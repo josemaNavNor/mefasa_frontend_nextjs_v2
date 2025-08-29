@@ -20,7 +20,7 @@ export function useUsers() {
         }
     }
 
-    async function createUser(user: { name: string, last_name: string, email: string, password: string, role_id: string }) {
+    async function createUser(user: { name: string, last_name: string, email: string, password: string, phone_number?: string, role_id: number, is_email_verified: boolean, email_verification_token: string, two_factor_enable: boolean, two_factor_secret: string }) {
         setLoading(true);
         try {
             const response = await fetch("http://localhost:4000/api/v1/users", {
