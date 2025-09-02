@@ -2,21 +2,21 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 import { MoreHorizontal } from "lucide-react"
-//import {checkbox} from "@/components/ui/checkbox"
- 
+import { Checkbox } from "@/components/ui/checkbox"
+
 import { Button } from "@/components/ui/button"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ArrowUpDown } from "lucide-react"
 
 export type User = {
-    id: string,   
+    id: string,
     name: string
     last_name: string
     role: { rol_name: string }
@@ -27,23 +27,47 @@ export type User = {
 
 export const columns: ColumnDef<User>[] = [
     {
+        id: "select",
+        header: ({ table }) => (
+            <Checkbox
+                checked={
+                    table.getIsAllPageRowsSelected() ||
+                    (table.getIsSomePageRowsSelected() && "indeterminate")
+                }
+                onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+                aria-label="Select all"
+            />
+        ),
+        cell: ({ row }) => (
+            <Checkbox
+                checked={row.getIsSelected()}
+                onCheckedChange={(value) => row.toggleSelected(!!value)}
+                aria-label="Select row"
+            />
+        ),
+        enableSorting: false,
+        enableHiding: false,
+    },
+    {
         accessorKey: "name",
-        header: ({column}) => {
+        header: ({ column }) => {
             return (
                 <Button
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Email
+                    Name
                     <ArrowUpDown className="h-4 w-4" />
                 </Button>
             )
         },
-       
+        cell: ({ row }) => (
+            <div className="text-left">{row.getValue("name")}</div>
+        ),
     },
     {
         accessorKey: "last_name",
-        header: ({column}) => {
+        header: ({ column }) => {
             return (
                 <Button
                     variant="ghost"
@@ -55,12 +79,12 @@ export const columns: ColumnDef<User>[] = [
             )
         },
         cell: ({ row }) => (
-            <div className="text-right">{row.getValue("last_name")}</div>
+            <div className="text-left">{row.getValue("last_name")}</div>
         ),
     },
     {
         accessorKey: "role",
-        header: ({column}) => {
+        header: ({ column }) => {
             return (
                 <Button
                     variant="ghost"
@@ -73,12 +97,12 @@ export const columns: ColumnDef<User>[] = [
         },
         cell: ({ row }) => {
             const role = row.getValue("role") as { rol_name?: string };
-            return <div className="text-right">{role?.rol_name ?? ""}</div>;
+            return <div className="text-left">{role?.rol_name ?? ""}</div>;
         },
     },
     {
         accessorKey: "email",
-        header: ({column}) => {
+        header: ({ column }) => {
             return (
                 <Button
                     variant="ghost"
@@ -90,12 +114,12 @@ export const columns: ColumnDef<User>[] = [
             )
         },
         cell: ({ row }) => (
-            <div className="text-center">{row.getValue("email")}</div>
+            <div className="text-left">{row.getValue("email")}</div>
         ),
     },
     {
         accessorKey: "phone_number",
-        header: ({column}) => {
+        header: ({ column }) => {
             return (
                 <Button
                     variant="ghost"
@@ -107,12 +131,12 @@ export const columns: ColumnDef<User>[] = [
             )
         },
         cell: ({ row }) => (
-            <div className="text-center">{row.getValue("phone_number")}</div>
+            <div className="text-left">{row.getValue("phone_number") ? row.getValue("phone_number") : "N/A"}</div>
         ),
     },
     {
         accessorKey: "is_email_verified",
-        header: ({column}) => {
+        header: ({ column }) => {
             return (
                 <Button
                     variant="ghost"
@@ -124,35 +148,34 @@ export const columns: ColumnDef<User>[] = [
             )
         },
         cell: ({ row }) => (
-            <div className="text-right">{row.getValue("is_email_verified") ? "Yes" : "No"}</div>
+            <div className="text-left">{row.getValue("is_email_verified") ? "Yes" : "No"}</div>
         ),
     },
     {
-    id: "actions",
-    cell: ({ row }) => {
-      const user = row.original
- 
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(user.id)}
-            >
-              Copy user ID
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>View user</DropdownMenuItem>
-            <DropdownMenuItem>View user details</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
+        id: "actions",
+        cell: ({ row }) => {
+            const user = row.original
+            return (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem
+                            onClick={() => navigator.clipboard.writeText(user.id)}
+                        >
+                            Copy user ID
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem>View user</DropdownMenuItem>
+                        <DropdownMenuItem>View user details</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            )
+        },
     },
-  },
 ]

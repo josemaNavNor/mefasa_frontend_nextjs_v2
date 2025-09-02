@@ -32,7 +32,7 @@ export function useRoles() {
             });
             const data = await response.json();
             //console.log(data);
-            setRoles((prevRoles) => [...prevRoles, data]);
+            setRoles(data.flat());
 
             if (response.ok) {
                 Swal.fire({
