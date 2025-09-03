@@ -1,7 +1,6 @@
-import { Calendar, ChevronDown, ChevronUp, Home, Inbox, Search, Settings, User2 } from "lucide-react"
+import { ChevronUp, Home, Inbox, Search, Settings, User2 } from "lucide-react"
 
 import {
-    SidebarProvider,
     Sidebar,
     SidebarContent,
     SidebarGroup,
@@ -14,7 +13,7 @@ import {
     SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
-
+import ImgLogo from "@/components/img-logo"
 // Menu items.
 const items = [
     {
@@ -50,6 +49,7 @@ export function AppSidebar() {
         <Sidebar collapsible="icon">
             <SidebarContent>
                 <SidebarGroup>
+                    <ImgLogo />
                     <SidebarGroupLabel>HDM - Help Desk Mefasa</SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
