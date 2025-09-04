@@ -1,4 +1,3 @@
-import { ChevronUp, Home, Inbox, Search, Settings, User2 } from "lucide-react"
 
 import {
     Sidebar,
@@ -15,6 +14,9 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
 import ImgLogo from "@/components/img-logo"
 // Menu items.
+import { ChevronUp, Home, Inbox, Search, Settings, User2, Building2, LayoutGrid, Ticket, Notebook } from "lucide-react"
+
+// Menu items.
 const items = [
     {
         title: "Home",
@@ -29,22 +31,22 @@ const items = [
     {
         title: "Roles",
         url: "/roles",
-        icon: User2,
+        icon: Notebook, 
     },
     {
         title: "Plantas",
         url: "/floors",
-        icon: Search,
+        icon: Building2, 
     },
     {
         title: "Áreas",
         url: "/areas",
-        icon: Search,
+        icon: LayoutGrid, 
     },
     {
         title: "Tipos de Tickets",
         url: "/type_tickets",
-        icon: Search,
+        icon: Ticket,
     },
     {
         title: "Settings",
