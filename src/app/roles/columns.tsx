@@ -18,7 +18,9 @@ import { ArrowUpDown } from "lucide-react"
 export type Rol = {
     id: string,
     rol_name: string
-    description: string
+    description: string,
+    created_at: string,
+    updated_at: string
 }
 
 export const columns: ColumnDef<Rol>[] = [
@@ -76,6 +78,40 @@ export const columns: ColumnDef<Rol>[] = [
         },
         cell: ({ row }) => (
             <div className="text-left">{row.getValue("description")}</div>
+        ),
+    },
+    {
+        accessorKey: "created_at",
+        header: ({ column }) => {
+            return (
+                <Button
+                    variant="ghost"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    Created At
+                    <ArrowUpDown className="h-4 w-4" />
+                </Button>
+            )
+        },
+        cell: ({ row }) => (
+            <div className="text-left">{row.getValue("created_at")}</div>
+        ),
+    },
+    {
+        accessorKey: "updated_at",
+        header: ({ column }) => {
+            return (
+                <Button
+                    variant="ghost"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    Created At
+                    <ArrowUpDown className="h-4 w-4" />
+                </Button>
+            )
+        },
+        cell: ({ row }) => (
+            <div className="text-left">{row.getValue("updated_at")}</div>
         ),
     },
     {

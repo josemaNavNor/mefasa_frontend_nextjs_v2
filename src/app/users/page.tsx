@@ -1,7 +1,7 @@
 "use client";
 import { useUsers } from "@/hooks/useUsersAdmin";
 import { columns, User } from "./columns"
-import { DataTable } from "./data-table"
+import { DataTable } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -35,6 +35,7 @@ export default function UsersPage() {
     const [phone_number, setPhoneNumber] = useState("");
     const [password, setPassword] = useState("");
     const [roleId, setRoleId] = useState("");
+    const [created_at, setCreatedAt] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
     const handleSubmit = async (e: React.FormEvent) => {

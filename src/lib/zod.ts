@@ -21,3 +21,42 @@ export const userSchema = z.object({
         .or(z.literal("").transform(() => undefined)),
     role_id: z.number().refine(val => val > 0, { message: "Debes seleccionar un rol" }),
 });
+
+export const roleSchema = z.object({
+    rol_name: z.string()
+        .min(1, { message: "El nombre del rol es requerido" })
+        .max(100, { message: "El nombre del rol debe tener menos de 100 caracteres" }),
+    description: z.string()
+        .min(1, { message: "La descripción es requerida" })
+        .max(255, { message: "La descripción debe tener menos de 255 caracteres" })
+        .optional()
+        .or(z.literal("").transform(() => undefined)),
+});
+
+export const floorSchema = z.object({
+    floor_name: z.string()
+        .min(1, { message: "El nombre de la planta es requerido" })
+        .max(100, { message: "El nombre de la planta debe tener menos de 100 caracteres" }),
+    description: z.string()
+        .max(255, { message: "La descripción debe tener menos de 255 caracteres" })
+        .optional()
+        .or(z.literal("").transform(() => undefined)),
+});
+
+export const areaSchema = z.object({
+    area_name: z.string()
+        .min(1, { message: "El nombre de la planta es requerido" })
+        .max(100, { message: "El nombre de la planta debe tener menos de 100 caracteres" }),
+    floor_id: z.number().refine(val => val > 0, { message: "Debes seleccionar una planta" }),
+});
+
+export const ticketTypeSchema = z.object({
+    ticket_type_name: z.string()
+        .min(1, { message: "El nombre del tipo de ticket es requerido" })
+        .max(100, { message: "El nombre del tipo de ticket debe tener menos de 100 caracteres" }),
+    description: z.string()
+        .max(255, { message: "La descripción debe tener menos de 255 caracteres" })
+        .optional()
+        .or(z.literal("").transform(() => undefined)),
+});
+

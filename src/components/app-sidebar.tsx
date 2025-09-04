@@ -22,7 +22,7 @@ const items = [
         icon: Home,
     },
     {
-        title: "Usuario",
+        title: "Usuarios",
         url: "/users",
         icon: User2,
     },
@@ -32,8 +32,18 @@ const items = [
         icon: User2,
     },
     {
-        title: "Search",
-        url: "/search",
+        title: "Plantas",
+        url: "/floors",
+        icon: Search,
+    },
+    {
+        title: "Áreas",
+        url: "/areas",
+        icon: Search,
+    },
+    {
+        title: "Tipos de Tickets",
+        url: "/type_tickets",
         icon: Search,
     },
     {
