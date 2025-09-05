@@ -14,16 +14,17 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ArrowUpDown } from "lucide-react"
 
-export type TicketType = {
+export type Permissions = {
     id: string,
-    type_name: string,
+    perm_name: string,
+    module: string,
     description: string,
     created_at: string,
     updated_at: string,
-    deleted_at: string,
+    deleted_at: string | null,
 }
 
-export const columns: ColumnDef<TicketType>[] = [
+export const columns: ColumnDef<Permissions>[] = [
     {
         id: "select",
         header: ({ table }) => (
@@ -47,20 +48,20 @@ export const columns: ColumnDef<TicketType>[] = [
         enableHiding: false,
     },
     {
-        accessorKey: "type_name",
+        accessorKey: "perm_name",
         header: ({ column }) => {
             return (
                 <Button
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Name
+                    Nombre
                     <ArrowUpDown className="h-4 w-4" />
                 </Button>
             )
         },
         cell: ({ row }) => (
-            <div className="text-left">{row.getValue("type_name")}</div>
+            <div className="text-left">{row.getValue("perm_name")}</div>
         ),
     },
     {
@@ -71,13 +72,30 @@ export const columns: ColumnDef<TicketType>[] = [
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Description
+                    Descripcion
                     <ArrowUpDown className="h-4 w-4" />
                 </Button>
             )
         },
         cell: ({ row }) => (
-            <div className="text-left">{row.getValue("description") ? row.getValue("description") : 'Sin descripción'}</div>
+            <div className="text-left">{row.getValue("description")}</div>
+        ),
+    },
+    {
+        accessorKey: "module",
+        header: ({ column }) => {
+            return (
+                <Button
+                    variant="ghost"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    Modulo
+                    <ArrowUpDown className="h-4 w-4" />
+                </Button>
+            )
+        },
+        cell: ({ row }) => (
+            <div className="text-left">{row.getValue("module")}</div>
         ),
     },
     {
@@ -128,9 +146,10 @@ export const columns: ColumnDef<TicketType>[] = [
             )
         },
         cell: ({ row }) => (
-            <div className="text-center">{row.getValue("deleted_at") ? row.getValue("deleted_at") : 'Activo'}</div>
+            <div className="text-center">{row.getValue("deleted_at") ? row.getValue("deleted_at") : 'Area Activa'}</div>
         ),
     },
+
     {
         id: "actions",
         cell: ({ row }) => {

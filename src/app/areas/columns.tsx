@@ -79,7 +79,7 @@ export const columns: ColumnDef<Area>[] = [
             )
         },
         cell: ({ row }) => (
-            <div className="text-left">{row.getValue("floor_name")}</div>
+            <div className="text-left">{row.getValue("floor_name") ? row.getValue("floor_name") : 'Sin Planta'}</div>
         ),
     },
     {

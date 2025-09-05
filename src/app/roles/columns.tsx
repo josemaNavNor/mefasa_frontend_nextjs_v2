@@ -20,7 +20,8 @@ export type Rol = {
     rol_name: string
     description: string,
     created_at: string,
-    updated_at: string
+    updated_at: string,
+    deleted_at: string
 }
 
 export const columns: ColumnDef<Rol>[] = [
@@ -105,13 +106,30 @@ export const columns: ColumnDef<Rol>[] = [
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Created At
+                    Updated At
                     <ArrowUpDown className="h-4 w-4" />
                 </Button>
             )
         },
         cell: ({ row }) => (
             <div className="text-left">{row.getValue("updated_at")}</div>
+        ),
+    },
+    {
+        accessorKey: "deleted_at",
+        header: ({ column }) => {
+            return (
+                <Button
+                    variant="ghost"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    Deleted At
+                    <ArrowUpDown className="h-4 w-4" />
+                </Button>
+            )
+        },
+        cell: ({ row }) => (
+            <div className="text-center">{row.getValue("deleted_at") ? row.getValue("deleted_at") : 'Area Activa'}</div>
         ),
     },
     {

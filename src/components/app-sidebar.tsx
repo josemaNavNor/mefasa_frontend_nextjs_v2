@@ -14,7 +14,7 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
 import ImgLogo from "@/components/img-logo"
 // Menu items.
-import { ChevronUp, Home, Inbox, Search, Settings, User2, Building2, LayoutGrid, Ticket, Notebook } from "lucide-react"
+import { ChevronUp, Home, Inbox, Search, Settings, User2, Building2, LayoutGrid, Ticket, Notebook, Footprints } from "lucide-react"
 
 // Menu items.
 const items = [
@@ -31,17 +31,22 @@ const items = [
     {
         title: "Roles",
         url: "/roles",
-        icon: Notebook, 
+        icon: Notebook,
+    },
+    {
+        title: "Permisos",
+        url: "/permissions",
+        icon: Footprints,
     },
     {
         title: "Plantas",
         url: "/floors",
-        icon: Building2, 
+        icon: Building2,
     },
     {
         title: "Áreas",
         url: "/areas",
-        icon: LayoutGrid, 
+        icon: LayoutGrid,
     },
     {
         title: "Tipos de Tickets",

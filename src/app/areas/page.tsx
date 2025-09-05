@@ -95,7 +95,7 @@ export default function AreasPage() {
                                 onValueChange={setFloorId}
                             >
                                 <SelectTrigger className={`w-full border-2 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder:text-gray-300${errors.role_id ? ' border-red-500' : ' border-gray-200'}`}>
-                                    <SelectValue placeholder="Selecciona un rol" />
+                                    <SelectValue placeholder="Selecciona una planta" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {floors.map((floor) => (

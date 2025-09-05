@@ -100,7 +100,7 @@ export const columns: ColumnDef<User>[] = [
         },
         cell: ({ row }) => {
             const role = row.getValue("role") as { rol_name?: string };
-            return <div className="text-left">{role?.rol_name ?? ""}</div>;
+            return <div className="text-left">{role?.rol_name ?? "Sin rol"}</div>;
         },
     },
     {
@@ -134,7 +134,7 @@ export const columns: ColumnDef<User>[] = [
             )
         },
         cell: ({ row }) => (
-            <div className="text-left">{row.getValue("phone_number") ? row.getValue("phone_number") : "N/A"}</div>
+            <div className="text-center">{row.getValue("phone_number") ? row.getValue("phone_number") : "N/A"}</div>
         ),
     },
     {

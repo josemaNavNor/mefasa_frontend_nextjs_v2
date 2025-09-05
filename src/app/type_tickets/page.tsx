@@ -33,7 +33,7 @@ export default function AreasPage() {
         if (!result.success) {
             const formatted = result.error.format();
             setErrors({
-                type_name: formatted.ticket_type_name?._errors[0] || '',
+                type_name: formatted.type_name?._errors[0] || '',
                 description: formatted.description?._errors[0] || '',
             });
             return;
