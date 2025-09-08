@@ -146,7 +146,7 @@ export const columns: ColumnDef<Permissions>[] = [
             )
         },
         cell: ({ row }) => (
-            <div className="text-center">{row.getValue("deleted_at") ? row.getValue("deleted_at") : 'Area Activa'}</div>
+            <div className="text-center">{row.getValue("deleted_at") ? row.getValue("deleted_at") : 'Activo'}</div>
         ),
     },
 

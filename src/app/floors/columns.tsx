@@ -129,7 +129,7 @@ export const columns: ColumnDef<Floor>[] = [
             )
         },
         cell: ({ row }) => (
-            <div className="text-center">{row.getValue("deleted_at") ? row.getValue("deleted_at") : 'Planta Activa'}</div>
+            <div className="text-center">{row.getValue("deleted_at") ? row.getValue("deleted_at") : 'Activo'}</div>
         ),
     },
     {
