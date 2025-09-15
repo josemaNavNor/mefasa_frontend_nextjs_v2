@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import * as React from "react"
-import { Input } from "@/components/ui/input"
 
 import {
     DropdownMenu,
@@ -71,7 +70,7 @@ export function DataTable<TData, TValue>({
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="ml-auto">
-                            Columns
+                            Columnas
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
@@ -133,7 +132,7 @@ export function DataTable<TData, TValue>({
                         ) : (
                             <TableRow>
                                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                                    No results.
+                                    Sin resultados...
                                 </TableCell>
                             </TableRow>
                         )}
@@ -146,7 +145,7 @@ export function DataTable<TData, TValue>({
                         onClick={() => table.previousPage()}
                         disabled={!table.getCanPreviousPage()}
                     >
-                        Previous
+                        Página Anterior
                     </Button>
                     <Button
                         variant="outline"
@@ -154,7 +153,7 @@ export function DataTable<TData, TValue>({
                         onClick={() => table.nextPage()}
                         disabled={!table.getCanNextPage()}
                     >
-                        Next
+                        Página Siguiente
                     </Button>
                 </div>
             </div>

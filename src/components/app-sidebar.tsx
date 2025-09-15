@@ -23,6 +23,11 @@ const items = [
         url: "/",
         icon: Home,
     },
+        {
+        title: "Tickets",
+        url: "/tickets",
+        icon: Ticket,
+    },
     {
         title: "Usuarios",
         url: "/users",

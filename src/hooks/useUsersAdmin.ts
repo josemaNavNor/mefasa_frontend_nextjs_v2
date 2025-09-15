@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import Swal from 'sweetalert2'
+import { eventEmitter } from './useEventListener'
 
 
 export function useUsers() {
@@ -32,9 +33,11 @@ export function useUsers() {
             });
             const data = await response.json();
             //console.log(data);
-            setUsers((prevUsers) => [...prevUsers, data]);
 
             if (response.ok) {
+                setUsers((prevUsers) => [...prevUsers, data]);
+                eventEmitter.emit('data-changed', 'users');
+                eventEmitter.emit('users-updated');
                 Swal.fire({
                     icon: 'success',
                     title: 'Usuario creado',
@@ -54,9 +57,13 @@ export function useUsers() {
         }
     }
 
+    const refetch = () => {
+        fetchUsers();
+    };
+
     useEffect(() => {
         fetchUsers();
     }, []);
 
-    return { users, loading, createUser };
+    return { users, loading, createUser, refetch };
 }

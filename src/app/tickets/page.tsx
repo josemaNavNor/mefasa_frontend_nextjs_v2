@@ -1,14 +1,15 @@
 "use client";
 import { useUsers } from "@/hooks/useUsersAdmin";
-import { columns, User } from "./columns"
+import { columns } from "./columns"
 import { DataTable } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useTickets } from "@/hooks/use_tickets";
 import { useType } from "@/hooks/use_typeTickets";
-//import { userSchema } from "@/lib/zod";
+import { useEventListener } from "@/hooks/useEventListener";
+
 import {
     Sheet,
     SheetClose,
@@ -26,45 +27,40 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-export default function UsersPage() {
+
+export default function TicketsPage() {
+    const { refetch } = useTickets();
     const { tickets } = useTickets();
     const { types } = useType();
+    const { users } = useUsers(); // Para obtener usuarios y técnicos
     const { createTicket } = useTickets();
+
     const [ticket_number, setTicketNumber] = useState("");
     const [summary, setSummary] = useState("");
     const [description, setDescription] = useState("");
     const [end_user_id, setEndUserId] = useState("");
     const [technician_id, setTechnicianId] = useState("");
     const [type_id, setTypeId] = useState("");
+    const [floor_id, setFloorId] = useState(""); 
+    const [area_id, setAreaId] = useState(""); 
     const [priority, setPriority] = useState("");
     const [status, setStatus] = useState("");
     const [due_date, setDueDate] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
+    const handleDataChange = useCallback((dataType: string) => {
+        if (dataType === 'roles' || dataType === 'all') {
+            refetch();
+        }
+    }, [refetch]);
+
+    useEventListener('data-changed', handleDataChange);
+    useEventListener('roles-updated', refetch);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setErrors({});
-        // const result = userSchema.safeParse({
-        //     name,
-        //     last_name,
-        //     email,
-        //     password,
-        //     phone_number,
-        //     role_id: Number(roleId),
-        // });
-        // // maneja los errores de validacion de campos con zod
-        // if (!result.success) {
-        //     const formatted = result.error.format();
-        //     setErrors({
-        //         name: formatted.name?._errors?.[0] || "",
-        //         last_name: formatted.last_name?._errors?.[0] || "",
-        //         email: formatted.email?._errors?.[0] || "",
-        //         password: formatted.password?._errors?.[0] || "",
-        //         phone_number: formatted.phone_number?._errors?.[0] || "",
-        //         role_id: formatted.role_id?._errors?.[0] || "",
-        //     });
-        //     return;
-        // }
+
         await createTicket({
             ticket_number,
             summary,
@@ -72,16 +68,21 @@ export default function UsersPage() {
             end_user_id: Number(end_user_id),
             technician_id: Number(technician_id),
             type_id: Number(type_id),
+            floor_id: Number(floor_id),
+            area_id: Number(area_id),
             priority,
             status,
             due_date
         });
-        setTicketNumber("");
+
+        // Reset form
         setSummary("");
         setDescription("");
         setEndUserId("");
         setTechnicianId("");
         setTypeId("");
+        setFloorId("");
+        setAreaId("");
         setPriority("");
         setStatus("");
         setDueDate("");
@@ -96,78 +97,141 @@ export default function UsersPage() {
                 <SheetTrigger asChild className="mb-4">
                     <Button variant="outline">Agregar Ticket</Button>
                 </SheetTrigger>
-                <SheetContent>
+                <SheetContent className="overflow-y-auto">
                     <SheetHeader>
                         <SheetTitle>Agregar Ticket</SheetTitle>
                         <SheetDescription>
                             Completa los campos a continuación para agregar un nuevo ticket.
                         </SheetDescription>
                     </SheetHeader>
-                    <form onSubmit={handleSubmit} className="grid flex-1 auto-rows-min gap-6 px-4">
+                    <form onSubmit={handleSubmit} className="grid flex-1 auto-rows-min gap-4 px-4">
                         <div className="grid gap-3">
-                            <Label htmlFor="sheet-demo-name">Titulo</Label>
+                            <Label htmlFor="summary">Título</Label>
                             <Input
-                                id="name"
+                                id="summary"
                                 type="text"
                                 autoComplete="off"
-                                placeholder="Titulo del ticket"
+                                placeholder="Título del ticket"
                                 value={summary}
                                 onChange={(e) => setSummary(e.target.value)}
-                                className={`w-full border-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder:text-gray-300${errors.summary ? ' border-red-500' : ' border-gray-200'}`}
+                                className="w-full"
+                                required
                             />
-                            {errors.summary && <p className="text-red-500 text-xs mt-1">{errors.summary}</p>}
                         </div>
+
                         <div className="grid gap-3">
-                            <Label htmlFor="sheet-demo-username">Descripcion</Label>
+                            <Label htmlFor="description">Descripción</Label>
                             <Input
-                                id="last_name"
+                                id="description"
                                 type="text"
                                 autoComplete="off"
-                                placeholder="Descripcion del ticket"
+                                placeholder="Descripción del ticket"
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
-                                className={`w-full border-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder:text-gray-300${errors.description ? ' border-red-500' : ' border-gray-200'}`}
+                                className="w-full"
+                                required
                             />
-                            {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
                         </div>
+
                         <div className="grid gap-3">
-                            <Label htmlFor="sheet-demo-role">Tipo de ticket</Label>
-                            <Select
-                                value={type_id}
-                                onValueChange={setTypeId}
-                            >
-                                <SelectTrigger className={`w-full border-2 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder:text-gray-300${errors.type_id ? ' border-red-500' : ' border-gray-200'}`}>
+                            <Label htmlFor="type_id">Tipo de ticket</Label>
+                            <Select value={type_id} onValueChange={setTypeId} required>
+                                <SelectTrigger className="w-full">
                                     <SelectValue placeholder="Selecciona un tipo de ticket" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {types.map((useType) => (
-                                        <SelectItem key={useType.id} value={String(useType.id)}>
-                                            {useType.name}
+                                    {types.map((type) => (
+                                        <SelectItem key={type.id} value={String(type.id)}>
+                                            {type.type_name}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
-                            {errors.type_id && <p className="text-red-500 text-xs mt-1">{errors.type_id}</p>}
                         </div>
+
                         <div className="grid gap-3">
-                            <Label htmlFor="sheet-demo-role">Tipo de ticket</Label>
-                            <Select
-                                value={type_id}
-                                onValueChange={setTypeId}
-                            >
-                                <SelectTrigger className={`w-full border-2 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder:text-gray-300${errors.type_id ? ' border-red-500' : ' border-gray-200'}`}>
-                                    <SelectValue placeholder="Selecciona un tipo de ticket" />
+                            <Label htmlFor="end_user_id">Usuario final</Label>
+                            <Select value={end_user_id} onValueChange={setEndUserId} required>
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Selecciona un usuario" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {types.map((useType) => (
-                                        <SelectItem key={useType.id} value={String(useType.id)}>
-                                            {useType.name}
+                                    {users?.map((user) => (
+                                        <SelectItem key={user.id} value={String(user.id)}>
+                                            {user.name} {user.last_name}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
-                            {errors.type_id && <p className="text-red-500 text-xs mt-1">{errors.type_id}</p>}
                         </div>
+
+                        <div className="grid gap-3">
+                            <Label htmlFor="technician_id">Asignar técnico</Label>
+                            <Select value={technician_id} onValueChange={setTechnicianId}>
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Selecciona un técnico" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {users?.filter(user => user.role?.name === 'Tecnico' || user.role?.name === 'Administrador').map((user) => (
+                                        <SelectItem key={user.id} value={String(user.id)}>
+                                            {user.name} {user.last_name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="grid gap-3">
+                            <Label htmlFor="floor_id">Planta</Label>
+                            <Input
+                                id="floor_id"
+                                type="number"
+                                placeholder="ID de la planta"
+                                value={floor_id}
+                                onChange={(e) => setFloorId(e.target.value)}
+                                className="w-full"
+                                required
+                            />
+                        </div>
+
+                        <div className="grid gap-3">
+                            <Label htmlFor="area_id">Área</Label>
+                            <Input
+                                id="area_id"
+                                type="number"
+                                placeholder="ID del área"
+                                value={area_id}
+                                onChange={(e) => setAreaId(e.target.value)}
+                                className="w-full"
+                                required
+                            />
+                        </div>
+
+                        <div className="grid gap-3">
+                            <Label htmlFor="priority">Prioridad</Label>
+                            <Select value={priority} onValueChange={setPriority}>
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Selecciona prioridad" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="LOW">Baja</SelectItem>
+                                    <SelectItem value="MEDIUM">Media</SelectItem>
+                                    <SelectItem value="HIGH">Alta</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="grid gap-3">
+                            <Label htmlFor="due_date">Fecha límite</Label>
+                            <Input
+                                id="due_date"
+                                type="date"
+                                value={due_date}
+                                onChange={(e) => setDueDate(e.target.value)}
+                                className="w-full"
+                            />
+                        </div>
+
                         <SheetFooter>
                             <Button type="submit">Agregar Ticket</Button>
                             <SheetClose asChild>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import Swal from 'sweetalert2'
-
+import { eventEmitter } from './useEventListener'
 
 export function useRoles() {
     const [roles, setRoles] = useState<any[]>([]);
@@ -31,10 +31,15 @@ export function useRoles() {
                 body: JSON.stringify(role),
             });
             const data = await response.json();
-            //console.log(data);
-            setRoles((prevRoles) => [...prevRoles, data]);
-
+            
             if (response.ok) {
+                // Actualizar el estado local
+                setRoles((prevRoles) => [...prevRoles, data]);
+                
+                // Emitir eventos globales
+                eventEmitter.emit('data-changed', 'roles');
+                eventEmitter.emit('roles-updated');
+                
                 Swal.fire({
                     icon: 'success',
                     title: 'Rol creado',    
@@ -49,14 +54,24 @@ export function useRoles() {
             }
         } catch (error) {
             console.error("Error al crear el rol:", error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al crear el rol',
+            });
         } finally {
             setLoading(false);
         }
     }
 
+    // Función para refrescar datos (útil para eventos externos)
+    const refetch = () => {
+        fetchRoles();
+    };
+
     useEffect(() => {
         fetchRoles();
     }, []);
 
-    return { roles, loading, createRole };
+    return { roles, loading, createRole, refetch };
 }

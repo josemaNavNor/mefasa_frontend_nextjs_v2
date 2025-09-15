@@ -13,22 +13,22 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ArrowUpDown } from "lucide-react"
+import Link from "next/link"
 
 export type Ticket = {
     id: string,
     ticket_number: string
     summary: string
-    end_user_id: number,
-    technician: { name: string },
-    type: { type_name: string },
+    end_user: { email: string, name: string, last_name: string } | null,
+    technician: { name: string, last_name: string } | null,
+    type: { type_name: string } | null,
     priority: string,
     status: string,
     due_date: string,
     created_at: string,
     updated_at: string,
-    deleted_at: string | 'Activo',
+    deleted_at: string | null,
 }
-
 export const columns: ColumnDef<Ticket>[] = [
     {
         id: "select",
@@ -66,7 +66,7 @@ export const columns: ColumnDef<Ticket>[] = [
             )
         },
         cell: ({ row }) => (
-            <div className="text-left">{row.getValue("ticket_number")}</div>
+            <div className="text-center">{row.getValue("ticket_number")}</div>
         ),
     },
     {
@@ -87,7 +87,7 @@ export const columns: ColumnDef<Ticket>[] = [
         ),
     },
     {
-        accessorKey: "end_user_id",
+        accessorKey: "end_user",
         header: ({ column }) => {
             return (
                 <Button
@@ -99,9 +99,10 @@ export const columns: ColumnDef<Ticket>[] = [
                 </Button>
             )
         },
-        cell: ({ row }) => (
-            <div className="text-left">{row.getValue("end_user_id") ? row.getValue("end_user_id") : "Sin Creador"}</div>
-        ),
+        cell: ({ row }) => {
+            const end_user = row.getValue("end_user") as { email?: string };
+            return <div className="text-center">{end_user ? `${end_user.email}` : "Sin creador"}</div>;
+        },
     },
     {
         accessorKey: "technician",
@@ -111,14 +112,14 @@ export const columns: ColumnDef<Ticket>[] = [
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Tipo de ticket
+                    Asignado a
                     <ArrowUpDown className="h-4 w-4" />
                 </Button>
             )
         },
         cell: ({ row }) => {
-            const technician = row.getValue("technician") as { name?: string };
-            return <div className="text-left">{technician?.name ?? "Sin técnico"}</div>;
+            const technician = row.getValue("technician") as { name?: string, last_name?: string };
+            return <div className="text-center">{technician ? `${technician.name} ${technician.last_name}` : "Sin Asignar"}</div>;
         },
     },
     {
@@ -135,8 +136,8 @@ export const columns: ColumnDef<Ticket>[] = [
             )
         },
         cell: ({ row }) => {
-            const type = row.getValue("type") as { name?: string };
-            return <div className="text-left">{type?.name ?? "Sin tipo"}</div>;
+            const type = row.getValue("type") as { type_name?: string };
+            return <div className="text-center">{type?.type_name ?? "Sin Asignar"}</div>;
         },
     },
     {
@@ -260,9 +261,13 @@ export const columns: ColumnDef<Ticket>[] = [
                         >
                             Copiar Numero de ticket
                         </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>Ver usuario</DropdownMenuItem>
-                        <DropdownMenuItem>Ver detalles del usuario</DropdownMenuItem>
+                        <DropdownMenuItem>
+                            <Link href={`/tickets/${user.id}`}>
+                                Ver detalles del ticket
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>Editar ticket</DropdownMenuItem>
+                        <DropdownMenuItem>Eliminar ticket</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             )

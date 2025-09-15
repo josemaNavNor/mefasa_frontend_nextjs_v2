@@ -5,8 +5,9 @@ import { DataTable } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { roleSchema } from "@/lib/zod";
+import { useEventListener } from "@/hooks/useEventListener";
 import {
     Sheet,
     SheetClose,
@@ -17,21 +18,22 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
-import { set } from "zod";
 
 export default function RolesPage() {
-    const { roles, loading } = useRoles();
-    const { createRole } = useRoles();
+    const { roles, createRole, refetch } = useRoles();
     const [rol_name, setRolName] = useState("");
     const [description, setDescription] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+    // Escuchar eventos de cambios en roles
+    const handleDataChange = useCallback((dataType: string) => {
+        if (dataType === 'roles' || dataType === 'all') {
+            refetch();
+        }
+    }, [refetch]);
+
+    useEventListener('data-changed', handleDataChange);
+    useEventListener('roles-updated', refetch);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -46,16 +48,17 @@ export default function RolesPage() {
             });
             return;
         }
+        
         await createRole({
             rol_name,
             description,
         });
+        
+        // Limpiar formulario solo si fue exitoso
         setRolName("");
         setDescription("");
         setErrors({});
     }
-
-    //if (loading) return <p>Cargando roles...</p>;
 
     return (
         <div className="w-full px-4 py-4">
@@ -75,7 +78,7 @@ export default function RolesPage() {
                     </SheetHeader>
                     <form onSubmit={handleSubmit} className="grid flex-1 auto-rows-min gap-6 px-4">
                         <div className="grid gap-3">
-                            <Label htmlFor="sheet-demo-name">Nombre</Label>
+                            <Label htmlFor="rol_name">Nombre</Label>
                             <Input
                                 id="rol_name"
                                 type="text"
@@ -88,7 +91,7 @@ export default function RolesPage() {
                             {errors.rol_name && <p className="text-red-500 text-xs mt-1">{errors.rol_name}</p>}
                         </div>
                         <div className="grid gap-3">
-                            <Label htmlFor="sheet-demo-username">Descripcion</Label>
+                            <Label htmlFor="description">Descripcion</Label>
                             <Input
                                 id="description"
                                 type="text"
