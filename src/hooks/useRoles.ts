@@ -9,7 +9,7 @@ export function useRoles() {
     async function fetchRoles() {
         setLoading(true);
         try {
-            const response = await fetch("http://localhost:4000/api/v1/roles");
+            const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/roles");
             const data = await response.json();
             setRoles(data.flat());
             //console.log(data);
@@ -23,7 +23,7 @@ export function useRoles() {
     async function createRole(role: { rol_name: string, description: string }) {
         setLoading(true);
         try {
-            const response = await fetch("http://localhost:4000/api/v1/roles", {
+            const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/roles", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

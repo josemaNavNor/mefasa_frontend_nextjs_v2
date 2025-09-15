@@ -9,7 +9,7 @@ export function useType() {
     async function fetchTicketsType() {
         setLoading(true);
         try {
-            const response = await fetch("http://localhost:4000/api/v1/types");
+            const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/types");
             const data = await response.json();
             setTypes(data.flat());
             //console.log(data);
@@ -23,7 +23,7 @@ export function useType() {
     async function createTicketType(type: { type_name: string, description: string }) {
         setLoading(true);
         try {
-            const response = await fetch("http://localhost:4000/api/v1/types", {
+            const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/types", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

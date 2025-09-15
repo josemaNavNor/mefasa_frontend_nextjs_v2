@@ -9,7 +9,7 @@ export function useAreas() {
     async function fetchAreas() {
         setLoading(true);
         try {
-            const response = await fetch("http://localhost:4000/api/v1/areas");
+            const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/areas");
             const data = await response.json();
             setAreas(data.flat());
             //console.log(data);
@@ -23,7 +23,7 @@ export function useAreas() {
     async function createArea(area: { area_name: string,floor_id: number }) {
         setLoading(true);
         try {
-            const response = await fetch("http://localhost:4000/api/v1/areas", {
+            const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/areas", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

@@ -9,7 +9,7 @@ export function usePermissions() {
     async function fetchPermissions() {
         setLoading(true);
         try {
-            const response = await fetch("http://localhost:4000/api/v1/permissions");
+            const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/permissions");
             const data = await response.json();
             setPermissions(data.flat());
             //console.log(data);
@@ -23,7 +23,7 @@ export function usePermissions() {
     async function createPermission(permission: { perm_name: string, module: string, description: string }) {
         setLoading(true);
         try {
-            const response = await fetch("http://localhost:4000/api/v1/permissions", {
+            const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/permissions", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
