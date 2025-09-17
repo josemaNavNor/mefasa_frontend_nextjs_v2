@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import Swal from 'sweetalert2'
 import { eventEmitter } from './useEventListener'
+import * as XLSX from 'xlsx'
 
 export function useTickets() {
     const [tickets, setTickets] = useState<any[]>([]);
@@ -118,9 +119,103 @@ export function useTickets() {
         fetchTickets();
     };
 
+    const exportToExcel = (ticketsToExport = tickets) => {
+        try {
+            // Preparar los datos para exportar
+            const dataToExport = ticketsToExport.map((ticket: any) => ({
+                'Número de Ticket': ticket.ticket_number || '',
+                'Título': ticket.summary || '',
+                'Descripción': ticket.description || '',
+                'Usuario Final': ticket.end_user ? 
+                    `${ticket.end_user.name} ${ticket.end_user.last_name}` : 
+                    'Sin asignar',
+                'Email Usuario': ticket.end_user?.email || '',
+                'Técnico Asignado': ticket.technician ? 
+                    `${ticket.technician.name} ${ticket.technician.last_name}` : 
+                    'Sin asignar',
+                'Tipo': ticket.type?.type_name || 'Sin tipo',
+                'Prioridad': ticket.priority || '',
+                'Estado': ticket.status || '',
+                'Piso': ticket.floor?.floor_name || 'Sin piso',
+                'Área': ticket.area?.area_name || 'Sin área',
+                'Fecha de Creación': ticket.created_at ? 
+                    new Date(ticket.created_at).toLocaleString('es-ES') : 
+                    '',
+                'Fecha de Actualización': ticket.updated_at ? 
+                    new Date(ticket.updated_at).toLocaleString('es-ES') : 
+                    '',
+                'Fecha Límite': ticket.due_date ? 
+                    new Date(ticket.due_date).toLocaleDateString('es-ES') : 
+                    'No establecida',
+                'Fecha de Asignación': ticket.assigned_at ? 
+                    new Date(ticket.assigned_at).toLocaleString('es-ES') : 
+                    '',
+                'Fecha de Resolución': ticket.resolved_at ? 
+                    new Date(ticket.resolved_at).toLocaleString('es-ES') : 
+                    '',
+                'Fecha de Cierre': ticket.closed_at ? 
+                    new Date(ticket.closed_at).toLocaleString('es-ES') : 
+                    ''
+            }));
+
+            // Crear el libro de Excel
+            const workbook = XLSX.utils.book_new();
+            const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+
+            // Ajustar el ancho de las columnas
+            const columnWidths = [
+                { wch: 15 }, // Número de Ticket
+                { wch: 30 }, // Título
+                { wch: 50 }, // Descripción
+                { wch: 25 }, // Usuario Final
+                { wch: 30 }, // Email Usuario
+                { wch: 25 }, // Técnico Asignado
+                { wch: 20 }, // Tipo
+                { wch: 12 }, // Prioridad
+                { wch: 15 }, // Estado
+                { wch: 15 }, // Piso
+                { wch: 15 }, // Área
+                { wch: 20 }, // Fecha de Creación
+                { wch: 20 }, // Fecha de Actualización
+                { wch: 15 }, // Fecha Límite
+                { wch: 20 }, // Fecha de Asignación
+                { wch: 20 }, // Fecha de Resolución
+                { wch: 20 }  // Fecha de Cierre
+            ];
+            worksheet['!cols'] = columnWidths;
+
+            // Agregar la hoja al libro
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Tickets');
+
+            // Generar el nombre del archivo con fecha y hora actual
+            const now = new Date();
+            const timestamp = now.toISOString().slice(0, 19).replace(/[:-]/g, '').replace('T', '_');
+            const filename = `hdm_export_${timestamp}.xlsx`;
+
+            // Descargar el archivo
+            XLSX.writeFile(workbook, filename);
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Exportación exitosa',
+                text: `Se han exportado ${dataToExport.length} tickets a Excel`,
+                timer: 3000,
+                showConfirmButton: false
+            });
+
+        } catch (error) {
+            console.error('Error al exportar a Excel:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error en la exportación',
+                text: 'No se pudo exportar el archivo Excel',
+            });
+        }
+    };
+
     useEffect(() => {
         fetchTickets();
     }, []);
 
-    return { tickets, loading, createTicket, updateTicket, fetchTicketById, refetch };
+    return { tickets, loading, createTicket, updateTicket, fetchTicketById, refetch, exportToExcel };
 }

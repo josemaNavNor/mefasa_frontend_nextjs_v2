@@ -6,13 +6,13 @@ import { useTickets } from "@/hooks/use_tickets";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Edit, Calendar, User, MapPin, Tag } from "lucide-react";
+import { ArrowLeft, Edit, Calendar, User, MapPin, Tag, Download } from "lucide-react";
 import { EditTicketDialog } from "@/components/edit-ticket-dialog";
 
 export default function TicketDetailsPage() {
   const params = useParams();
   const router = useRouter();
-  const { fetchTicketById, loading } = useTickets();
+  const { fetchTicketById, loading, exportToExcel } = useTickets();
   const [ticket, setTicket] = useState<any>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
 
@@ -113,6 +113,13 @@ export default function TicketDetailsPage() {
           <Button onClick={() => setShowEditDialog(true)}>
             <Edit className="h-4 w-4 mr-2" />
             Editar Ticket
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => exportToExcel([ticket])}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Exportar
           </Button>
         </div>
       </div>

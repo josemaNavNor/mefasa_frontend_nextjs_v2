@@ -135,18 +135,12 @@ export function EditTicketDialog({ ticket, open, onOpenChange }: EditTicketDialo
     
     // El campo en la base de datos es 'rol_name', no 'role_name'
     const roleName = (userRole.rol_name || userRole.role_name || '').toLowerCase().trim();
-    console.log('Verificando rol:', roleName, 'para usuario:', user.name);
     
     return roleName.includes('tecnico') || 
            roleName.includes('administrador') ||
            roleName.includes('admin') ||
            roleName.includes('soporte');
   });
-
-  // Debug: Agregar logs para diagnóstico
-  console.log('Todos los usuarios:', users);
-  console.log('Usuarios de soporte filtrados:', supportUsers);
-  console.log('Ejemplo de rol de primer usuario:', users[0]?.role || users[0]?.roles);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

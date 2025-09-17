@@ -10,6 +10,7 @@ import { useTickets } from "@/hooks/use_tickets";
 import { useType } from "@/hooks/use_typeTickets";
 import { useEventListener } from "@/hooks/useEventListener";
 import { EditTicketDialog } from "@/components/edit-ticket-dialog";
+import { Download } from "lucide-react";
 
 import {
     Sheet,
@@ -30,7 +31,7 @@ import {
 } from "@/components/ui/select"
 
 export default function TicketsPage() {
-    const { refetch } = useTickets();
+    const { refetch, exportToExcel } = useTickets();
     const { tickets } = useTickets();
     const { types } = useType();
     const { users } = useUsers(); // Para obtener usuarios y técnicos
@@ -106,17 +107,18 @@ export default function TicketsPage() {
             <div className="mb-4">
                 <h1 className="text-4xl font-bold">Tickets</h1>
             </div>
-            <Sheet>
-                <SheetTrigger asChild className="mb-4">
-                    <Button variant="outline">Agregar Ticket</Button>
-                </SheetTrigger>
-                <SheetContent className="overflow-y-auto">
-                    <SheetHeader>
-                        <SheetTitle>Agregar Ticket</SheetTitle>
-                        <SheetDescription>
-                            Completa los campos a continuación para agregar un nuevo ticket.
-                        </SheetDescription>
-                    </SheetHeader>
+            <div className="flex gap-2 mb-4">
+                <Sheet>
+                    <SheetTrigger asChild>
+                        <Button variant="outline">Agregar Ticket</Button>
+                    </SheetTrigger>
+                    <SheetContent className="overflow-y-auto">
+                        <SheetHeader>
+                            <SheetTitle>Agregar Ticket</SheetTitle>
+                            <SheetDescription>
+                                Completa los campos a continuación para agregar un nuevo ticket.
+                            </SheetDescription>
+                        </SheetHeader>
                     <form onSubmit={handleSubmit} className="grid flex-1 auto-rows-min gap-4 px-4">
                         <div className="grid gap-3">
                             <Label htmlFor="summary">Título</Label>
@@ -254,6 +256,15 @@ export default function TicketsPage() {
                     </form>
                 </SheetContent>
             </Sheet>
+            <Button 
+                variant="default" 
+                onClick={() => exportToExcel()}
+                className="ml-2"
+            >
+                <Download className="h-4 w-4 mr-2" />
+                Exportar a Excel
+            </Button>
+            </div>
             <DataTable columns={columns} data={tickets} />
             
             {/* Diálogo de Edición */}
