@@ -29,7 +29,12 @@ export type Ticket = {
     updated_at: string,
     deleted_at: string | null,
 }
-export const columns: ColumnDef<Ticket>[] = [
+
+interface ColumnsProps {
+    onEditTicket?: (ticket: Ticket) => void;
+}
+
+export const createColumns = ({ onEditTicket }: ColumnsProps = {}): ColumnDef<Ticket>[] => [
     {
         id: "select",
         header: ({ table }) => (
@@ -266,7 +271,9 @@ export const columns: ColumnDef<Ticket>[] = [
                                 Ver detalles del ticket
                             </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>Editar ticket</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onEditTicket?.(user)}>
+                            Editar ticket
+                        </DropdownMenuItem>
                         <DropdownMenuItem>Eliminar ticket</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -274,3 +281,6 @@ export const columns: ColumnDef<Ticket>[] = [
         },
     },
 ]
+
+// Exportación por defecto para compatibilidad hacia atrás
+export const columns = createColumns();

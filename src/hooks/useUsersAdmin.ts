@@ -13,7 +13,7 @@ export function useUsers() {
             const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/users");
             const data = await response.json();
             setUsers(data.flat());
-            //console.log(data);
+            // console.log('Datos de usuarios desde API:', data);
         } catch (error) {
             console.error("Error al obtener los usuarios:", error);
         } finally {

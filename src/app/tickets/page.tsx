@@ -1,6 +1,6 @@
 "use client";
 import { useUsers } from "@/hooks/useUsersAdmin";
-import { columns } from "./columns"
+import { createColumns } from "./columns"
 import { DataTable } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,6 +9,7 @@ import { useState, useCallback } from "react";
 import { useTickets } from "@/hooks/use_tickets";
 import { useType } from "@/hooks/use_typeTickets";
 import { useEventListener } from "@/hooks/useEventListener";
+import { EditTicketDialog } from "@/components/edit-ticket-dialog";
 
 import {
     Sheet,
@@ -47,6 +48,18 @@ export default function TicketsPage() {
     const [status, setStatus] = useState("");
     const [due_date, setDueDate] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    
+    // Estado para edición de tickets
+    const [editingTicket, setEditingTicket] = useState<any>(null);
+    const [showEditDialog, setShowEditDialog] = useState(false);
+
+    // Crear columnas con callback de edición
+    const columns = createColumns({
+        onEditTicket: (ticket) => {
+            setEditingTicket(ticket);
+            setShowEditDialog(true);
+        }
+    });
 
     const handleDataChange = useCallback((dataType: string) => {
         if (dataType === 'roles' || dataType === 'all') {
@@ -242,6 +255,18 @@ export default function TicketsPage() {
                 </SheetContent>
             </Sheet>
             <DataTable columns={columns} data={tickets} />
+            
+            {/* Diálogo de Edición */}
+            <EditTicketDialog
+                ticket={editingTicket}
+                open={showEditDialog}
+                onOpenChange={(open) => {
+                    setShowEditDialog(open);
+                    if (!open) {
+                        setEditingTicket(null);
+                    }
+                }}
+            />
         </div>
     );
 }
