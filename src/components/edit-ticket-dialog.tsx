@@ -91,19 +91,19 @@ export function EditTicketDialog({ ticket, open, onOpenChange }: EditTicketDialo
     } else {
       updateData.technician_id = null;
     }
-    
+
     if (formData.type_id && formData.type_id !== "0") {
       updateData.type_id = parseInt(formData.type_id);
     } else {
       updateData.type_id = null;
     }
-    
+
     if (formData.floor_id && formData.floor_id !== "0") {
       updateData.floor_id = parseInt(formData.floor_id);
     } else {
       updateData.floor_id = null;
     }
-    
+
     if (formData.area_id && formData.area_id !== "0") {
       updateData.area_id = parseInt(formData.area_id);
     } else {
@@ -111,7 +111,7 @@ export function EditTicketDialog({ ticket, open, onOpenChange }: EditTicketDialo
     }
 
     const result = await updateTicket(ticket.id, updateData);
-    
+
     if (result) {
       onOpenChange(false);
     }
@@ -119,7 +119,7 @@ export function EditTicketDialog({ ticket, open, onOpenChange }: EditTicketDialo
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    
+
     // Limpiar error cuando el usuario empiece a escribir
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: "" }));
@@ -130,16 +130,16 @@ export function EditTicketDialog({ ticket, open, onOpenChange }: EditTicketDialo
   const supportUsers = users.filter(user => {
     // Verificar si tiene el campo role (singular) o roles (plural)
     const userRole = user.role || user.roles?.[0];
-    
+
     if (!userRole) return false;
-    
+
     // El campo en la base de datos es 'rol_name', no 'role_name'
     const roleName = (userRole.rol_name || userRole.role_name || '').toLowerCase().trim();
-    
-    return roleName.includes('tecnico') || 
-           roleName.includes('administrador') ||
-           roleName.includes('admin') ||
-           roleName.includes('soporte');
+
+    return roleName.includes('tecnico') ||
+      roleName.includes('administrador') ||
+      roleName.includes('admin') ||
+      roleName.includes('soporte');
   });
 
   return (
@@ -214,6 +214,7 @@ export function EditTicketDialog({ ticket, open, onOpenChange }: EditTicketDialo
                   <SelectValue placeholder="Seleccionar tipo" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="0">Sin tipo</SelectItem>
                   {types.map((type) => (
                     <SelectItem key={type.id} value={type.id.toString()}>
                       {type.type_name}
@@ -274,6 +275,7 @@ export function EditTicketDialog({ ticket, open, onOpenChange }: EditTicketDialo
                   <SelectValue placeholder="Seleccionar planta" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="0">Sin planta</SelectItem>
                   {floors.map((floor) => (
                     <SelectItem key={floor.id} value={floor.id.toString()}>
                       {floor.floor_name}
@@ -294,6 +296,7 @@ export function EditTicketDialog({ ticket, open, onOpenChange }: EditTicketDialo
                   <SelectValue placeholder="Seleccionar área" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="0">Sin área</SelectItem>
                   {areas.map((area) => (
                     <SelectItem key={area.id} value={area.id.toString()}>
                       {area.area_name}
@@ -303,6 +306,7 @@ export function EditTicketDialog({ ticket, open, onOpenChange }: EditTicketDialo
               </Select>
             </div>
           </div>
+
 
           {/* Fecha límite */}
           <div>
@@ -317,15 +321,15 @@ export function EditTicketDialog({ ticket, open, onOpenChange }: EditTicketDialo
         </div>
 
         <DialogFooter>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={loading}
           >
             Cancelar
           </Button>
-          <Button 
-            onClick={handleSave} 
+          <Button
+            onClick={handleSave}
             disabled={loading}
           >
             {loading ? "Guardando..." : "Guardar Cambios"}

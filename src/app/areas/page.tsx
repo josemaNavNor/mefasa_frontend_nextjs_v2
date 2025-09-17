@@ -6,8 +6,9 @@ import { DataTable } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { areaSchema } from "@/lib/zod";
+import { useEventListener } from "@/hooks/useEventListener";
 import {
     Sheet,
     SheetClose,
@@ -27,12 +28,21 @@ import {
 } from "@/components/ui/select"
 
 export default function AreasPage() {
-    const { areas } = useAreas();
+    const { areas, createArea, refetch } = useAreas();
     const { floors } = useFloors();
-    const { createArea } = useAreas();
     const [area_name, setAreaName] = useState("");
     const [floorId, setFloorId] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+    // Escuchar eventos de cambios en areas
+    const handleDataChange = useCallback((dataType: string) => {
+        if (dataType === 'areas' || dataType === 'all') {
+            refetch();
+        }
+    }, [refetch]);
+
+    useEventListener('data-changed', handleDataChange);
+    useEventListener('areas-updated', refetch);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -47,21 +57,22 @@ export default function AreasPage() {
             });
             return;
         }
+        
         await createArea({
             area_name,
             floor_id: Number(floorId)
         });
+        
+        // Limpiar formulario solo si fue exitoso
         setAreaName("");
         setFloorId("");
         setErrors({});
     }
 
-    //if (loading) return <p>Cargando roles...</p>;
-
     return (
         <div className="w-full px-4 py-4">
             <div className="mb-4">
-                <h1 className="text-4xl font-bold">Gestion de Areas</h1>
+                <h1 className="text-4xl font-bold">Gestión de Areas</h1>
             </div>
             <Sheet>
                 <SheetTrigger asChild className="mb-4">
@@ -76,12 +87,12 @@ export default function AreasPage() {
                     </SheetHeader>
                     <form onSubmit={handleSubmit} className="grid flex-1 auto-rows-min gap-6 px-4">
                         <div className="grid gap-3">
-                            <Label htmlFor="sheet-demo-name">Nombre</Label>
+                            <Label htmlFor="area_name">Nombre</Label>
                             <Input
                                 id="area_name"
                                 type="text"
                                 autoComplete="off"
-                                placeholder="Nombre de la área"
+                                placeholder="Nombre del área"
                                 value={area_name}
                                 onChange={(e) => setAreaName(e.target.value)}
                                 className={`w-full border-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder:text-gray-300${errors.area_name ? ' border-red-500' : ' border-gray-200'}`}
@@ -89,12 +100,12 @@ export default function AreasPage() {
                             {errors.area_name && <p className="text-red-500 text-xs mt-1">{errors.area_name}</p>}
                         </div>
                         <div className="grid gap-3">
-                            <Label htmlFor="sheet-demo-role">Planta</Label>
+                            <Label htmlFor="floor_id">Planta</Label>
                             <Select
                                 value={floorId}
                                 onValueChange={setFloorId}
                             >
-                                <SelectTrigger className={`w-full border-2 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder:text-gray-300${errors.role_id ? ' border-red-500' : ' border-gray-200'}`}>
+                                <SelectTrigger className={`w-full border-2 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder:text-gray-300${errors.floor_id ? ' border-red-500' : ' border-gray-200'}`}>
                                     <SelectValue placeholder="Selecciona una planta" />
                                 </SelectTrigger>
                                 <SelectContent>

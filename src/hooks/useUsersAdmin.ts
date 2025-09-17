@@ -2,7 +2,6 @@ import { useState, useEffect } from "react"
 import Swal from 'sweetalert2'
 import { eventEmitter } from './useEventListener'
 
-
 export function useUsers() {
     const [users, setUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
@@ -13,7 +12,7 @@ export function useUsers() {
             const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/users");
             const data = await response.json();
             setUsers(data.flat());
-            // console.log('Datos de usuarios desde API:', data);
+            // console.log('API:', data);
         } catch (error) {
             console.error("Error al obtener los usuarios:", error);
         } finally {
@@ -21,7 +20,18 @@ export function useUsers() {
         }
     }
 
-    async function createUser(user: { name: string, last_name: string, email: string, password: string, phone_number?: string, role_id: number, is_email_verified: boolean, email_verification_token: string, two_factor_enable: boolean, two_factor_secret: string }) {
+    async function createUser(user: { 
+        name: string, 
+        last_name: string, 
+        email: string, 
+        password: string, 
+        phone_number?: string, 
+        role_id: number, 
+        is_email_verified: boolean, 
+        email_verification_token: string, 
+        two_factor_enable: boolean, 
+        two_factor_secret: string 
+    }) {
         setLoading(true);
         try {
             const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/users", {
@@ -32,12 +42,15 @@ export function useUsers() {
                 body: JSON.stringify(user),
             });
             const data = await response.json();
-            //console.log(data);
 
             if (response.ok) {
+                // actualizar estado local inmediatamente
                 setUsers((prevUsers) => [...prevUsers, data]);
+                
+                // eventos globales
                 eventEmitter.emit('data-changed', 'users');
                 eventEmitter.emit('users-updated');
+                
                 Swal.fire({
                     icon: 'success',
                     title: 'Usuario creado',
@@ -52,6 +65,11 @@ export function useUsers() {
             }
         } catch (error) {
             console.error("Error al crear el usuario:", error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al crear el usuario',
+            });
         } finally {
             setLoading(false);
         }

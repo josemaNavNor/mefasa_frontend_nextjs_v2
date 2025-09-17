@@ -54,7 +54,7 @@ export const columns: ColumnDef<TicketType>[] = [
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Name
+                    Nombre del Tipo
                     <ArrowUpDown className="h-4 w-4" />
                 </Button>
             )
@@ -71,7 +71,7 @@ export const columns: ColumnDef<TicketType>[] = [
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Description
+                    Descripción
                     <ArrowUpDown className="h-4 w-4" />
                 </Button>
             )
@@ -88,7 +88,7 @@ export const columns: ColumnDef<TicketType>[] = [
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Created At
+                    Creado el
                     <ArrowUpDown className="h-4 w-4" />
                 </Button>
             )
@@ -105,7 +105,7 @@ export const columns: ColumnDef<TicketType>[] = [
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Updated At
+                    Actualizado el
                     <ArrowUpDown className="h-4 w-4" />
                 </Button>
             )
@@ -122,7 +122,7 @@ export const columns: ColumnDef<TicketType>[] = [
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Deleted At
+                    Estado
                     <ArrowUpDown className="h-4 w-4" />
                 </Button>
             )
@@ -134,7 +134,7 @@ export const columns: ColumnDef<TicketType>[] = [
     {
         id: "actions",
         cell: ({ row }) => {
-            const area = row.original
+            const ticketType = row.original
             return (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -144,13 +144,12 @@ export const columns: ColumnDef<TicketType>[] = [
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                         <DropdownMenuItem
-                            onClick={() => navigator.clipboard.writeText(area.id)}
+                            onClick={() => navigator.clipboard.writeText(ticketType.id)}
                         >
-                            Copy area ID
+                            Copiar ID del tipo
                         </DropdownMenuItem>
-                        <DropdownMenuSeparator />
                     </DropdownMenuContent>
                 </DropdownMenu>
             )

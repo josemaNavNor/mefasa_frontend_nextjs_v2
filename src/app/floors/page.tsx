@@ -5,8 +5,9 @@ import { DataTable } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { floorSchema } from "@/lib/zod";
+import { useEventListener } from "@/hooks/useEventListener";
 import {
     Sheet,
     SheetClose,
@@ -17,20 +18,22 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
 
 export default function FloorsPage() {
-    const { floors } = useFloors();
-    const { createFloor } = useFloors();
+    const { floors, createFloor, refetch } = useFloors();
     const [floor_name, setFloorName] = useState("");
     const [description, setDescription] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+    // Escuchar eventos de cambios en plantas
+    const handleDataChange = useCallback((dataType: string) => {
+        if (dataType === 'floors' || dataType === 'all') {
+            refetch();
+        }
+    }, [refetch]);
+
+    useEventListener('data-changed', handleDataChange);
+    useEventListener('floors-updated', refetch);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -45,21 +48,22 @@ export default function FloorsPage() {
             });
             return;
         }
+        
         await createFloor({
             floor_name,
             description,
         });
+        
+        // Limpiar formulario solo si fue exitoso
         setFloorName("");
         setDescription("");
         setErrors({});
     }
 
-    //if (loading) return <p>Cargando roles...</p>;
-
     return (
         <div className="w-full px-4 py-4">
             <div className="mb-4">
-                <h1 className="text-4xl font-bold">Gestion de Plantas</h1>
+                <h1 className="text-4xl font-bold">Gestión de Plantas</h1>
             </div>
             <Sheet>
                 <SheetTrigger asChild className="mb-4">
@@ -74,7 +78,7 @@ export default function FloorsPage() {
                     </SheetHeader>
                     <form onSubmit={handleSubmit} className="grid flex-1 auto-rows-min gap-6 px-4">
                         <div className="grid gap-3">
-                            <Label htmlFor="sheet-demo-name">Nombre</Label>
+                            <Label htmlFor="floor_name">Nombre</Label>
                             <Input
                                 id="floor_name"
                                 type="text"
@@ -82,12 +86,12 @@ export default function FloorsPage() {
                                 placeholder="Nombre de la planta"
                                 value={floor_name}
                                 onChange={(e) => setFloorName(e.target.value)}
-                                className={`w-full border-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder:text-gray-300${errors.rol_name ? ' border-red-500' : ' border-gray-200'}`}
+                                className={`w-full border-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder:text-gray-300${errors.floor_name ? ' border-red-500' : ' border-gray-200'}`}
                             />
                             {errors.floor_name && <p className="text-red-500 text-xs mt-1">{errors.floor_name}</p>}
                         </div>
                         <div className="grid gap-3">
-                            <Label htmlFor="sheet-demo-username">Descripcion</Label>
+                            <Label htmlFor="description">Descripción</Label>
                             <Input
                                 id="description"
                                 type="text"

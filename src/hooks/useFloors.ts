@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import Swal from 'sweetalert2'
-
+import { eventEmitter } from './useEventListener'
 
 export function useFloors() {
     const [floors, setFloors] = useState<any[]>([]);
@@ -12,7 +12,7 @@ export function useFloors() {
             const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/floors");
             const data = await response.json();
             setFloors(data.flat());
-            //console.log(data);
+            //console.log('API:', data);
         } catch (error) {
             console.error("Error al obtener las plantas:", error);
         } finally {
@@ -20,7 +20,7 @@ export function useFloors() {
         }
     }
 
-    async function createFloor(floor: { floor_name: string, description: string}) {
+    async function createFloor(floor: { floor_name: string, description: string }) {
         setLoading(true);
         try {
             const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/floors", {
@@ -31,10 +31,13 @@ export function useFloors() {
                 body: JSON.stringify(floor),
             });
             const data = await response.json();
-            //console.log(data);
-            setFloors((prevFloors) => [...prevFloors, data]);
-
+            
             if (response.ok) {
+                setFloors((prevFloors) => [...prevFloors, data]);
+                
+                eventEmitter.emit('data-changed', 'floors');
+                eventEmitter.emit('floors-updated');
+                
                 Swal.fire({
                     icon: 'success',
                     title: 'Planta creada',
@@ -49,14 +52,23 @@ export function useFloors() {
             }
         } catch (error) {
             console.error("Error al crear la planta:", error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al crear la planta',
+            });
         } finally {
             setLoading(false);
         }
     }
 
+    const refetch = () => {
+        fetchFloors();
+    };
+
     useEffect(() => {
         fetchFloors();
     }, []);
 
-    return { floors, loading, createFloor };
+    return { floors, loading, createFloor, refetch };
 }

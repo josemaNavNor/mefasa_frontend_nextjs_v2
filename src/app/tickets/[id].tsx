@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useTickets } from "@/hooks/use_tickets";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Edit, Calendar, User, MapPin, Tag, Download } from "lucide-react";
@@ -87,7 +87,6 @@ export default function TicketDetailsPage() {
 
   return (
     <div className="container mx-auto py-6 space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <Button
@@ -125,7 +124,6 @@ export default function TicketDetailsPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Información Principal */}
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <CardHeader>
@@ -135,13 +133,9 @@ export default function TicketDetailsPage() {
               <p className="whitespace-pre-wrap">{ticket.description}</p>
             </CardContent>
           </Card>
-
-          {/* Información adicional se puede agregar aquí */}
         </div>
 
-        {/* Panel Lateral */}
         <div className="space-y-6">
-          {/* Información del Ticket */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Información del Ticket</CardTitle>
@@ -188,7 +182,7 @@ export default function TicketDetailsPage() {
                 <div>
                   <p className="text-sm font-medium">Ubicación</p>
                   <p className="text-sm text-muted-foreground">
-                    {ticket.floor?.floor_name || "Sin piso"} - {ticket.area?.area_name}
+                    {ticket.floor?.floor_name || "Sin planta"} - {ticket.area?.area_name || "Sin área"}
                   </p>
                 </div>
               </div>
@@ -205,7 +199,6 @@ export default function TicketDetailsPage() {
             </CardContent>
           </Card>
 
-          {/* Fechas */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Fechas</CardTitle>
@@ -256,14 +249,13 @@ export default function TicketDetailsPage() {
         </div>
       </div>
 
-      {/* Diálogo de Edición */}
       <EditTicketDialog
         ticket={ticket}
         open={showEditDialog}
         onOpenChange={(open) => {
           setShowEditDialog(open);
           if (!open) {
-            // Recargar los detalles del ticket después de editar
+            // Recargar los detalles del ticket despues de editar
             loadTicketDetails();
           }
         }}

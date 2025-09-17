@@ -37,7 +37,7 @@ export default function TicketsPage() {
     const { users } = useUsers(); // Para obtener usuarios y técnicos
     const { createTicket } = useTickets();
 
-    const [ticket_number, setTicketNumber] = useState("");
+    const [ticket_number] = useState("");
     const [summary, setSummary] = useState("");
     const [description, setDescription] = useState("");
     const [end_user_id, setEndUserId] = useState("");
@@ -165,22 +165,6 @@ export default function TicketsPage() {
                         </div>
 
                         <div className="grid gap-3">
-                            <Label htmlFor="end_user_id">Usuario final</Label>
-                            <Select value={end_user_id} onValueChange={setEndUserId} required>
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Selecciona un usuario" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {users?.map((user) => (
-                                        <SelectItem key={user.id} value={String(user.id)}>
-                                            {user.name} {user.last_name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div className="grid gap-3">
                             <Label htmlFor="technician_id">Asignar técnico</Label>
                             <Select value={technician_id} onValueChange={setTechnicianId}>
                                 <SelectTrigger className="w-full">
@@ -267,7 +251,7 @@ export default function TicketsPage() {
             </div>
             <DataTable columns={columns} data={tickets} />
             
-            {/* Diálogo de Edición */}
+            {/* Dialogo de edicion */}
             <EditTicketDialog
                 ticket={editingTicket}
                 open={showEditDialog}

@@ -5,8 +5,9 @@ import { DataTable } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { ticketTypeSchema } from "@/lib/zod";
+import { useEventListener } from "@/hooks/useEventListener";
 import {
     Sheet,
     SheetClose,
@@ -18,12 +19,21 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet"
 
-export default function AreasPage() {
-    const { types } = useType();
-    const { createTicketType } = useType();
+export default function TypeTicketsPage() {
+    const { types, createTicketType, refetch } = useType();
     const [description, setDescription] = useState("");
     const [type_name, setTicketTypeName] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+    // Escuchar eventos de cambios en tipos de tickets
+    const handleDataChange = useCallback((dataType: string) => {
+        if (dataType === 'types' || dataType === 'all') {
+            refetch();
+        }
+    }, [refetch]);
+
+    useEventListener('data-changed', handleDataChange);
+    useEventListener('types-updated', refetch);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -38,21 +48,22 @@ export default function AreasPage() {
             });
             return;
         }
+        
         await createTicketType({
             type_name,
             description,
         });
+        
+        // Limpiar formulario solo si fue exitoso
         setTicketTypeName("");
         setDescription("");
         setErrors({});
     }
 
-    //if (loading) return <p>Cargando roles...</p>;
-
     return (
         <div className="w-full px-4 py-4">
             <div className="mb-4">
-                <h1 className="text-4xl font-bold">Gestion Tipos de Tickets</h1>
+                <h1 className="text-4xl font-bold">Gestión Tipos de Tickets</h1>
             </div>
             <Sheet>
                 <SheetTrigger asChild className="mb-4">
@@ -67,9 +78,9 @@ export default function AreasPage() {
                     </SheetHeader>
                     <form onSubmit={handleSubmit} className="grid flex-1 auto-rows-min gap-6 px-4">
                         <div className="grid gap-3">
-                            <Label htmlFor="sheet-demo-name">Tipo de Ticket</Label>
+                            <Label htmlFor="type_name">Tipo de Ticket</Label>
                             <Input
-                                id="area_name"
+                                id="type_name"
                                 type="text"
                                 autoComplete="off"
                                 placeholder="Nombre del tipo de ticket"
@@ -80,12 +91,12 @@ export default function AreasPage() {
                             {errors.type_name && <p className="text-red-500 text-xs mt-1">{errors.type_name}</p>}
                         </div>
                         <div className="grid gap-3">
-                            <Label htmlFor="sheet-demo-name">Descripcion</Label>
+                            <Label htmlFor="description">Descripción</Label>
                             <Input
-                                id="area_name"
+                                id="description"
                                 type="text"
                                 autoComplete="off"
-                                placeholder="Descripcion del tipo de ticket"
+                                placeholder="Descripción del tipo de ticket"
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                                 className={`w-full border-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder:text-gray-300${errors.description ? ' border-red-500' : ' border-gray-200'}`}
@@ -93,7 +104,7 @@ export default function AreasPage() {
                             {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
                         </div>
                         <SheetFooter>
-                            <Button type="submit">Agregar</Button>
+                            <Button type="submit">Agregar Tipo de Ticket</Button>
                             <SheetClose asChild>
                                 <Button variant="outline">Cerrar</Button>
                             </SheetClose>

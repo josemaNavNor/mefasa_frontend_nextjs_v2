@@ -121,7 +121,7 @@ export function useTickets() {
 
     const exportToExcel = (ticketsToExport = tickets) => {
         try {
-            // Preparar los datos para exportar
+            // datos a exportar
             const dataToExport = ticketsToExport.map((ticket: any) => ({
                 'Número de Ticket': ticket.ticket_number || '',
                 'Título': ticket.summary || '',
@@ -164,23 +164,23 @@ export function useTickets() {
 
             // Ajustar el ancho de las columnas
             const columnWidths = [
-                { wch: 15 }, // Número de Ticket
-                { wch: 30 }, // Título
-                { wch: 50 }, // Descripción
-                { wch: 25 }, // Usuario Final
-                { wch: 30 }, // Email Usuario
-                { wch: 25 }, // Técnico Asignado
-                { wch: 20 }, // Tipo
-                { wch: 12 }, // Prioridad
-                { wch: 15 }, // Estado
-                { wch: 15 }, // Piso
-                { wch: 15 }, // Área
-                { wch: 20 }, // Fecha de Creación
-                { wch: 20 }, // Fecha de Actualización
-                { wch: 15 }, // Fecha Límite
-                { wch: 20 }, // Fecha de Asignación
-                { wch: 20 }, // Fecha de Resolución
-                { wch: 20 }  // Fecha de Cierre
+                { wch: 15 }, // numero de Ticket
+                { wch: 30 }, // titulo
+                { wch: 50 }, // descripcion
+                { wch: 25 }, // usuario Final
+                { wch: 30 }, // email Usuario
+                { wch: 25 }, // tecnico Asignado
+                { wch: 20 }, // tipo
+                { wch: 12 }, // prioridad
+                { wch: 15 }, // estado
+                { wch: 15 }, // piso
+                { wch: 15 }, // area
+                { wch: 20 }, // fecha de Creación
+                { wch: 20 }, // fecha de Actualización
+                { wch: 15 }, // fecha Límite
+                { wch: 20 }, // fecha de Asignación
+                { wch: 20 }, // fecha de Resolución
+                { wch: 20 }  // fecha de Cierre
             ];
             worksheet['!cols'] = columnWidths;
 

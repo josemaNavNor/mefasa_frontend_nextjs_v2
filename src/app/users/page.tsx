@@ -5,7 +5,7 @@ import { DataTable } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useState,useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useRoles } from "@/hooks/useRoles";
 import { userSchema } from "@/lib/zod";
 import { useEventListener } from "@/hooks/useEventListener";
@@ -29,9 +29,8 @@ import {
 } from "@/components/ui/select"
 
 export default function UsersPage() {
-    const { users, refetch } = useUsers();
+    const { users, createUser, refetch } = useUsers();
     const { roles } = useRoles();
-    const { createUser } = useUsers();
     const [name, setName] = useState("");
     const [last_name, setLastName] = useState("");
     const [email, setEmail] = useState("");
@@ -40,18 +39,20 @@ export default function UsersPage() {
     const [roleId, setRoleId] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
+    // Escuchar eventos de cambios en usuarios
     const handleDataChange = useCallback((dataType: string) => {
-        if (dataType === 'roles' || dataType === 'all') {
+        if (dataType === 'users' || dataType === 'all') {
             refetch();
         }
     }, [refetch]);
 
     useEventListener('data-changed', handleDataChange);
-    useEventListener('roles-updated', refetch);
+    useEventListener('users-updated', refetch);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setErrors({});
+        
         const result = userSchema.safeParse({
             name,
             last_name,
@@ -60,7 +61,8 @@ export default function UsersPage() {
             phone_number,
             role_id: Number(roleId),
         });
-        // maneja los errores de validacion de campos con zod
+
+        // Maneja los errores de validación de campos con zod
         if (!result.success) {
             const formatted = result.error.format();
             setErrors({
@@ -73,6 +75,7 @@ export default function UsersPage() {
             });
             return;
         }
+
         await createUser({
             name,
             last_name,
@@ -85,20 +88,21 @@ export default function UsersPage() {
             two_factor_enable: false,
             two_factor_secret: ''
         });
+
+        // Limpiar formulario solo si fue exitoso
         setName("");
         setLastName("");
         setEmail("");
         setPassword("");
         setPhoneNumber("");
         setRoleId("");
+        setErrors({});
     };
-
-    //if (loading) return <p>Cargando usuarios...</p>;
 
     return (
         <div className="w-full px-4 py-4">
             <div className="mb-4">
-                <h1 className="text-4xl font-bold">Gestion de Usuarios</h1>
+                <h1 className="text-4xl font-bold">Gestión de Usuarios</h1>
             </div>
             <Sheet>
                 <SheetTrigger asChild className="mb-4">
@@ -113,7 +117,7 @@ export default function UsersPage() {
                     </SheetHeader>
                     <form onSubmit={handleSubmit} className="grid flex-1 auto-rows-min gap-6 px-4">
                         <div className="grid gap-3">
-                            <Label htmlFor="sheet-demo-name">Nombres</Label>
+                            <Label htmlFor="name">Nombres</Label>
                             <Input
                                 id="name"
                                 type="text"
@@ -126,7 +130,7 @@ export default function UsersPage() {
                             {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
                         </div>
                         <div className="grid gap-3">
-                            <Label htmlFor="sheet-demo-username">Apellidos</Label>
+                            <Label htmlFor="last_name">Apellidos</Label>
                             <Input
                                 id="last_name"
                                 type="text"
@@ -139,12 +143,12 @@ export default function UsersPage() {
                             {errors.last_name && <p className="text-red-500 text-xs mt-1">{errors.last_name}</p>}
                         </div>
                         <div className="grid gap-3">
-                            <Label htmlFor="sheet-demo-email">Correo electronico</Label>
+                            <Label htmlFor="email">Correo electrónico</Label>
                             <Input
                                 id="email"
                                 type="email"
                                 autoComplete="off"
-                                placeholder="Correo electronico"
+                                placeholder="Correo electrónico"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 className={`w-full border-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder:text-gray-300${errors.email ? ' border-red-500' : ' border-gray-200'}`}
@@ -152,7 +156,7 @@ export default function UsersPage() {
                             {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                         </div>
                         <div className="grid gap-3">
-                            <Label htmlFor="sheet-demo-password">Contraseña</Label>
+                            <Label htmlFor="password">Contraseña</Label>
                             <Input
                                 id="password"
                                 type="password"
@@ -164,19 +168,19 @@ export default function UsersPage() {
                             {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
                         </div>
                         <div className="grid gap-3">
-                            <Label htmlFor="sheet-demo-username">Numero de telefono</Label>
+                            <Label htmlFor="phone_number">Número de teléfono</Label>
                             <Input
                                 id="phone_number"
                                 type="tel"
-                                placeholder="Ingrese su numero de telefono"
+                                placeholder="Ingrese su número de teléfono"
                                 value={phone_number}
                                 onChange={(e) => setPhoneNumber(e.target.value)}
-                                className={`w-full border-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder:text-gray-300${errors.phone ? ' border-red-500' : ' border-gray-200'}`}
+                                className={`w-full border-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder:text-gray-300${errors.phone_number ? ' border-red-500' : ' border-gray-200'}`}
                             />
                             {errors.phone_number && <p className="text-red-500 text-xs mt-1">{errors.phone_number}</p>}
                         </div>
                         <div className="grid gap-3">
-                            <Label htmlFor="sheet-demo-role">Rol</Label>
+                            <Label htmlFor="role_id">Rol</Label>
                             <Select
                                 value={roleId}
                                 onValueChange={setRoleId}
