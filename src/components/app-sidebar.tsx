@@ -49,11 +49,6 @@ const items = [
         icon: Building2,
     },
     {
-        title: "Áreas",
-        url: "/areas",
-        icon: LayoutGrid,
-    },
-    {
         title: "Tipos de Tickets",
         url: "/type_tickets",
         icon: Ticket,

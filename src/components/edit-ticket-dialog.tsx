@@ -10,7 +10,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { useTickets } from "@/hooks/use_tickets";
 import { useUsers } from "@/hooks/useUsersAdmin";
 import { useType } from "@/hooks/use_typeTickets";
-import { useAreas } from "@/hooks/useAreas";
 import { useFloors } from "@/hooks/useFloors";
 
 interface EditTicketDialogProps {
@@ -23,7 +22,6 @@ export function EditTicketDialog({ ticket, open, onOpenChange }: EditTicketDialo
   const { updateTicket, loading } = useTickets();
   const { users } = useUsers();
   const { types } = useType();
-  const { areas } = useAreas();
   const { floors } = useFloors();
 
   // Estados del formulario
@@ -279,27 +277,6 @@ export function EditTicketDialog({ ticket, open, onOpenChange }: EditTicketDialo
                   {floors.map((floor) => (
                     <SelectItem key={floor.id} value={floor.id.toString()}>
                       {floor.floor_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Área */}
-            <div>
-              <Label htmlFor="area">Área</Label>
-              <Select
-                value={formData.area_id}
-                onValueChange={(value) => handleChange("area_id", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar área" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="0">Sin área</SelectItem>
-                  {areas.map((area) => (
-                    <SelectItem key={area.id} value={area.id.toString()}>
-                      {area.area_name}
                     </SelectItem>
                   ))}
                 </SelectContent>
