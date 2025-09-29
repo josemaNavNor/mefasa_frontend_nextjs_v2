@@ -13,7 +13,7 @@ export function useTickets() {
             const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/tickets");
             const data = await response.json();
             setTickets(data.flat());
-            console.log(data);
+            //console.log(data);
         } catch (error) {
             console.error("Error al obtener los tickets:", error);
         } finally {

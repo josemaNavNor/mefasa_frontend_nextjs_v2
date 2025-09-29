@@ -12,7 +12,7 @@ import {
     ColumnFiltersState,
     getFilteredRowModel,
 } from "@tanstack/react-table"
-
+import Loading from "@/app/dashboard/loading"
 import {
     Table,
     TableBody,
@@ -136,7 +136,7 @@ export function DataTable<TData, TValue>({
                         ) : (
                             <TableRow>
                                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                                    Sin resultados...
+                                    <Loading />
                                 </TableCell>
                             </TableRow>
                         )}
