@@ -10,6 +10,7 @@ import { useTickets } from "@/hooks/use_tickets";
 import { useType } from "@/hooks/use_typeTickets";
 import { useEventListener } from "@/hooks/useEventListener";
 import { EditTicketDialog } from "@/components/edit-ticket-dialog";
+import { TicketDetailsModal } from "@/components/ticket-details-modal";
 import { Download } from "lucide-react";
 
 import {
@@ -34,7 +35,7 @@ export default function TicketsPage() {
     const { refetch, exportToExcel } = useTickets();
     const { tickets } = useTickets();
     const { types } = useType();
-    const { users } = useUsers(); // Para obtener usuarios y técnicos
+    const { users } = useUsers();
     const { createTicket } = useTickets();
 
     const [ticket_number] = useState("");
@@ -53,6 +54,10 @@ export default function TicketsPage() {
     // Estado para edición de tickets
     const [editingTicket, setEditingTicket] = useState<any>(null);
     const [showEditDialog, setShowEditDialog] = useState(false);
+    
+    // Estado para el modal de detalles
+    const [selectedTicket, setSelectedTicket] = useState<any>(null);
+    const [showDetailsModal, setShowDetailsModal] = useState(false);
 
     // Crear columnas con callback de edición
     const columns = createColumns({
@@ -70,6 +75,12 @@ export default function TicketsPage() {
 
     useEventListener('data-changed', handleDataChange);
     useEventListener('roles-updated', refetch);
+
+    // Función para manejar clic en fila
+    const handleRowClick = (ticket: any) => {
+        setSelectedTicket(ticket);
+        setShowDetailsModal(true);
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -120,6 +131,7 @@ export default function TicketsPage() {
                             </SheetDescription>
                         </SheetHeader>
                     <form onSubmit={handleSubmit} className="grid flex-1 auto-rows-min gap-4 px-4">
+                        {/* ...existing code... */}
                         <div className="grid gap-3">
                             <Label htmlFor="summary">Título</Label>
                             <Input
@@ -249,7 +261,12 @@ export default function TicketsPage() {
                 Exportar a Excel
             </Button>
             </div>
-            <DataTable columns={columns} data={tickets} />
+            
+            <DataTable 
+                columns={columns} 
+                data={tickets} 
+                onRowClick={handleRowClick}
+            />
             
             {/* Dialogo de edicion */}
             <EditTicketDialog
@@ -259,6 +276,18 @@ export default function TicketsPage() {
                     setShowEditDialog(open);
                     if (!open) {
                         setEditingTicket(null);
+                    }
+                }}
+            />
+            
+            {/* Modal de detalles del ticket */}
+            <TicketDetailsModal
+                ticket={selectedTicket}
+                open={showDetailsModal}
+                onOpenChange={(open) => {
+                    setShowDetailsModal(open);
+                    if (!open) {
+                        setSelectedTicket(null);
                     }
                 }}
             />
