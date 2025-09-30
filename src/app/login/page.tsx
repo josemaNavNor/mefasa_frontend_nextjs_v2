@@ -10,14 +10,15 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-
-export default function login() {
+import ImgLogo from "@/components/img-logo"
+export default function Login() {
   return (
     <Card className="w-full max-w-sm">
+      <ImgLogo/>
       <CardHeader>
         <CardTitle>Iniciar sesion</CardTitle>
         <CardDescription>
-          Ingresa tu correo para iniciar sesion
+          Ingresa tus credenciales para iniciar sesion
         </CardDescription>
         <CardAction>
           <Button variant="link">Registro</Button>
