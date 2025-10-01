@@ -12,7 +12,7 @@ import {
     ColumnFiltersState,
     getFilteredRowModel,
 } from "@tanstack/react-table"
-import Loading from "@/app/dashboard/loading"
+import Loading from "@/components/loading"
 import {
     Table,
     TableBody,
@@ -47,6 +47,7 @@ export function DataTable<TData, TValue>({
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
     const [rowSelection, setRowSelection] = React.useState({})
+    const [showNoData, setShowNoData] = React.useState(false)
     const table = useReactTable({
         data,
         columns,
@@ -65,6 +66,17 @@ export function DataTable<TData, TValue>({
             rowSelection,
         },
     })
+
+    React.useEffect(() => {
+        if (!table.getRowModel().rows?.length) {
+            const timer = setTimeout(() => {
+                setShowNoData(true)
+            }, 7000);
+            return () => clearTimeout(timer);
+        } else {
+            setShowNoData(false)
+        }
+    }, [table.getRowModel().rows?.length])
 
     return (
         <div>
@@ -136,7 +148,12 @@ export function DataTable<TData, TValue>({
                         ) : (
                             <TableRow>
                                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                                    <Loading />
+                                    {showNoData ? (
+                                        <div className="text-muted-foreground">No hay datos disponibles</div>
+                                    ) : (
+                                        <Loading />
+                                    )
+                                    }
                                 </TableCell>
                             </TableRow>
                         )}

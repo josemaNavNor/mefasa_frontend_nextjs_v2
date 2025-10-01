@@ -1,3 +1,4 @@
+'use client';
 
 import {
     Sidebar,
@@ -5,7 +6,6 @@ import {
     SidebarGroup,
     SidebarGroupContent,
     SidebarGroupLabel,
-    SidebarHeader,
     SidebarFooter,
     SidebarMenu,
     SidebarMenuButton,
@@ -13,10 +13,9 @@ import {
 } from "@/components/ui/sidebar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
 import ImgLogo from "@/components/img-logo"
-// Menu items.
-import { ChevronUp, Home, Inbox, Search, Settings, User2, Building2, LayoutGrid, Ticket, Notebook, Footprints } from "lucide-react"
+import { useAuth } from "@/hooks/use_auth_login" 
+import { ChevronUp, Home, Settings, User2, Building2, Ticket, Notebook, Footprints, LogOut } from "lucide-react"
 
-// Menu items.
 const items = [
     {
         title: "Home",
@@ -60,8 +59,13 @@ const items = [
     },
 ]
 
-
 export function AppSidebar() {
+    const { user, logout } = useAuth(); 
+
+    const handleSignOut = () => {
+        logout();
+    };
+
     return (
         <Sidebar collapsible="icon">
             <SidebarContent>
@@ -90,7 +94,8 @@ export function AppSidebar() {
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <SidebarMenuButton>
-                                    <User2 /> Username
+                                    <User2 /> 
+                                    {user?.email || 'Username'}
                                     <ChevronUp className="ml-auto" />
                                 </SidebarMenuButton>
                             </DropdownMenuTrigger>
@@ -99,13 +104,16 @@ export function AppSidebar() {
                                 className="w-[--radix-popper-anchor-width]"
                             >
                                 <DropdownMenuItem>
-                                    <span>Account</span>
+                                    <User2 className="mr-2 h-4 w-4" />
+                                    <span>Cuenta</span>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem>
-                                    <span>Billing</span>
+                                    <Settings className="mr-2 h-4 w-4" />
+                                    <span>Configuración</span>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    <span>Sign out</span>
+                                <DropdownMenuItem onClick={handleSignOut}>
+                                    <LogOut className="mr-2 h-4 w-4" />
+                                    <span>Cerrar sesión</span>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
