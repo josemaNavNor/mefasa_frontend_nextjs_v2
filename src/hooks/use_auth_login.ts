@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { authService } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
+import Notiflix from 'notiflix';
+
 
 interface User {
   id: number;
@@ -17,7 +19,7 @@ export function useAuth() {
   useEffect(() => {
     const token = authService.getToken();
     const userData = authService.getUser();
-    
+
     if (token && userData) {
       setUser(userData);
     }
@@ -27,15 +29,19 @@ export function useAuth() {
   const login = async (email: string, password: string, token?: string) => {
     try {
       const response = await authService.login({ email, password, token });
-      
-      localStorage.setItem('token', response.access_token);
-      localStorage.setItem('user', JSON.stringify(response.user));
-      
-      setUser(response.user);
-      router.push('/');
-      
+
+      if (response) {
+        localStorage.setItem('token', response.access_token);
+        localStorage.setItem('user', JSON.stringify(response.user));
+        setUser(response.user);
+        Notiflix.Notify.success(`¡Bienvenido de nuevo, ${response.user.name}!`);
+        router.push('/');
+      } else {
+        Notiflix.Notify.failure('Credenciales inválidas. Por favor, inténtalo de nuevo.');
+      }
       return { success: true };
     } catch (error) {
+      Notiflix.Notify.failure('Credenciales inválidas. Por favor, inténtalo de nuevo.');
       return { success: false, error: 'Credenciales inválidas' };
     }
   };

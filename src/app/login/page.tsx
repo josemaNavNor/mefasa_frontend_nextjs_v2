@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/hooks/use_auth_login';
+import { loginSchema } from '@/lib/zod';
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -30,6 +31,7 @@ export default function Login() {
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
   
   const { login } = useAuth();
 
@@ -37,8 +39,24 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setValidationErrors({});
 
-    // Si tu backend requiere OTP, inclúyelo en el login
+    // Validar con Zod
+    const validation = loginSchema.safeParse({ email, password, otp });
+    
+    if (!validation.success) {
+      const errors: {[key: string]: string} = {};
+      validation.error.issues.forEach((error) => {
+        if (error.path[0]) {
+          errors[error.path[0] as string] = error.message;
+        }
+      });
+      setValidationErrors(errors);
+      setLoading(false);
+      return;
+    }
+
+    // Si la validación pasa, proceder con el login
     const result = await login(email, password, otp);
     
     if (!result.success) {
@@ -72,8 +90,11 @@ export default function Login() {
                   placeholder="m@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  required
+                  className={validationErrors.email ? "border-red-500" : ""}
                 />
+                {validationErrors.email && (
+                  <p className="text-sm text-red-500">{validationErrors.email}</p>
+                )}
               </div>
               <div className="grid gap-2">
                 <div className="flex items-center">
@@ -90,8 +111,11 @@ export default function Login() {
                   type="password" 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required 
+                  className={validationErrors.password ? "border-red-500" : ""}
                 />
+                {validationErrors.password && (
+                  <p className="text-sm text-red-500">{validationErrors.password}</p>
+                )}
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="otp">Codigo de verificacion</Label>
@@ -114,6 +138,9 @@ export default function Login() {
                     </InputOTPGroup>
                   </InputOTP>
                 </div>
+                {validationErrors.otp && (
+                  <p className="text-sm text-red-500">{validationErrors.otp}</p>
+                )}
               </div>
               
               {error && (

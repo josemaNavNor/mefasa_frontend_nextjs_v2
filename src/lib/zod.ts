@@ -72,3 +72,16 @@ export const permissionSchema = z.object({
         .optional()
         .or(z.literal("").transform(() => undefined)),
 });
+
+export const loginSchema = z.object({
+    email: z.string()
+        .min(1, { message: "El email es requerido" })
+        .email({ message: "Email inválido" }),
+    password: z.string()
+        .min(1, { message: "La contraseña es requerida" })
+        .min(6, { message: "La contraseña debe tener más de 6 caracteres" }),
+    otp: z.string()
+        .min(6, { message: "El código debe tener 6 dígitos" })
+        .max(6, { message: "El código debe tener 6 dígitos" })
+        .or(z.literal(""))
+});
