@@ -17,7 +17,7 @@ import { ArrowUpDown } from "lucide-react"
 export type Permissions = {
     id: string,
     perm_name: string,
-    module: string,
+    moduleEntity: { name: string },
     description: string,
     created_at: string,
     updated_at: string,
@@ -52,7 +52,7 @@ export const columns: ColumnDef<Permissions>[] = [
         header: ({ column }) => {
             return (
                 <Button
-                    variant="ghost"
+                    variant="link"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
                     Nombre
@@ -69,7 +69,7 @@ export const columns: ColumnDef<Permissions>[] = [
         header: ({ column }) => {
             return (
                 <Button
-                    variant="ghost"
+                    variant="link"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
                     Descripcion
@@ -82,11 +82,11 @@ export const columns: ColumnDef<Permissions>[] = [
         ),
     },
     {
-        accessorKey: "module",
+        accessorKey: "moduleEntity",
         header: ({ column }) => {
             return (
                 <Button
-                    variant="ghost"
+                    variant="link"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
                     Modulo
@@ -94,16 +94,17 @@ export const columns: ColumnDef<Permissions>[] = [
                 </Button>
             )
         },
-        cell: ({ row }) => (
-            <div className="text-left">{row.getValue("module")}</div>
-        ),
+        cell: ({ row }) => {
+            const module = row.getValue("moduleEntity") as { name?: string };
+            return <div className="text-left">{module?.name ?? 'Sin modulo'}</div>;
+        },
     },
     {
         accessorKey: "created_at",
         header: ({ column }) => {
             return (
                 <Button
-                    variant="ghost"
+                    variant="link"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
                     Created At
@@ -120,7 +121,7 @@ export const columns: ColumnDef<Permissions>[] = [
         header: ({ column }) => {
             return (
                 <Button
-                    variant="ghost"
+                    variant="link"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
                     Updated At
@@ -137,7 +138,7 @@ export const columns: ColumnDef<Permissions>[] = [
         header: ({ column }) => {
             return (
                 <Button
-                    variant="ghost"
+                    variant="link"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
                     Deleted At
