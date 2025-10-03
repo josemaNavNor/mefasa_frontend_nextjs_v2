@@ -64,7 +64,7 @@ export const permissionSchema = z.object({
     perm_name: z.string()
         .min(1, { message: "El nombre del permiso es requerido" })
         .max(100, { message: "El nombre del permiso debe tener menos de 100 caracteres" }),
-    module: z.string()
+    moduleId: z.string()
         .min(1, { message: "El módulo es requerido" })
         .max(100, { message: "El módulo debe tener menos de 100 caracteres" }),
     description: z.string()

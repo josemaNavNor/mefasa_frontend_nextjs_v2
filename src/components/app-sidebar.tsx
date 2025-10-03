@@ -53,6 +53,11 @@ const items = [
         icon: Ticket,
     },
     {
+        title: "Asignar Permisos",
+        url: "/role-permissions",
+        icon: Settings, 
+    },
+    {
         title: "Settings",
         url: "/settings",
         icon: Settings,

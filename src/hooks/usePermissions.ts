@@ -20,7 +20,7 @@ export function usePermissions() {
         }
     }
 
-    async function createPermission(permission: { perm_name: string, module: string, description: string }) {
+    async function createPermission(permission: { perm_name: string, module_id: number, description: string }) {
         setLoading(true);
         try {
             const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/permissions", {
