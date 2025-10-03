@@ -1,7 +1,7 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { MoreHorizontal } from "lucide-react"
+import { MoreHorizontal, Edit } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 
 import { Button } from "@/components/ui/button"
@@ -28,7 +28,11 @@ export type User = {
     deleted_at: string | 'Activo',
 }
 
-export const columns: ColumnDef<User>[] = [
+interface ColumnsProps {
+    onEdit?: (user: User) => void;
+}
+
+export const createColumns = ({ onEdit }: ColumnsProps = {}): ColumnDef<User>[] => [
     {
         id: "select",
         header: ({ table }) => (
@@ -225,6 +229,14 @@ export const columns: ColumnDef<User>[] = [
                             Copy user ID
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
+                        {onEdit && (
+                            <DropdownMenuItem
+                                onClick={() => onEdit(user)}
+                            >
+                                <Edit className="h-4 w-4 mr-2" />
+                                Edit user
+                            </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem>View user</DropdownMenuItem>
                         <DropdownMenuItem>View user details</DropdownMenuItem>
                     </DropdownMenuContent>
@@ -233,3 +245,6 @@ export const columns: ColumnDef<User>[] = [
         },
     },
 ]
+
+// Mantener compatibilidad con la exportación anterior
+export const columns = createColumns();
