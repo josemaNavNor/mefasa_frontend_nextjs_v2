@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import Swal from 'sweetalert2'
 import { eventEmitter } from './useEventListener'
+import { api } from '@/lib/httpClient'
 
 export function useUsers() {
     const [users, setUsers] = useState<any[]>([]);
@@ -9,12 +10,27 @@ export function useUsers() {
     async function fetchUsers() {
         setLoading(true);
         try {
-            const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/users");
-            const data = await response.json();
-            setUsers(data.flat());
-            // console.log('API:', data);
+            const data = await api.get('/users');
+            console.log('API Response:', data);
+            console.log('Is Array:', Array.isArray(data));
+            console.log('Data type:', typeof data);
+            
+            // Verificar si data es un array, si no, usar data directamente
+            if (Array.isArray(data)) {
+                setUsers(data);
+            } else if (data && Array.isArray(data.users)) {
+                // Si la respuesta tiene estructura { users: [...] }
+                setUsers(data.users);
+            } else if (data && typeof data === 'object') {
+                // Si es un objeto, convertir a array con un elemento
+                setUsers([data]);
+            } else {
+                console.error('Unexpected data structure:', data);
+                setUsers([]);
+            }
         } catch (error) {
             console.error("Error al obtener los usuarios:", error);
+            setUsers([]);
         } finally {
             setLoading(false);
         }
@@ -34,41 +50,26 @@ export function useUsers() {
     }) {
         setLoading(true);
         try {
-            const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/users", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(user),
+            const data = await api.post('/users', user);
+            
+            // actualizar estado local inmediatamente
+            setUsers((prevUsers) => [...prevUsers, data]);
+            
+            // eventos globales
+            eventEmitter.emit('data-changed', 'users');
+            eventEmitter.emit('users-updated');
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Usuario creado',
+                text: 'Usuario creado exitosamente',
             });
-            const data = await response.json();
-
-            if (response.ok) {
-                // actualizar estado local inmediatamente
-                setUsers((prevUsers) => [...prevUsers, data]);
-                
-                // eventos globales
-                eventEmitter.emit('data-changed', 'users');
-                eventEmitter.emit('users-updated');
-                
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Usuario creado',
-                    text: `${data.message}`,
-                });
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error al crear el usuario',
-                    text: `${data.message || ''}`,
-                });
-            }
         } catch (error) {
             console.error("Error al crear el usuario:", error);
             Swal.fire({
                 icon: 'error',
-                title: 'Error',
-                text: 'Error al crear el usuario',
+                title: 'Error al crear el usuario',
+                text: error instanceof Error ? error.message : 'Error desconocido',
             });
         } finally {
             setLoading(false);
@@ -89,43 +90,28 @@ export function useUsers() {
     }) {
         setLoading(true);
         try {
-            const response = await fetch(`https://mefasa-backend-nestjs.onrender.com/api/v1/users/${id}`, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(user),
+            const data = await api.patch(`/users/${id}`, user);
+            
+            // Actualizar estado local
+            setUsers((prevUsers) =>
+                prevUsers.map((u) => (u.id === id ? { ...u, ...data } : u))
+            );
+
+            // Eventos globales
+            eventEmitter.emit('data-changed', 'users');
+            eventEmitter.emit('users-updated');
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Usuario actualizado',
+                text: 'Usuario actualizado exitosamente',
             });
-            const data = await response.json();
-
-            if (response.ok) {
-                // Actualizar estado local
-                setUsers((prevUsers) =>
-                    prevUsers.map((u) => (u.id === id ? { ...u, ...data } : u))
-                );
-
-                // Eventos globales
-                eventEmitter.emit('data-changed', 'users');
-                eventEmitter.emit('users-updated');
-
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Usuario actualizado',
-                    text: `${data.message}`,
-                });
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error al actualizar el usuario',
-                    text: `${data.message || ''}`,
-                });
-            }
         } catch (error) {
             console.error("Error al actualizar el usuario:", error);
             Swal.fire({
                 icon: 'error',
-                title: 'Error',
-                text: 'Error al actualizar el usuario',
+                title: 'Error al actualizar el usuario',
+                text: error instanceof Error ? error.message : 'Error desconocido',
             });
         } finally {
             setLoading(false);

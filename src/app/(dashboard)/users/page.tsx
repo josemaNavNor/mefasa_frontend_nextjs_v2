@@ -9,6 +9,7 @@ import { useState, useCallback, useMemo } from "react";
 import { useRoles } from "@/hooks/useRoles";
 import { userSchema } from "@/lib/zod";
 import { useEventListener } from "@/hooks/useEventListener";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 import {
     Sheet,
@@ -170,10 +171,11 @@ export default function UsersPage() {
     };
 
     return (
-        <div className="w-full px-4 py-4">
-            <div className="mb-4">
-                <h1 className="text-4xl font-bold">Gestión de Usuarios</h1>
-            </div>
+        <ProtectedRoute allowedRoles="Administrador">
+            <div className="w-full px-4 py-4">
+                <div className="mb-4">
+                    <h1 className="text-4xl font-bold">Gestión de Usuarios</h1>
+                </div>
             
             {/* Sheet para agregar usuario */}
             <Sheet>
@@ -383,6 +385,7 @@ export default function UsersPage() {
             </Sheet>
 
             <DataTable columns={columns} data={users} />
-        </div>
+            </div>
+        </ProtectedRoute>
     );
 }

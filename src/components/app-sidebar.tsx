@@ -16,60 +16,76 @@ import ImgLogo from "@/components/img-logo"
 import { useAuth } from "@/hooks/use_auth_login" 
 import { ChevronUp, Home, Settings, User2, Building2, Ticket, Notebook, Footprints, LogOut } from "lucide-react"
 
-const items = [
+// Definir los elementos del menú con roles requeridos
+const menuItems = [
     {
         title: "Home",
         url: "/",
         icon: Home,
+        roles: ['Administrador', 'Tecnico'], // Todos pueden ver Home
     },
-        {
+    {
         title: "Tickets",
         url: "/tickets",
         icon: Ticket,
+        roles: ['Administrador', 'Tecnico'], // Todos pueden ver tickets
     },
     {
         title: "Usuarios",
         url: "/users",
         icon: User2,
+        roles: ['Administrador'], // Solo administradores
     },
     {
         title: "Roles",
         url: "/roles",
         icon: Notebook,
+        roles: ['Administrador'], // Solo administradores
     },
     {
         title: "Permisos",
         url: "/permissions",
         icon: Footprints,
+        roles: ['Administrador'], // Solo administradores
     },
     {
         title: "Plantas",
         url: "/floors",
         icon: Building2,
+        roles: ['Administrador', 'Tecnico'], // Administradores y técnicos
     },
     {
         title: "Tipos de Tickets",
         url: "/type_tickets",
         icon: Ticket,
+        roles: ['Administrador'], // Solo administradores
     },
     {
         title: "Asignar Permisos",
         url: "/role-permissions",
-        icon: Settings, 
+        icon: Settings,
+        roles: ['Administrador'], // Solo administradores
     },
     {
         title: "Settings",
         url: "/settings",
         icon: Settings,
+        roles: ['Administrador', 'Tecnico'], // Administradores y técnicos
     },
 ]
 
 export function AppSidebar() {
-    const { user, logout } = useAuth(); 
+    const { user, logout, hasRole } = useAuth(); 
 
     const handleSignOut = () => {
         logout();
     };
+
+    // Filtrar elementos del menú basados en el rol del usuario (similar a tu ejemplo de Express)
+    const visibleMenuItems = menuItems.filter(item => {
+        if (!user) return false;
+        return hasRole(item.roles);
+    });
 
     return (
         <Sidebar collapsible="icon">
@@ -79,7 +95,7 @@ export function AppSidebar() {
                     <SidebarGroupLabel>HDM - Help Desk Mefasa</SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
-                            {items.map((item) => (
+                            {visibleMenuItems.map((item) => (
                                 <SidebarMenuItem key={item.title}>
                                     <SidebarMenuButton asChild>
                                         <a href={item.url}>

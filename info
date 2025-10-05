@@ -1,0 +1,28 @@
+Flujo de Funcionamiento
+🔄 Flujo de Registro
+Usuario envía datos de registro a /register
+Sistema genera token de verificación por email
+Usuario hace clic en enlace del email
+Sistema verifica token con /verify-email/:token
+Correo queda verificado y puede hacer login
+🔄 Flujo de Login Estándar
+Usuario envía credenciales a /login
+Sistema valida email verificado y contraseña
+Si no tiene 2FA: retorna JWT token y datos de usuario
+Si tiene 2FA: retorna indicación de requerir 2FA
+🔄 Flujo de Login con 2FA
+Usuario intenta login estándar → sistema indica que requiere 2FA
+Usuario obtiene código de app autenticadora
+Usuario envía credenciales + código 2FA a /login-2fa
+Sistema valida todo y retorna JWT token
+🔄 Flujo de Configuración 2FA
+Usuario autenticado solicita generar QR en /2fa/generate/:id
+Usuario escanea QR con app autenticadora
+Usuario envía código de prueba a /2fa/enable/:id
+Sistema verifica código y activa 2FA
+Para futuros logins deberá usar /login-2fa
+Seguridad y Guards
+🛡️ AuthGuard
+Valida JWT token en header Authorization: Bearer <token>
+Extrae información del usuario del token
+Protege endpoints marcados con @UseGuards(AuthGuard)
