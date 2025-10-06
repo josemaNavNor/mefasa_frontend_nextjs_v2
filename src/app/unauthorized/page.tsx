@@ -12,7 +12,7 @@ export default function UnauthorizedPage() {
   };
 
   const handleGoHome = () => {
-    router.push('/dashboard');
+    router.push('/');
   };
 
   const handleLogout = () => {
@@ -45,18 +45,10 @@ export default function UnauthorizedPage() {
         
         <div className="space-y-3">
           <Button 
-            onClick={handleGoBack}
-            variant="outline"
-            className="w-full"
-          >
-            Volver Atrás
-          </Button>
-          
-          <Button 
             onClick={handleGoHome}
             className="w-full"
           >
-            Ir al Dashboard
+            Ir a Inicio
           </Button>
           
           <Button 

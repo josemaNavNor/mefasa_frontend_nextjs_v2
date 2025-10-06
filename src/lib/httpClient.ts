@@ -14,6 +14,9 @@ class HttpClient {
 
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
+      //console.log('Token incluido en request');
+    } else {
+      //console.log('No hay token disponible');
     }
 
     return headers;
@@ -21,9 +24,12 @@ class HttpClient {
 
   private async handleResponse(response: Response) {
     if (response.status === 401) {
-      // Token expirado o inválido, redirigir al login
+      // Token expirado o inválido, limpiar y redirigir al login
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('user');
+      
       window.location.href = '/login';
       throw new Error('Token expirado');
     }

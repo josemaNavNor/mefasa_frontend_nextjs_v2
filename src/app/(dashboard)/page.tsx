@@ -1,12 +1,45 @@
 "use client";
 import { useAuthContext } from '@/components/auth-provider';
-import { ShowForAdmin, ShowForTech, ShowForAdminOrTech } from '@/components/RoleBasedRender';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Ticket, Settings, Building2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect, useState } from 'react';
 
 export default function DashboardHome() {
-  const { user, isAdmin, isTech, isUserFinal } = useAuthContext();
+  const { user, isAdmin, isTech, isUserFinal, loading } = useAuthContext();
+  const [, forceUpdate] = useState({});
+
+  // Escuchar cambios en el usuario para forzar re-render
+  useEffect(() => {
+    const handleUserChange = () => {
+      //console.log('Dashboard: Usuario cambió, forzando re-render');
+      forceUpdate({});
+    };
+
+    window.addEventListener('userChanged', handleUserChange);
+    return () => window.removeEventListener('userChanged', handleUserChange);
+  }, []);
+
+  // Mostrar loading mientras se carga la información de autenticación
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // Si no hay usuario después de cargar, mostrar mensaje
+  if (!user) {
+    return (
+      <div className="p-6">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
+          <p className="text-gray-600">No se pudo cargar la información del usuario.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
@@ -17,110 +50,6 @@ export default function DashboardHome() {
         </p>
       </div>
 
-      {/* Contenido específico para Administradores */}
-      <ShowForAdmin>
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4 text-blue-600">Panel de Administración</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Gestión de Usuarios</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <CardDescription>Administrar usuarios del sistema</CardDescription>
-                <Button className="mt-2 w-full" size="sm" asChild>
-                  <a href="/users">Gestionar</a>
-                </Button>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Roles y Permisos</CardTitle>
-                <Settings className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <CardDescription>Configurar roles y permisos</CardDescription>
-                <Button className="mt-2 w-full" size="sm" asChild>
-                  <a href="/roles">Configurar</a>
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </ShowForAdmin>
-
-      {/* Contenido para Administradores y Técnicos */}
-      <ShowForAdminOrTech>
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4 text-green-600">
-            Panel {isTech ? 'de Técnico' : 'Administrativo'}
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Tickets</CardTitle>
-                <Ticket className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <CardDescription>Ver y gestionar tickets</CardDescription>
-                <Button className="mt-2 w-full" size="sm" asChild>
-                  <a href="/tickets">Ver Tickets</a>
-                </Button>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Plantas</CardTitle>
-                <Building2 className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <CardDescription>Gestionar plantas del edificio</CardDescription>
-                <Button className="mt-2 w-full" size="sm" asChild>
-                  <a href="/floors">Ver Plantas</a>
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </ShowForAdminOrTech>
-
-      {/* Contenido para todos los usuarios */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-4 text-gray-600">Acciones Disponibles</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">Mis Tickets</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription>Ver mis tickets {isUserFinal ? 'reportados' : 'asignados'}</CardDescription>
-              <Button className="mt-2 w-full" size="sm" asChild>
-                <a href="/tickets">Ver Mis Tickets</a>
-              </Button>
-            </CardContent>
-          </Card>
-          
-          {/* Solo usuarios finales pueden crear tickets nuevos */}
-          {isUserFinal && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-medium">Crear Ticket</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>Reportar un nuevo problema</CardDescription>
-                <Button className="mt-2 w-full" size="sm" asChild>
-                  <a href="/tickets/create">Crear Ticket</a>
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      </div>
-
-      {/* Información del usuario */}
       <Card className="mt-6">
         <CardHeader>
           <CardTitle>Información de la Sesión</CardTitle>

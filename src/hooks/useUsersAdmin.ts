@@ -11,9 +11,9 @@ export function useUsers() {
         setLoading(true);
         try {
             const data = await api.get('/users');
-            console.log('API Response:', data);
-            console.log('Is Array:', Array.isArray(data));
-            console.log('Data type:', typeof data);
+            //console.log('API Response:', data);
+            //console.log('Is Array:', Array.isArray(data));
+            //console.log('Data type:', typeof data);
             
             // Verificar si data es un array, si no, usar data directamente
             if (Array.isArray(data)) {
@@ -29,7 +29,7 @@ export function useUsers() {
                 setUsers([]);
             }
         } catch (error) {
-            console.error("Error al obtener los usuarios:", error);
+            //console.error("Error al obtener los usuarios:", error);
             setUsers([]);
         } finally {
             setLoading(false);

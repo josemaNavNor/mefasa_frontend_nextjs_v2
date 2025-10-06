@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/hooks/use_auth_login';
+import { useAuthContext } from '@/components/auth-provider';
 import { loginSchema } from '@/lib/zod';
 import { Button } from "@/components/ui/button"
 import {
@@ -33,7 +33,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
   
-  const { login } = useAuth();
+  const { login } = useAuthContext();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

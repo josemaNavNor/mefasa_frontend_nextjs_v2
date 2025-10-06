@@ -1,5 +1,5 @@
 "use client";
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { useAuthContext } from './auth-provider';
 
 interface RoleBasedRenderProps {
@@ -10,7 +10,23 @@ interface RoleBasedRenderProps {
 
 // Componente para mostrar contenido basado en roles
 export const RoleBasedRender = ({ allowedRoles, children, fallback = null }: RoleBasedRenderProps) => {
-  const { hasRole, isAuthenticated } = useAuthContext();
+  const { hasRole, isAuthenticated, loading } = useAuthContext();
+  const [, forceUpdate] = useState({});
+
+  // Escuchar cambios en el usuario para forzar re-render
+  useEffect(() => {
+    const handleUserChange = () => {
+      forceUpdate({});
+    };
+
+    window.addEventListener('userChanged', handleUserChange);
+    return () => window.removeEventListener('userChanged', handleUserChange);
+  }, []);
+
+  // Si está cargando, no mostrar nada hasta que termine de cargar
+  if (loading) {
+    return <>{fallback}</>;
+  }
 
   if (!isAuthenticated) {
     return <>{fallback}</>;
@@ -44,7 +60,7 @@ export const ShowForAdminOrTech = ({ children, fallback }: { children: ReactNode
 
 // Hook para usar condicionalmente en JSX (similar a tu ejemplo de Express)
 export const useConditionalRender = () => {
-  const { user, isAdmin, isTech, isUserFinal, hasRole } = useAuthContext();
+  const { user, isAdmin, isTech, isUserFinal, hasRole, loading } = useAuthContext();
 
   return {
     // Información del usuario
@@ -56,11 +72,14 @@ export const useConditionalRender = () => {
     isUserFinal,
     hasRole,
     
+    // Estado de carga
+    loading,
+    
     // Funciones helper para mostrar elementos específicos
-    showForAdmin: (element: ReactNode) => isAdmin ? element : null,
-    showForTech: (element: ReactNode) => isTech ? element : null,
-    showForAdminOrTech: (element: ReactNode) => (isAdmin || isTech) ? element : null,
-    showForRole: (role: string | string[], element: ReactNode) => hasRole(role) ? element : null,
+    showForAdmin: (element: ReactNode) => (loading ? null : (isAdmin ? element : null)),
+    showForTech: (element: ReactNode) => (loading ? null : (isTech ? element : null)),
+    showForAdminOrTech: (element: ReactNode) => (loading ? null : ((isAdmin || isTech) ? element : null)),
+    showForRole: (role: string | string[], element: ReactNode) => (loading ? null : (hasRole(role) ? element : null)),
     
     // Función para agregar elementos al menú dinámicamente (como en tu ejemplo)
     shouldShowMenuItem: (requiredRoles: string | string[]) => hasRole(requiredRoles),

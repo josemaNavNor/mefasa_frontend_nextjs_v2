@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/sidebar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
 import ImgLogo from "@/components/img-logo"
-import { useAuth } from "@/hooks/use_auth_login" 
+import { useAuthContext } from "@/components/auth-provider" 
 import { ChevronUp, Home, Settings, User2, Building2, Ticket, Notebook, Footprints, LogOut } from "lucide-react"
 
 // Definir los elementos del menú con roles requeridos
@@ -52,7 +52,7 @@ const menuItems = [
         title: "Plantas",
         url: "/floors",
         icon: Building2,
-        roles: ['Administrador', 'Tecnico'], // Administradores y técnicos
+        roles: ['Administrador'], // Solo administradores
     },
     {
         title: "Tipos de Tickets",
@@ -75,14 +75,14 @@ const menuItems = [
 ]
 
 export function AppSidebar() {
-    const { user, logout, hasRole } = useAuth(); 
+    const { user, logout, hasRole, loading } = useAuthContext(); 
 
     const handleSignOut = () => {
         logout();
     };
 
     // Filtrar elementos del menú basados en el rol del usuario (similar a tu ejemplo de Express)
-    const visibleMenuItems = menuItems.filter(item => {
+    const visibleMenuItems = loading ? [] : menuItems.filter(item => {
         if (!user) return false;
         return hasRole(item.roles);
     });
@@ -116,7 +116,7 @@ export function AppSidebar() {
                             <DropdownMenuTrigger asChild>
                                 <SidebarMenuButton>
                                     <User2 /> 
-                                    {user?.email || 'Username'}
+                                    {loading ? 'Cargando...' : (user?.email || 'Username')}
                                     <ChevronUp className="ml-auto" />
                                 </SidebarMenuButton>
                             </DropdownMenuTrigger>
