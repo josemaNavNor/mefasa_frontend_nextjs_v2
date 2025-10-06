@@ -125,7 +125,7 @@ export function useTickets() {
         }
     }
 
-    async function createTicket(ticket: { ticket_number: string, summary: string, description: string, end_user_id: number, technician_id: number, type_id: number, priority: string, status: string, floor_id: number, area_id: number, due_date: string }) {
+    async function createTicket(ticket: { ticket_number: string, summary: string, description: string, end_user: number, technician_id: number, type_id: number, priority: string, status: string, floor_id: number, area_id: number, due_date: string }) {
         setLoading(true);
         try {
             const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/tickets", {
