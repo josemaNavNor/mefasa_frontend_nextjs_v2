@@ -6,13 +6,32 @@ export function useRoles() {
     const [roles, setRoles] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
 
+    const getAuthHeaders = () => {
+        const token = localStorage.getItem('token'); 
+        return {
+            'Content-Type': 'application/json',
+            ...(token && { 'Authorization': `Bearer ${token}` })
+        };
+    };
+
     async function fetchRoles() {
         setLoading(true);
         try {
-            const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/roles");
+            const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/roles", {
+                headers: getAuthHeaders()
+            });
+            
+            if (response.status === 401) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'No autorizado',
+                    text: 'Sesión expirada. Por favor, inicia sesión nuevamente.',
+                });
+                return;
+            }
+            
             const data = await response.json();
-            setRoles(data.flat());
-            //console.log(data);
+            setRoles(data);
         } catch (error) {
             console.error("Error al obtener los roles:", error);
         } finally {
@@ -25,11 +44,19 @@ export function useRoles() {
         try {
             const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/roles", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: getAuthHeaders(),
                 body: JSON.stringify(role),
             });
+            
+            if (response.status === 401) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'No autorizado',
+                    text: 'Sesión expirada. Por favor, inicia sesión nuevamente.',
+                });
+                return;
+            }
+            
             const data = await response.json();
             
             if (response.ok) {

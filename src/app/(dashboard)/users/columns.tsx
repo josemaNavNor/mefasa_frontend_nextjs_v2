@@ -63,7 +63,7 @@ export const createColumns = ({ onEdit }: ColumnsProps = {}): ColumnDef<User>[] 
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Name
+                    Nombre
                     <ArrowUpDown className="h-4 w-4" />
                 </Button>
             )
@@ -80,7 +80,7 @@ export const createColumns = ({ onEdit }: ColumnsProps = {}): ColumnDef<User>[] 
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Last Name
+                    Apellido
                     <ArrowUpDown className="h-4 w-4" />
                 </Button>
             )
@@ -97,7 +97,7 @@ export const createColumns = ({ onEdit }: ColumnsProps = {}): ColumnDef<User>[] 
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Role
+                    Rol
                     <ArrowUpDown className="h-4 w-4" />
                 </Button>
             )
@@ -115,7 +115,7 @@ export const createColumns = ({ onEdit }: ColumnsProps = {}): ColumnDef<User>[] 
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Email
+                    Correo electronico
                     <ArrowUpDown className="h-4 w-4" />
                 </Button>
             )
@@ -132,7 +132,7 @@ export const createColumns = ({ onEdit }: ColumnsProps = {}): ColumnDef<User>[] 
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Phone Number
+                    Numero de Telefono
                     <ArrowUpDown className="h-4 w-4" />
                 </Button>
             )
@@ -149,13 +149,13 @@ export const createColumns = ({ onEdit }: ColumnsProps = {}): ColumnDef<User>[] 
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Email Verified
+                    Email verificado
                     <ArrowUpDown className="h-4 w-4" />
                 </Button>
             )
         },
         cell: ({ row }) => (
-            <div className="text-center">{row.getValue("is_email_verified") ? "Yes" : "No"}</div>
+            <div className="text-center">{row.getValue("is_email_verified") ? "Si" : "No"}</div>
         ),
     },
     {

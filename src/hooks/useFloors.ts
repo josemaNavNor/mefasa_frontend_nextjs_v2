@@ -6,15 +6,48 @@ export function useFloors() {
     const [floors, setFloors] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
 
+    const getAuthHeaders = () => {
+        const token = localStorage.getItem('token');
+        return {
+            'Content-Type': 'application/json',
+            ...(token && { 'Authorization': `Bearer ${token}` })
+        };
+    };
+
     async function fetchFloors() {
         setLoading(true);
         try {
-            const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/floors");
+            const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/floors", {
+                method: 'GET',
+                headers: getAuthHeaders(),
+            });
+            
+            if (response.status === 401) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'No autorizado',
+                    text: 'Sesión expirada. Por favor, inicia sesión nuevamente.',
+                });
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = '/login';
+                return;
+            }
+            
             const data = await response.json();
-            setFloors(data.flat());
-            //console.log('API:', data);
+            
+            // Manejo seguro de la respuesta
+            if (Array.isArray(data)) {
+                setFloors(data);
+            } else if (data && Array.isArray(data.floors)) {
+                setFloors(data.floors);
+            } else {
+                console.error('Unexpected data structure:', data);
+                setFloors([]);
+            }
         } catch (error) {
             console.error("Error al obtener las plantas:", error);
+            setFloors([]);
         } finally {
             setLoading(false);
         }
@@ -25,11 +58,22 @@ export function useFloors() {
         try {
             const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/floors", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: getAuthHeaders(),
                 body: JSON.stringify(floor),
             });
+            
+            if (response.status === 401) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'No autorizado',
+                    text: 'Sesión expirada. Por favor, inicia sesión nuevamente.',
+                });
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = '/login';
+                return;
+            }
+            
             const data = await response.json();
             
             if (response.ok) {

@@ -31,26 +31,44 @@ interface CreateCommentData {
 export function useTicketComments(ticketId?: number) {
   const [comments, setComments] = useState<TicketComment[]>([]);
   const [loading, setLoading] = useState(false);
-  //const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('token');
+    return {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+  }
 
   async function fetchCommentsByTicket(id: number) {
     setLoading(true);
     try {
       const response = await fetch(`https://mefasa-backend-nestjs.onrender.com/api/v1/tickets-comments/by-ticket/${id}`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
+        headers: getAuthHeaders(),
       });
-      
-      if (!response.ok) {
-        throw new Error('Error al obtener los comentarios');
+
+      if (response.status === 401) {
+        Swal.fire({
+          icon: 'error',
+          title: 'No autorizado',
+          text: 'Sesión expirada. Por favor, inicia sesión nuevamente.',
+        });
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+        return;
       }
-      
+
       const data = await response.json();
-      setComments(data);
-      return data;
+      if (Array.isArray(data)) {
+        setComments(data);
+      } else if (data && Array.isArray(data.floors)) {
+        setComments(data.floors);
+      } else {
+        console.error('Unexpected data structure:', data);
+        setComments([]);
+      }
     } catch (error) {
       console.error('Error al obtener los comentarios:', error);
       Swal.fire({
@@ -75,23 +93,23 @@ export function useTicketComments(ticketId?: number) {
         credentials: 'include',
         body: JSON.stringify(commentData),
       });
-      
+
       const data = await response.json();
 
       if (response.ok) {
         // actualizar estado local inmediatamente
         setComments((prevComments) => [...prevComments, data]);
-        
+
         // eventos globales
         eventEmitter.emit('data-changed', 'ticket-comments');
         eventEmitter.emit('ticket-comments-updated');
-        
+
         Swal.fire({
           icon: 'success',
           title: 'Comentario creado',
           text: 'Comentario agregado exitosamente',
         });
-        
+
         return data;
       } else {
         Swal.fire({
@@ -125,11 +143,11 @@ export function useTicketComments(ticketId?: number) {
     }
   }, [ticketId]);
 
-  return { 
-    comments, 
-    loading, 
-    createComment, 
+  return {
+    comments,
+    loading,
+    createComment,
     fetchCommentsByTicket,
-    refetch 
+    refetch
   };
 }

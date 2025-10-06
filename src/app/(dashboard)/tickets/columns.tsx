@@ -18,7 +18,7 @@ export type Ticket = {
     id: string,
     ticket_number: string
     summary: string
-    end_user: { email: string, name: string, last_name: string } | null,
+    end_user: string
     technician: { name: string, last_name: string } | null,
     type: { type_name: string } | null,
     priority: string,
@@ -103,10 +103,9 @@ export const createColumns = ({ onEditTicket }: ColumnsProps = {}): ColumnDef<Ti
                 </Button>
             )
         },
-        cell: ({ row }) => {
-            const end_user = row.getValue("end_user") as { email?: string };
-            return <div className="text-center">{end_user ? `${end_user.email}` : "Sin creador"}</div>;
-        },
+        cell: ({ row }) => (
+            <div className="text-left">{row.getValue("end_user")}</div>
+        ),
     },
     {
         accessorKey: "technician",

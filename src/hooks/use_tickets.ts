@@ -7,13 +7,42 @@ export function useTickets() {
     const [tickets, setTickets] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
 
+    const getAuthHeaders = () => {
+        const token = localStorage.getItem('token');
+        return {
+            'Content-Type': 'application/json',
+            ...(token && { 'Authorization': `Bearer ${token}` })
+        };
+    }
+
     async function fetchTickets() {
         setLoading(true);
         try {
-            const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/tickets");
+            const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/tickets", {
+                method: 'GET',
+                headers: getAuthHeaders(),
+            });
+            if (response.status === 401) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'No autorizado',
+                    text: 'Sesión expirada. Por favor, inicia sesión nuevamente.',
+                });
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = '/login';
+                return;
+            }
             const data = await response.json();
-            setTickets(data.flat());
-            //console.log(data);
+
+            if (Array.isArray(data)) {
+                setTickets(data);
+            } else if (data && Array.isArray(data.tickets)) {
+                setTickets(data.tickets);
+            } else {
+                console.error('Unexpected data structure:', data);
+                setTickets([]);
+            }
         } catch (error) {
             console.error("Error al obtener los tickets:", error);
         } finally {
@@ -24,7 +53,23 @@ export function useTickets() {
     async function fetchTicketById(id: string) {
         setLoading(true);
         try {
-            const response = await fetch(`https://mefasa-backend-nestjs.onrender.com/api/v1/tickets/${id}`);
+            const response = await fetch(`https://mefasa-backend-nestjs.onrender.com/api/v1/tickets/${id}`, {
+                method: 'GET',
+                headers: getAuthHeaders(),
+            });
+
+            if (response.status === 401) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'No autorizado',
+                    text: 'Sesión expirada. Por favor, inicia sesión nuevamente.',
+                });
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = '/login';
+                return null;
+            }
+            
             const data = await response.json();
             return data;
         } catch (error) {
@@ -48,7 +93,7 @@ export function useTickets() {
             const data = await response.json();
 
             if (response.ok) {
-                setTickets((prevTickets) => 
+                setTickets((prevTickets) =>
                     prevTickets.map(t => t.id === id ? { ...t, ...data } : t)
                 );
                 eventEmitter.emit('data-changed', 'tickets');
@@ -126,35 +171,35 @@ export function useTickets() {
                 'Número de Ticket': ticket.ticket_number || '',
                 'Título': ticket.summary || '',
                 'Descripción': ticket.description || '',
-                'Usuario Final': ticket.end_user ? 
-                    `${ticket.end_user.name} ${ticket.end_user.last_name}` : 
+                'Usuario Final': ticket.end_user ?
+                    `${ticket.end_user.name} ${ticket.end_user.last_name}` :
                     'Sin asignar',
                 'Email Usuario': ticket.end_user?.email || '',
-                'Técnico Asignado': ticket.technician ? 
-                    `${ticket.technician.name} ${ticket.technician.last_name}` : 
+                'Técnico Asignado': ticket.technician ?
+                    `${ticket.technician.name} ${ticket.technician.last_name}` :
                     'Sin asignar',
                 'Tipo': ticket.type?.type_name || 'Sin tipo',
                 'Prioridad': ticket.priority || '',
                 'Estado': ticket.status || '',
                 'Piso': ticket.floor?.floor_name || 'Sin piso',
                 'Área': ticket.area?.area_name || 'Sin área',
-                'Fecha de Creación': ticket.created_at ? 
-                    new Date(ticket.created_at).toLocaleString('es-ES') : 
+                'Fecha de Creación': ticket.created_at ?
+                    new Date(ticket.created_at).toLocaleString('es-ES') :
                     '',
-                'Fecha de Actualización': ticket.updated_at ? 
-                    new Date(ticket.updated_at).toLocaleString('es-ES') : 
+                'Fecha de Actualización': ticket.updated_at ?
+                    new Date(ticket.updated_at).toLocaleString('es-ES') :
                     '',
-                'Fecha Límite': ticket.due_date ? 
-                    new Date(ticket.due_date).toLocaleDateString('es-ES') : 
+                'Fecha Límite': ticket.due_date ?
+                    new Date(ticket.due_date).toLocaleDateString('es-ES') :
                     'No establecida',
-                'Fecha de Asignación': ticket.assigned_at ? 
-                    new Date(ticket.assigned_at).toLocaleString('es-ES') : 
+                'Fecha de Asignación': ticket.assigned_at ?
+                    new Date(ticket.assigned_at).toLocaleString('es-ES') :
                     '',
-                'Fecha de Resolución': ticket.resolved_at ? 
-                    new Date(ticket.resolved_at).toLocaleString('es-ES') : 
+                'Fecha de Resolución': ticket.resolved_at ?
+                    new Date(ticket.resolved_at).toLocaleString('es-ES') :
                     '',
-                'Fecha de Cierre': ticket.closed_at ? 
-                    new Date(ticket.closed_at).toLocaleString('es-ES') : 
+                'Fecha de Cierre': ticket.closed_at ?
+                    new Date(ticket.closed_at).toLocaleString('es-ES') :
                     ''
             }));
 
@@ -218,4 +263,8 @@ export function useTickets() {
     }, []);
 
     return { tickets, loading, createTicket, updateTicket, fetchTicketById, refetch, exportToExcel };
+}
+
+function setTypes(data: any[]) {
+    throw new Error("Function not implemented.");
 }

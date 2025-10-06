@@ -131,7 +131,6 @@ export default function TicketsPage() {
                             </SheetDescription>
                         </SheetHeader>
                     <form onSubmit={handleSubmit} className="grid flex-1 auto-rows-min gap-4 px-4">
-                        {/* ...existing code... */}
                         <div className="grid gap-3">
                             <Label htmlFor="summary">Título</Label>
                             <Input
