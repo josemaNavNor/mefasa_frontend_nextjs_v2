@@ -12,7 +12,7 @@ export const useAuth = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token'); // ✅ CORREGIDO: usar 'token' consistentemente
+    const token = localStorage.getItem('token'); 
     const userData = localStorage.getItem('user');
     
     if (token && userData) {
@@ -30,7 +30,7 @@ export const useAuth = () => {
   };
 
   const logout = () => {
-    localStorage.removeItem('token'); // ✅ CORREGIDO: usar 'token' consistentemente
+    localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
   };

@@ -41,7 +41,7 @@ export default function TicketsPage() {
     const [ticket_number] = useState("");
     const [summary, setSummary] = useState("");
     const [description, setDescription] = useState("");
-    const [end_user_id, setEndUserId] = useState("");
+    const [end_user, setEndUser] = useState("");
     const [technician_id, setTechnicianId] = useState("");
     const [type_id, setTypeId] = useState("");
     const [floor_id, setFloorId] = useState(""); 
@@ -90,7 +90,7 @@ export default function TicketsPage() {
             ticket_number,
             summary,
             description,
-            end_user_id: Number(end_user_id),
+            end_user,
             technician_id: Number(technician_id),
             type_id: Number(type_id),
             floor_id: Number(floor_id),
@@ -103,7 +103,7 @@ export default function TicketsPage() {
         // Reset form
         setSummary("");
         setDescription("");
-        setEndUserId("");
+        setEndUser("");
         setTechnicianId("");
         setTypeId("");
         setFloorId("");

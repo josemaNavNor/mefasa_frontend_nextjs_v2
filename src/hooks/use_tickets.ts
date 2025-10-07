@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import Swal from 'sweetalert2'
+import Notiflix from 'notiflix';
 import { eventEmitter } from './useEventListener'
 import * as XLSX from 'xlsx'
 
@@ -23,11 +23,7 @@ export function useTickets() {
                 headers: getAuthHeaders(),
             });
             if (response.status === 401) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'No autorizado',
-                    text: 'Sesión expirada. Por favor, inicia sesión nuevamente.',
-                });
+                Notiflix.Notify.failure('Sesión expirada. Por favor, inicia sesión nuevamente.');
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
                 window.location.href = '/login';
@@ -59,11 +55,7 @@ export function useTickets() {
             });
 
             if (response.status === 401) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'No autorizado',
-                    text: 'Sesión expirada. Por favor, inicia sesión nuevamente.',
-                });
+                Notiflix.Notify.failure('Sesión expirada. Por favor, inicia sesión nuevamente.');
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
                 window.location.href = '/login';
@@ -85,11 +77,10 @@ export function useTickets() {
         try {
             const response = await fetch(`https://mefasa-backend-nestjs.onrender.com/api/v1/tickets/${id}`, {
                 method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: getAuthHeaders(),
                 body: JSON.stringify(ticket),
             });
+
             const data = await response.json();
 
             if (response.ok) {
@@ -98,41 +89,27 @@ export function useTickets() {
                 );
                 eventEmitter.emit('data-changed', 'tickets');
                 eventEmitter.emit('tickets-updated');
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Ticket actualizado',
-                    text: `${data.message || 'Ticket actualizado correctamente'}`,
-                });
+                Notiflix.Notify.success('Ticket actualizado correctamente');
                 return data;
             } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error al actualizar el ticket',
-                    text: `${data.message || ''}`,
-                });
+
                 return null;
             }
         } catch (error) {
             console.error("Error al actualizar el ticket:", error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error al actualizar el ticket',
-            });
+            Notiflix.Notify.failure('Error al actualizar el ticket');
             return null;
         } finally {
             setLoading(false);
         }
     }
 
-    async function createTicket(ticket: { ticket_number: string, summary: string, description: string, end_user: number, technician_id: number, type_id: number, priority: string, status: string, floor_id: number, area_id: number, due_date: string }) {
+    async function createTicket(ticket: { ticket_number: string, summary: string, description: string, end_user: string, technician_id: number, type_id: number, priority: string, status: string, floor_id: number, area_id: number, due_date: string }) {
         setLoading(true);
         try {
             const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/tickets", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: getAuthHeaders(),
                 body: JSON.stringify(ticket),
             });
             const data = await response.json();
@@ -141,17 +118,9 @@ export function useTickets() {
                 setTickets((prevTickets) => [...prevTickets, data]);
                 eventEmitter.emit('data-changed', 'tickets');
                 eventEmitter.emit('tickets-updated');
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Ticket creado',
-                    text: `${data.message}`,
-                });
+                Notiflix.Notify.success('Ticket creado correctamente');
             } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error al crear el ticket',
-                    text: `${data.message || ''}`,
-                });
+                Notiflix.Notify.failure(data.message || 'Error al crear el ticket');
             }
         } catch (error) {
             console.error("Error al crear el ticket:", error);
@@ -240,21 +209,11 @@ export function useTickets() {
             // Descargar el archivo
             XLSX.writeFile(workbook, filename);
 
-            Swal.fire({
-                icon: 'success',
-                title: 'Exportación exitosa',
-                text: `Se han exportado ${dataToExport.length} tickets a Excel`,
-                timer: 3000,
-                showConfirmButton: false
-            });
+            Notiflix.Notify.success(`Se han exportado ${dataToExport.length} tickets a Excel`);
 
         } catch (error) {
             console.error('Error al exportar a Excel:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error en la exportación',
-                text: 'No se pudo exportar el archivo Excel',
-            });
+            Notiflix.Notify.failure('Error al exportar a Excel');
         }
     };
 
