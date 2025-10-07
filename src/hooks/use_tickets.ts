@@ -89,6 +89,7 @@ export function useTickets() {
                 );
                 eventEmitter.emit('data-changed', 'tickets');
                 eventEmitter.emit('tickets-updated');
+                eventEmitter.emit('ticket-history-updated', parseInt(id));
                 Notiflix.Notify.success('Ticket actualizado correctamente');
                 return data;
             } else {

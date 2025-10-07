@@ -39,6 +39,17 @@ export const getFieldDisplayName = (field: string) => {
 }
 
 export const getCurrentUserId = (): number | null => {
-    const userId = localStorage.getItem('userId') || '2'
-    return parseInt(userId)
+    try {
+        const userString = localStorage.getItem('user')
+        if (!userString) {
+            console.warn('Usuario no encontrado en localStorage')
+            return null
+        }
+        
+        const user = JSON.parse(userString)
+        return user?.id || null
+    } catch (error) {
+        console.error('Error al obtener el usuario de localStorage:', error)
+        return null
+    }
 }

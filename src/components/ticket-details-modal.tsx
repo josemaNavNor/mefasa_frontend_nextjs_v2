@@ -45,24 +45,14 @@ export function TicketDetailsModal({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-[90vw] max-h-[85vh] flex flex-col">
+            <DialogContent className="max-w-[95vw] max-h-[90vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle className="text-xl font-bold">
                         #{ticket.ticket_number} - {ticket.summary}
                     </DialogTitle>
                 </DialogHeader>
 
-                {/* Información básica del ticket */}
-                {ticketData && (
-                    <TicketBasicInfo 
-                        ticket={ticketData} 
-                        users={users}
-                        types={types}
-                        onTicketUpdate={handleTicketUpdate} 
-                    />
-                )}
-
-                {/* Contenido principal dividido en dos columnas */}
+                {/* Contenido principal dividido en tres columnas */}
                 <div className="flex-1 overflow-hidden flex gap-4">
                     {/* Conversación del ticket */}
                     <TicketConversation 
@@ -73,6 +63,18 @@ export function TicketDetailsModal({
 
                     {/* Historial de acciones */}
                     <TicketHistory history={history} />
+
+                    {/* Información básica del ticket */}
+                    <div className="w-80 flex-shrink-0">
+                        {ticketData && (
+                            <TicketBasicInfo 
+                                ticket={ticketData} 
+                                users={users}
+                                types={types}
+                                onTicketUpdate={handleTicketUpdate} 
+                            />
+                        )}
+                    </div>
                 </div>
 
                 {/* Formulario para nueva respuesta */}

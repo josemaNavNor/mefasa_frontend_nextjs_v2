@@ -105,9 +105,11 @@ export function AppSidebar() {
                                 side="top"
                                 className="w-[--radix-popper-anchor-width]"
                             >
-                                <DropdownMenuItem>
-                                    <User2 className="mr-2 h-4 w-4" />
-                                    <span>Cuenta</span>
+                                <DropdownMenuItem asChild>
+                                    <a href="/profile" className="flex items-center">
+                                        <User2 className="mr-2 h-4 w-4" />
+                                        <span>Cuenta</span>
+                                    </a>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem>
                                     <Settings className="mr-2 h-4 w-4" />

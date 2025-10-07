@@ -6,8 +6,10 @@ export interface TicketComment {
     is_public: boolean
     created_at: string
     users?: {
+        id: number
         name: string
         last_name: string
+        email: string
     }
     comments_files?: any[]
 }
@@ -29,7 +31,7 @@ export interface User {
     last_name: string
     email: string
     role?: {
-        role_name: string
+        rol_name: string  // El backend devuelve 'rol_name' no 'role_name'
     }
 }
 
@@ -45,13 +47,14 @@ export interface Ticket {
     description?: string
     status: string
     priority: string
-    technician_id?: number
+    technician_id?: number  // Para actualizaciones
+    technician?: {         // Como viene del backend
+        id: number
+        name: string
+        last_name: string
+    }
     type_id?: number
     due_date?: string
     created_at: string
-    end_user?: {
-        name: string
-        last_name: string
-        email: string
-    }
+    end_user: string
 }

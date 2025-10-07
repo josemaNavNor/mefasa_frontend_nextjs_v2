@@ -9,6 +9,7 @@ import { useType } from "@/hooks/use_typeTickets"
 import { toast } from "sonner"
 import { createHistoryDescription, getCurrentUserId } from "@/lib/ticket-utils"
 import { Ticket } from "@/types/ticket"
+import { eventEmitter } from "./useEventListener"
 
 export const useTicketModal = (ticket: Ticket | null) => {
     const [responseText, setResponseText] = useState("")
@@ -48,32 +49,19 @@ export const useTicketModal = (ticket: Ticket | null) => {
             const result = await updateTicket(ticket.id.toString(), updateData)
             
             if (result) {
-                // Actualizar estado local
                 setTicketData((prev: any) => ({ ...prev, [field]: newValue }))
                 
                 // Crear entrada en el historial
                 const historyData = {
                     ticket_id: typeof ticket.id === 'string' ? parseInt(ticket.id) : ticket.id,
                     user_id: currentUserId,
-                    action_type: `${field}_changed`,
+                    action_type: `${field} modificado`,
                     description: createHistoryDescription(field, oldValue, newValue, users, types),
                     old_values: { [field]: oldValue },
                     new_values: { [field]: newValue }
                 }
-
-                // Crear historial (opcional, no crítico)
-                const ENABLE_HISTORY = false // Cambiar a true cuando el backend esté arreglado
-                
-                if (ENABLE_HISTORY) {
-                    try {
-                        await createHistoryEntry(historyData)
-                        console.log('Historia creada exitosamente')
-                    } catch (historyError) {
-                        console.warn('Error al crear historia, pero el ticket se actualizó:', historyError)
-                    }
-                } else {
-                    console.log('Creación de historia deshabilitada:', historyData.description)
-                }
+                //console.log('Ticket actualizado, el backend creará el historial automáticamente')
+                eventEmitter.emit('ticket-history-updated', historyData.ticket_id)
 
                 toast.success(`Campo actualizado correctamente`)
             } else {

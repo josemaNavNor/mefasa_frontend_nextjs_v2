@@ -34,12 +34,13 @@ export function TicketBasicInfo({ ticket, users, types, onTicketUpdate }: Ticket
         setTempValues({ ...tempValues, [field]: currentValue })
     }
 
-    const handleSave = (field: string) => {
+    const handleSave = async (field: string) => {
         const oldValue = getFieldValue(field)
         const newValue = tempValues[field]
         
         if (oldValue !== newValue) {
-            onTicketUpdate(field, newValue, oldValue)
+            await onTicketUpdate(field, newValue, oldValue)
+            // Los eventos se emiten desde useTickets.updateTicket(), no necesitamos duplicarlos aquí
         }
         
         setEditingField(null)
@@ -56,7 +57,9 @@ export function TicketBasicInfo({ ticket, users, types, onTicketUpdate }: Ticket
         switch (field) {
             case 'status': return ticket?.status
             case 'priority': return ticket?.priority
-            case 'technician_id': return ticket?.technician_id
+            case 'technician_id': 
+                // Priorizar technician_id si existe, sino usar technician.id
+                return ticket?.technician_id || ticket?.technician?.id || null
             case 'type_id': return ticket?.type_id
             case 'due_date': return ticket?.due_date
             default: return ''
@@ -66,9 +69,16 @@ export function TicketBasicInfo({ ticket, users, types, onTicketUpdate }: Ticket
     const getDisplayValue = (field: string, value: any) => {
         switch (field) {
             case 'technician_id':
-                if (!value || value === 0) return 'Sin asignar'
-                const technician = users.find(u => u.id === value)
-                return technician ? `${technician.name} ${technician.last_name}` : 'Sin asignar'
+                // Si value es un ID (número), buscar en la lista de users
+                if (typeof value === 'number' && value !== 0) {
+                    const technician = users.find(u => u.id === value)
+                    return technician ? `${technician.name} ${technician.last_name}` : 'Sin asignar'
+                }
+                // Si viene directamente del ticket como objeto technician
+                if (ticket?.technician && typeof ticket.technician === 'object') {
+                    return `${ticket.technician.name} ${ticket.technician.last_name}`
+                }
+                return 'Sin asignar'
             case 'type_id':
                 if (!value) return 'Sin tipo'
                 const type = types.find(t => t.id === value)
@@ -114,19 +124,24 @@ export function TicketBasicInfo({ ticket, users, types, onTicketUpdate }: Ticket
 
             case 'technician_id':
                 const canBeTechnician = (user: any) => {
-                    if (!user.role?.role_name) return false
-                    const roleName = user.role.role_name.toLowerCase()
-                    return roleName.includes('técnico') || 
-                           roleName.includes('tecnico') || 
-                           roleName.includes('administrador') ||
-                           roleName.includes('admin')
+                    // El backend devuelve 'rol_name' no 'role_name'
+                    const roleName = user.role?.rol_name || user.role?.role_name
+                    if (!roleName) return false
+                    const roleNameLower = roleName.toLowerCase()
+                    const canBe = roleNameLower.includes('técnico') || 
+                           roleNameLower.includes('tecnico') || 
+                           roleNameLower.includes('administrador') ||
+                           roleNameLower.includes('admin')
+                    console.log(`User ${user.name} (${roleName}) can be technician:`, canBe)
+                    return canBe
                 }
 
                 const availableUsers = users.filter(canBeTechnician)
+                console.log('Available users for technician select:', availableUsers)
                 
                 return (
                     <Select 
-                        value={tempValue?.toString() || '0'} 
+                        value={tempValue?.toString() || (ticket?.technician?.id ? ticket.technician.id.toString() : (ticket?.technician_id ? ticket.technician_id.toString() : '0'))} 
                         onValueChange={(value) => setTempValues({ ...tempValues, [field]: value === '0' ? null : parseInt(value) })}
                     >
                         <SelectTrigger className="h-8 text-xs">
@@ -137,7 +152,7 @@ export function TicketBasicInfo({ ticket, users, types, onTicketUpdate }: Ticket
                             {availableUsers.length > 0 ? (
                                 availableUsers.map((user) => (
                                     <SelectItem key={user.id} value={user.id.toString()}>
-                                        {user.name} {user.last_name} {user.role?.role_name && `(${user.role.role_name})`}
+                                        {user.name} {user.last_name}
                                     </SelectItem>
                                 ))
                             ) : (
@@ -207,12 +222,14 @@ export function TicketBasicInfo({ ticket, users, types, onTicketUpdate }: Ticket
         const isEditing = editingField === field
         
         return (
-            <div key={field} className="flex items-center space-x-2">
-                <span className="font-medium min-w-[100px]">{label}:</span>
+            <div key={field} className="flex flex-col space-y-2">
+                <span className="font-medium text-sm">{label}:</span>
                 
                 {isEditing ? (
-                    <div className="flex items-center space-x-2 flex-1">
-                        {renderEditInput(field, currentValue)}
+                    <div className="flex items-center space-x-2">
+                        <div className="flex-1">
+                            {renderEditInput(field, currentValue)}
+                        </div>
                         <Button size="sm" variant="outline" onClick={() => handleSave(field)} className="h-6 w-6 p-0">
                             <Check className="h-3 w-3" />
                         </Button>
@@ -221,13 +238,13 @@ export function TicketBasicInfo({ ticket, users, types, onTicketUpdate }: Ticket
                         </Button>
                     </div>
                 ) : (
-                    <div className="flex items-center space-x-2 flex-1">
-                        <span className="text-sm">{getDisplayValue(field, currentValue)}</span>
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600 flex-1 break-words">{getDisplayValue(field, currentValue)}</span>
                         <Button
                             size="sm"
                             variant="ghost"
                             onClick={() => handleEdit(field, currentValue)}
-                            className="h-6 w-6 p-0 opacity-50 hover:opacity-100"
+                            className="h-6 w-6 p-0 opacity-50 hover:opacity-100 flex-shrink-0 ml-2"
                         >
                             <Edit2 className="h-3 w-3" />
                         </Button>
@@ -238,22 +255,30 @@ export function TicketBasicInfo({ ticket, users, types, onTicketUpdate }: Ticket
     }
 
     return (
-        <div className="bg-gray-50 p-4 rounded-lg mb-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                {renderField('status', 'Estado', ticket?.status)}
-                {renderField('priority', 'Prioridad', ticket?.priority)}
-                {renderField('technician_id', 'Asignado a', ticket?.technician_id)}
-                {renderField('type_id', 'Tipo', ticket?.type_id)}
-                {renderField('due_date', 'Fecha límite', ticket?.due_date)}
-                
-                <div className="flex items-center space-x-2">
-                    <span className="font-medium min-w-[100px]">Creador:</span>
-                    <span className="text-sm">
-                        {ticket?.end_user 
-                            ? `${ticket.end_user}`
-                            : "Sin creador"
-                        }
-                    </span>
+        <div className="border rounded-lg flex flex-col h-full">
+            <div className="p-3 bg-gray-50 border-b">
+                <h3 className="font-medium text-gray-700 flex items-center">
+                    <Edit2 className="h-4 w-4 mr-2" />
+                    Información a Editar
+                </h3>
+            </div>
+            <div className="p-4 flex-1 overflow-y-auto">
+                <div className="space-y-4 text-sm">
+                    {renderField('status', 'Estado', ticket?.status)}
+                    {renderField('priority', 'Prioridad', ticket?.priority)}
+                    {renderField('technician_id', 'Asignado a', getFieldValue('technician_id'))}
+                    {renderField('type_id', 'Tipo', ticket?.type_id)}
+                    {renderField('due_date', 'Fecha límite', ticket?.due_date)}
+                    
+                    <div className="flex flex-col space-y-1">
+                        <span className="font-medium">Creador:</span>
+                        <span className="text-sm text-gray-600">
+                            {ticket?.end_user 
+                                ? `${ticket.end_user}`
+                                : "Sin creador"
+                            }
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>

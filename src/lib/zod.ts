@@ -85,3 +85,22 @@ export const loginSchema = z.object({
         .max(6, { message: "El código debe tener 6 dígitos" })
         .or(z.literal(""))
 });
+
+export const profileSchema = z.object({
+    name: z.string()
+        .min(1, { message: "El nombre es requerido" })
+        .min(2, { message: "El nombre debe tener al menos 2 caracteres" })
+        .max(50, { message: "El nombre no puede tener más de 50 caracteres" })
+        .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s\-]+$/, { message: "Solo se permiten letras, espacios y guiones" }),
+    last_name: z.string()
+        .min(1, { message: "El apellido es requerido" })
+        .min(2, { message: "El apellido debe tener al menos 2 caracteres" })
+        .max(50, { message: "El apellido no puede tener más de 50 caracteres" })
+        .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s\-]+$/, { message: "Solo se permiten letras, espacios y guiones" }),
+    phone_number: z.string()
+        .regex(/^[0-9\s\-+()]*$/, { message: "Solo números, espacios y los siguientes caracteres: - + ( )" })
+        .min(0)
+        .max(15, { message: "El número de teléfono no puede tener más de 15 caracteres" })
+        .optional()
+        .or(z.literal(""))
+});

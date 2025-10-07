@@ -49,7 +49,7 @@ export function TicketResponseForm({
                         placeholder="Escribe tu respuesta aquí..."
                         value={responseText}
                         onChange={(e) => setResponseText(e.target.value)}
-                        className="min-h-[80px] resize-none"
+                        className="min-h-[10px] resize-none w-200"
                         required
                     />
                 </div>

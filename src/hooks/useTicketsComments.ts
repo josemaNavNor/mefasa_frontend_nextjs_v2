@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import Swal from 'sweetalert2';
+import Notiflix from 'notiflix';
 import { eventEmitter } from './useEventListener';
 
 interface TicketComment {
@@ -49,11 +49,7 @@ export function useTicketComments(ticketId?: number) {
       });
 
       if (response.status === 401) {
-        Swal.fire({
-          icon: 'error',
-          title: 'No autorizado',
-          text: 'Sesión expirada. Por favor, inicia sesión nuevamente.',
-        });
+        Notiflix.Notify.failure('Sesión expirada. Por favor, inicia sesión nuevamente.');
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         window.location.href = '/login';
@@ -71,11 +67,7 @@ export function useTicketComments(ticketId?: number) {
       }
     } catch (error) {
       console.error('Error al obtener los comentarios:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Error al cargar los comentarios',
-      });
+      Notiflix.Notify.failure('Error al cargar los comentarios');
       return [];
     } finally {
       setLoading(false);
@@ -87,44 +79,38 @@ export function useTicketComments(ticketId?: number) {
     try {
       const response = await fetch('https://mefasa-backend-nestjs.onrender.com/api/v1/tickets-comments', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         credentials: 'include',
         body: JSON.stringify(commentData),
       });
 
+      if (response.status === 401) {
+        Notiflix.Notify.failure('Sesión expirada. Por favor, inicia sesión nuevamente.');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+        return;
+      }
+
       const data = await response.json();
 
       if (response.ok) {
-        // actualizar estado local inmediatamente
-        setComments((prevComments) => [...prevComments, data]);
+        // En lugar de actualizar el estado local inmediatamente, hacer refetch para obtener datos completos
+        if (ticketId) {
+          await fetchCommentsByTicket(ticketId);
+        }
 
-        // eventos globales
         eventEmitter.emit('data-changed', 'ticket-comments');
         eventEmitter.emit('ticket-comments-updated');
-
-        Swal.fire({
-          icon: 'success',
-          title: 'Comentario creado',
-          text: 'Comentario agregado exitosamente',
-        });
-
+        eventEmitter.emit('ticket-history-updated', ticketId);
+        Notiflix.Notify.success('Respuesta enviada con éxito');
         return data;
       } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error al crear el comentario',
-          text: `${data.message || ''}`,
-        });
+        Notiflix.Notify.failure('Respuesta no enviada');
       }
     } catch (error) {
       console.error('Error al crear el comentario:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Error al crear el comentario',
-      });
+      Notiflix.Notify.failure('Error al crear el comentario');
       throw error;
     } finally {
       setLoading(false);

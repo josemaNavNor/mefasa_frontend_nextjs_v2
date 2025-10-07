@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { useEventListener } from "./useEventListener";
 
 export interface TicketHistoryItem {
     id: number;
@@ -141,6 +142,17 @@ export function useTicketHistory(ticketId?: number) {
             fetchHistory();
         }
     }, [ticketId]);
+
+    // Escuchar eventos de actualización del historial
+    useEventListener('ticket-history-updated', (updatedTicketId: number) => {
+        if (ticketId && updatedTicketId === ticketId) {
+            console.log('Recargando historial para ticket:', ticketId);
+            // Agregar un pequeño delay para que el backend procese el historial
+            setTimeout(() => {
+                fetchHistory();
+            }, 500);
+        }
+    });
 
     return {
         history,

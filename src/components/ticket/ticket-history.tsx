@@ -1,19 +1,33 @@
 "use client"
 
-import { Settings, Clock } from "lucide-react"
+import { Settings, Clock, RefreshCw } from "lucide-react"
 import { TicketHistoryItem } from "@/types/ticket"
+import { useState, useEffect } from "react"
+import { useEventListener } from "@/hooks/useEventListener"
 
 interface TicketHistoryProps {
     history: TicketHistoryItem[]
 }
 
 export function TicketHistory({ history }: TicketHistoryProps) {
+    const [isUpdating, setIsUpdating] = useState(false)
+
+    // Escuchar eventos de actualización del historial para mostrar indicador visual
+    useEventListener('ticket-history-updated', () => {
+        setIsUpdating(true)
+        setTimeout(() => {
+            setIsUpdating(false)
+        }, 1000)
+    })
     return (
-        <div className="w-80 flex flex-col border rounded-lg">
-            <div className="p-3 bg-gray-100 border-b">
-                <h3 className="font-semibold flex items-center">
+        <div className="w-72 flex-shrink-0 flex flex-col border rounded-lg">
+            <div className="p-3 bg-gray-50 border-b">
+                <h3 className="font-medium text-gray-700 flex items-center">
                     <Settings className="h-4 w-4 mr-2" />
                     Historial de Acciones
+                    {isUpdating && (
+                        <RefreshCw className="h-3 w-3 ml-2 animate-spin text-blue-500" />
+                    )}
                 </h3>
             </div>
 
