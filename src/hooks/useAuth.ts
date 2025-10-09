@@ -3,19 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { authService } from '@/lib/auth';
 import Notiflix from 'notiflix';
-
-interface User {
-  id: number;
-  email: string;
-  name: string;
-  role: string;
-}
-
-interface AuthState {
-  user: User | null;
-  loading: boolean;
-  isAuthenticated: boolean;
-}
+import { User, AuthState } from '@/types/use_auth';
 
 export function useAuth() {
   const [state, setState] = useState<AuthState>({
@@ -26,7 +14,7 @@ export function useAuth() {
   
   const router = useRouter();
 
-  // Función para limpiar completamente el estado de autenticación
+  // Limpiar el estado de autenticación
   const clearAuthState = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -40,7 +28,7 @@ export function useAuth() {
     });
   }, []);
 
-  // Función para establecer usuario autenticado
+  // Establecer usuario autenticado
   const setAuthenticatedUser = useCallback((user: User, token: string) => {
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(user));
@@ -95,7 +83,7 @@ export function useAuth() {
         // Si es un usuario diferente, limpiar estado anterior
         if (currentUserId && currentUserId !== response.user.id) {
           clearAuthState();
-          // Pequeño delay para asegurar limpieza
+          // delay para limpieza
           await new Promise(resolve => setTimeout(resolve, 200));
         }
 
@@ -116,13 +104,13 @@ export function useAuth() {
         return { success: false, error: 'Credenciales inválidas' };
       }
     } catch (error) {
-      console.error('Login error:', error);
+      //console.error('Login error:', error);
       Notiflix.Notify.failure('Credenciales inválidas. Por favor, inténtalo de nuevo.');
       return { success: false, error: 'Credenciales inválidas' };
     }
   }, [state.user?.id, clearAuthState, setAuthenticatedUser, router]);
 
-  // Función de logout
+  // Cerrar sesion
   const logout = useCallback(() => {
     authService.logout();
     clearAuthState();
@@ -132,7 +120,7 @@ export function useAuth() {
     }, 100);
   }, [clearAuthState, router]);
 
-  // Funciones helper para verificar roles
+  // helpers para verificar roles
   const hasRole = useCallback((roles: string | string[]): boolean => {
     if (!state.user) return false;
     

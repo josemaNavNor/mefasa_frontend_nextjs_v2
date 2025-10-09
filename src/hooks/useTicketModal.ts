@@ -6,7 +6,7 @@ import { useTicketHistory } from "@/hooks/useTicketHistory"
 import { useTickets } from "@/hooks/use_tickets"
 import { useUsers } from "@/hooks/useUsersAdmin"
 import { useType } from "@/hooks/use_typeTickets"
-import { toast } from "sonner"
+import Notiflix from 'notiflix';
 import { createHistoryDescription, getCurrentUserId } from "@/lib/ticket-utils"
 import { Ticket } from "@/types/ticket"
 import { eventEmitter } from "./useEventListener"
@@ -40,7 +40,7 @@ export const useTicketModal = (ticket: Ticket | null) => {
 
     const handleTicketUpdate = async (field: string, newValue: any, oldValue: any) => {
         if (!ticket || !currentUserId) {
-            console.error('Missing ticket or currentUserId:', { ticket: !!ticket, currentUserId })
+            console.error('Usuario o ticket no identificado', { ticket: !!ticket, currentUserId })
             return
         }
 
@@ -60,29 +60,28 @@ export const useTicketModal = (ticket: Ticket | null) => {
                     old_values: { [field]: oldValue },
                     new_values: { [field]: newValue }
                 }
-                //console.log('Ticket actualizado, el backend creará el historial automáticamente')
-                eventEmitter.emit('ticket-history-updated', historyData.ticket_id)
+                eventEmitter.emit('Ticket actualizado', historyData.ticket_id)
 
-                toast.success(`Campo actualizado correctamente`)
+                Notiflix.Notify.success(`Campo actualizado correctamente`)
             } else {
-                toast.error('No se pudo actualizar el ticket')
+                Notiflix.Notify.failure('No se pudo actualizar el ticket')
             }
         } catch (error) {
             console.error('Error actualizando ticket:', error)
-            toast.error('Error al actualizar el ticket')
+            Notiflix.Notify.failure('Error al actualizar el ticket')
         }
     }
 
     const handleSubmitResponse = async (e: React.FormEvent) => {
-        e.preventDefault()
+        e.preventDefault();
 
         if (!responseText.trim()) {
-            toast.error('Por favor escribe un comentario')
+            Notiflix.Notify.warning('Por favor escribe un comentario')
             return
         }
 
         if (!currentUserId) {
-            toast.error('Error: Usuario no identificado')
+            Notiflix.Notify.warning('Error: Usuario no identificado')
             return
         }
 
@@ -96,11 +95,11 @@ export const useTicketModal = (ticket: Ticket | null) => {
 
             setResponseText("")
             setSelectedFiles([])
-            toast.success('Comentario enviado correctamente')
+            Notiflix.Notify.success('Comentario enviado correctamente')
 
         } catch (error) {
             console.error('Error al enviar respuesta:', error)
-            toast.error('Error al enviar comentario')
+            Notiflix.Notify.failure('Error al enviar comentario')
         }
     }
 

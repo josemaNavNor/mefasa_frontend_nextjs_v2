@@ -2,70 +2,80 @@ import { useState, useEffect } from "react"
 import Notiflix from 'notiflix';
 import { eventEmitter } from './useEventListener'
 import * as XLSX from 'xlsx'
+import { api } from '@/lib/httpClient'
+import { useSettings } from '@/contexts/SettingsContext'
 
 export function useTickets() {
+    const { autoRefreshEnabled, autoRefreshInterval } = useSettings();
     const [tickets, setTickets] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
+    const [lastTicketCount, setLastTicketCount] = useState(0);
+    const [isPolling, setIsPolling] = useState(false);
 
-    const getAuthHeaders = () => {
-        const token = localStorage.getItem('token');
-        return {
-            'Content-Type': 'application/json',
-            ...(token && { 'Authorization': `Bearer ${token}` })
-        };
-    }
-
-    async function fetchTickets() {
-        setLoading(true);
+    async function fetchTickets(showNotification = false) {
+        if (!isPolling) setLoading(true);
         try {
-            const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/tickets", {
-                method: 'GET',
-                headers: getAuthHeaders(),
-            });
-            if (response.status === 401) {
-                Notiflix.Notify.failure('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                window.location.href = '/login';
-                return;
-            }
-            const data = await response.json();
-
-            if (Array.isArray(data)) {
-                setTickets(data);
-            } else if (data && Array.isArray(data.tickets)) {
-                setTickets(data.tickets);
+            const response = await api.get('/tickets');
+            let newTickets: any[] = [];
+            
+            if (Array.isArray(response)) {
+                newTickets = response;
+            } else if (response && Array.isArray(response.tickets)) {
+                newTickets = response.tickets;
+            } else if (response && typeof response === 'object' && !Array.isArray(response)) {
+                newTickets = [response];
             } else {
-                console.error('Unexpected data structure:', data);
-                setTickets([]);
+                console.error('Unexpected data structure:', response);
+                newTickets = [];
             }
+
+            // Detectar nuevos tickets
+            const currentCount = newTickets.length;
+            console.log('Polling check:', { 
+                currentCount, 
+                lastTicketCount, 
+                showNotification, 
+                isNewTicket: currentCount > lastTicketCount 
+            });
+            
+            if (lastTicketCount > 0 && currentCount > lastTicketCount && showNotification) {
+                const newTicketsCount = currentCount - lastTicketCount;
+                //console.log(`Ticket  ${newTicketsCount} new tickets`);
+                Notiflix.Notify.info(`¡${newTicketsCount} nuevo${newTicketsCount > 1 ? 's' : ''} ticket${newTicketsCount > 1 ? 's' : ''} registrado${newTicketsCount > 1 ? 's' : ''}!`);
+            }
+            
+            // Ordenar tickets por fecha de creación (más nuevo primero)
+            const sortedTickets = newTickets.sort((a, b) => {
+                const dateA = new Date(a.created_at || 0).getTime();
+                const dateB = new Date(b.created_at || 0).getTime();
+                return dateB - dateA; // Orden descendente (más nuevo primero)
+            });
+            
+            setTickets(sortedTickets);
+            setLastTicketCount(currentCount);
+            
         } catch (error) {
             console.error("Error al obtener los tickets:", error);
+            if (!isPolling) {
+                Notiflix.Notify.failure('Error al cargar tickets');
+                setTickets([]);
+            }
         } finally {
-            setLoading(false);
+            if (!isPolling) setLoading(false);
         }
     }
 
     async function fetchTicketById(id: string) {
         setLoading(true);
         try {
-            const response = await fetch(`https://mefasa-backend-nestjs.onrender.com/api/v1/tickets/${id}`, {
-                method: 'GET',
-                headers: getAuthHeaders(),
-            });
-
-            if (response.status === 401) {
-                Notiflix.Notify.failure('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                window.location.href = '/login';
-                return null;
-            }
+            const response = await api.get(`/tickets/${id}`);
             
-            const data = await response.json();
-            return data;
+            return response;
         } catch (error) {
             console.error("Error al obtener el ticket:", error);
+            Notiflix.Notify.failure(
+                error instanceof Error ? `Error al cargar ticket: ${error.message}` : 'Error al cargar ticket'
+            );
             return null;
         } finally {
             setLoading(false);
@@ -75,30 +85,26 @@ export function useTickets() {
     async function updateTicket(id: string, ticket: { summary?: string, description?: string, technician_id?: number, type_id?: number, priority?: string, status?: string, floor_id?: number, area_id?: number, due_date?: string }) {
         setLoading(true);
         try {
-            const response = await fetch(`https://mefasa-backend-nestjs.onrender.com/api/v1/tickets/${id}`, {
-                method: "PATCH",
-                headers: getAuthHeaders(),
-                body: JSON.stringify(ticket),
+            const response = await api.patch(`/tickets/${id}`, ticket);
+
+            setTickets((prevTickets) => {
+                const updatedTickets = prevTickets.map(t => t.id === id ? { ...t, ...response } : t);
+                // Mantener el ordenamiento por fecha de creación (más nuevo primero)
+                return updatedTickets.sort((a, b) => {
+                    const dateA = new Date(a.created_at || 0).getTime();
+                    const dateB = new Date(b.created_at || 0).getTime();
+                    return dateB - dateA; // Orden descendente
+                });
             });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                setTickets((prevTickets) =>
-                    prevTickets.map(t => t.id === id ? { ...t, ...data } : t)
-                );
-                eventEmitter.emit('data-changed', 'tickets');
-                eventEmitter.emit('tickets-updated');
-                eventEmitter.emit('ticket-history-updated', parseInt(id));
-                Notiflix.Notify.success('Ticket actualizado correctamente');
-                return data;
-            } else {
-
-                return null;
-            }
+            eventEmitter.emit('data-changed', 'tickets');
+            eventEmitter.emit('tickets-updated');
+            eventEmitter.emit('ticket-history-updated', parseInt(id));
+            return response;
         } catch (error) {
             console.error("Error al actualizar el ticket:", error);
-            Notiflix.Notify.failure('Error al actualizar el ticket');
+            Notiflix.Notify.failure(
+                error instanceof Error ? `Error al actualizar el ticket: ${error.message}` : 'Error al actualizar el ticket'
+            );
             return null;
         } finally {
             setLoading(false);
@@ -108,23 +114,45 @@ export function useTickets() {
     async function createTicket(ticket: { ticket_number: string, summary: string, description: string, end_user: string, technician_id: number, type_id: number, priority: string, status: string, floor_id: number, area_id: number, due_date: string }) {
         setLoading(true);
         try {
-            const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/tickets", {
-                method: "POST",
-                headers: getAuthHeaders(),
-                body: JSON.stringify(ticket),
-            });
-            const data = await response.json();
+            const response = await api.post('/tickets', ticket);
 
-            if (response.ok) {
-                setTickets((prevTickets) => [...prevTickets, data]);
-                eventEmitter.emit('data-changed', 'tickets');
-                eventEmitter.emit('tickets-updated');
-                Notiflix.Notify.success('Ticket creado correctamente');
-            } else {
-                Notiflix.Notify.failure(data.message || 'Error al crear el ticket');
-            }
+            setTickets((prevTickets) => {
+                const updatedTickets = [...prevTickets, response];
+                // Mantener el ordenamiento por fecha de creación (más nuevo primero)
+                return updatedTickets.sort((a, b) => {
+                    const dateA = new Date(a.created_at || 0).getTime();
+                    const dateB = new Date(b.created_at || 0).getTime();
+                    return dateB - dateA; // Orden descendente
+                });
+            });
+            eventEmitter.emit('data-changed', 'tickets');
+            eventEmitter.emit('tickets-updated');
+            Notiflix.Notify.success('Ticket creado correctamente');
         } catch (error) {
             console.error("Error al crear el ticket:", error);
+            Notiflix.Notify.failure(
+                error instanceof Error ? `Error al crear el ticket: ${error.message}` : 'Error al crear el ticket'
+            );
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function deleteTicket(id: string) {
+        setLoading(true);
+        try {
+            await api.delete(`/tickets/${id}`);
+            setTickets((prevTickets) => prevTickets.filter((ticket) => ticket.id !== id));
+            eventEmitter.emit('data-changed', 'tickets');
+            eventEmitter.emit('tickets-updated');
+            Notiflix.Notify.success('Ticket eliminado correctamente');
+            return true;
+        } catch (error) {
+            console.error("Error al eliminar el ticket:", error);
+            Notiflix.Notify.failure(
+                error instanceof Error ? `Error al eliminar el ticket: ${error.message}` : 'Error al eliminar el ticket: Error desconocido'
+            );
+            return false;
         } finally {
             setLoading(false);
         }
@@ -219,12 +247,43 @@ export function useTickets() {
     };
 
     useEffect(() => {
+        // Cargar tickets inicial
         fetchTickets();
-    }, []);
+        
+        let pollingInterval: NodeJS.Timeout | null = null;
+        
+        // Solo iniciar polling si está habilitado en configuraciones
+        if (autoRefreshEnabled) {
+            setIsPolling(true);
+            console.log(`Starting ticket polling every ${autoRefreshInterval / 1000} seconds`);
+            pollingInterval = setInterval(() => {
+                console.log('Polling for new tickets...');
+                fetchTickets(true); // true para mostrar notificaciones de nuevos tickets
+            }, autoRefreshInterval);
+        } else {
+            setIsPolling(false);
+            console.log('Auto-refresh is disabled');
+        }
+        
+        // Cleanup: detener el polling cuando el componente se desmonte o cambien las configuraciones
+        return () => {
+            setIsPolling(false);
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+            }
+        };
+    }, [autoRefreshEnabled, autoRefreshInterval]);
 
-    return { tickets, loading, createTicket, updateTicket, fetchTicketById, refetch, exportToExcel };
+    return { 
+        tickets, 
+        loading, 
+        createTicket, 
+        updateTicket, 
+        deleteTicket, 
+        fetchTicketById, 
+        refetch, 
+        exportToExcel,
+        isPolling
+    };
 }
 
-function setTypes(data: any[]) {
-    throw new Error("Function not implemented.");
-}

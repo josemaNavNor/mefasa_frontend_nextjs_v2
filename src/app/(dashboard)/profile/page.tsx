@@ -23,7 +23,7 @@ export default function ProfilePage() {
     });
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-    // Cargar datos del perfil en el formulario cuando esté disponible
+    // Cargar datos del perfil en el formulario cuando este disponible
     useEffect(() => {
         if (profile) {
             setFormData({
@@ -93,7 +93,7 @@ export default function ProfilePage() {
         const success = await updateProfile(formData);
         if (success) {
             setIsEditing(false);
-            await refetch(); // Recargar datos del perfil
+            await refetch();
         }
     };
 
@@ -134,7 +134,7 @@ export default function ProfilePage() {
     };
 
     return (
-        <div className="container mx-auto p-6 max-w-4xl">
+        <div className="container mx-auto p-6 max-w-9xl">
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center space-x-3">
                     <User className="h-6 w-6" />

@@ -1,14 +1,16 @@
 "use client";
 import { useUsers } from "@/hooks/useUsersAdmin";
 import { createColumns } from "./columns"
+import { createTicketHandlers } from "./handlers";
 import { DataTable } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useTickets } from "@/hooks/use_tickets";
 import { useType } from "@/hooks/use_typeTickets";
 import { useEventListener } from "@/hooks/useEventListener";
+import { useSettings } from "@/contexts/SettingsContext";
 import { EditTicketDialog } from "@/components/edit-ticket-dialog";
 import { TicketDetailsModal } from "@/components/ticket-details-modal";
 import { Download } from "lucide-react";
@@ -32,11 +34,10 @@ import {
 } from "@/components/ui/select"
 
 export default function TicketsPage() {
-    const { refetch, exportToExcel } = useTickets();
-    const { tickets } = useTickets();
+    const { tickets, createTicket, deleteTicket, refetch, exportToExcel, isPolling } = useTickets();
     const { types } = useType();
     const { users } = useUsers();
-    const { createTicket } = useTickets();
+    const { autoRefreshEnabled } = useSettings();
 
     const [ticket_number] = useState("");
     const [summary, setSummary] = useState("");
@@ -59,64 +60,87 @@ export default function TicketsPage() {
     const [selectedTicket, setSelectedTicket] = useState<any>(null);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
 
-    // Crear columnas con callback de edición
-    const columns = createColumns({
-        onEditTicket: (ticket) => {
-            setEditingTicket(ticket);
-            setShowEditDialog(true);
-        }
+    // Crear handlers
+    const handlers = createTicketHandlers({
+        createTicket,
+        deleteTicket,
+        exportToExcel
     });
 
-    const handleDataChange = useCallback((dataType: string) => {
-        if (dataType === 'roles' || dataType === 'all') {
-            refetch();
-        }
-    }, [refetch]);
+    // Wrapper functions para los handlers
+    const handleDelete = useCallback((ticket: any) => {
+        handlers.handleDelete(ticket);
+    }, [handlers]);
 
-    useEventListener('data-changed', handleDataChange);
-    useEventListener('roles-updated', refetch);
+    const handleEditTicket = useCallback((ticket: any) => {
+        handlers.handleEditTicket(ticket, setEditingTicket, setShowEditDialog);
+    }, [handlers]);
 
-    // Función para manejar clic en fila
-    const handleRowClick = (ticket: any) => {
-        setSelectedTicket(ticket);
-        setShowDetailsModal(true);
-    };
+    const handleRowClick = useCallback((ticket: any) => {
+        handlers.handleRowClick(ticket, setSelectedTicket, setShowDetailsModal);
+    }, [handlers]);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setErrors({});
-
-        await createTicket({
+    const handleSubmit = useCallback(async (e: React.FormEvent) => {
+        const formData = {
             ticket_number,
             summary,
             description,
             end_user,
-            technician_id: Number(technician_id),
-            type_id: Number(type_id),
-            floor_id: Number(floor_id),
-            area_id: Number(area_id),
+            technician_id,
+            type_id,
+            floor_id,
+            area_id,
             priority,
             status,
             due_date
-        });
+        };
 
-        // Reset form
-        setSummary("");
-        setDescription("");
-        setEndUser("");
-        setTechnicianId("");
-        setTypeId("");
-        setFloorId("");
-        setAreaId("");
-        setPriority("");
-        setStatus("");
-        setDueDate("");
-    };
+        const setters = {
+            setSummary,
+            setDescription,
+            setEndUser,
+            setTechnicianId,
+            setTypeId,
+            setFloorId,
+            setAreaId,
+            setPriority,
+            setStatus,
+            setDueDate,
+            setErrors
+        };
+
+        await handlers.handleSubmit(e, formData, setters);
+    }, [handlers, ticket_number, summary, description, end_user, technician_id, type_id, floor_id, area_id, priority, status, due_date]);
+
+    const handleExportToExcel = useCallback(() => {
+        handlers.handleExportToExcel();
+    }, [handlers]);
+
+    // Crear columnas con callbacks de edición y eliminación usando useMemo
+    const columns = useMemo(() => createColumns({
+        onEditTicket: handleEditTicket,
+        onDeleteTicket: handleDelete
+    }), [handleEditTicket, handleDelete]);
+
+    const handleDataChange = useCallback((dataType: string) => {
+        handlers.handleDataChange(dataType, refetch);
+    }, [handlers, refetch]);
+
+    useEventListener('data-changed', handleDataChange);
+    useEventListener('roles-updated', refetch);
 
     return (
         <div className="w-full px-4 py-4">
-            <div className="mb-4">
-                <h1 className="text-4xl font-bold">Tickets</h1>
+            <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <h1 className="text-4xl font-bold">Tickets</h1>
+                    {autoRefreshEnabled && isPolling && (
+                        <div className="flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                            Auto-refresh activo
+                        </div>
+                    )}
+                </div>
             </div>
             <div className="flex gap-2 mb-4">
                 <Sheet>
@@ -253,7 +277,7 @@ export default function TicketsPage() {
             </Sheet>
             <Button 
                 variant="default" 
-                onClick={() => exportToExcel()}
+                onClick={handleExportToExcel}
                 className="ml-2"
             >
                 <Download className="h-4 w-4 mr-2" />

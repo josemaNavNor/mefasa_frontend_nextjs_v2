@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { toast } from "sonner";
+import Notiflix from 'notiflix';
 import { useEventListener } from "./useEventListener";
+import { api } from "@/lib/httpClient";
 
 export interface TicketHistoryItem {
     id: number;
@@ -23,47 +24,27 @@ export function useTicketHistory(ticketId?: number) {
     const [history, setHistory] = useState<TicketHistoryItem[]>([]);
     const [loading, setLoading] = useState(false);
 
-    const getAuthHeaders = () => {
-        const token = localStorage.getItem('token');
-        return {
-            'Content-Type': 'application/json',
-            ...(token && { 'Authorization': `Bearer ${token}` })
-        };
-    };
-
     const fetchHistory = async () => {
-        if (!ticketId) return;
-        
+        if (!ticketId) return; 
         setLoading(true);
+
         try {
-            const response = await fetch(
-                `https://mefasa-backend-nestjs.onrender.com/api/v1/ticket-history/by-ticket/${ticketId}`,
-                {
-                    method: 'GET',
-                    headers: getAuthHeaders(),
-                }
-            );
-
-            if (response.status === 401) {
-                toast.error('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                window.location.href = '/login';
-                return;
-            }
-
-            const data = await response.json();
+            const response = await api.get(`/ticket-history/by-ticket/${ticketId}`);
             
-            if (Array.isArray(data)) {
-                setHistory(data);
+            if (Array.isArray(response)) {
+                setHistory(response);
+            } else if (response && Array.isArray(response.history)) {
+                setHistory(response.history);
+            } else if (response && typeof response === 'object' && !Array.isArray(response)) {
+                setHistory([response]);
             } else {
-                console.error('Unexpected data structure:', data);
+                console.error('Unexpected data structure:', response);
                 setHistory([]);
             }
         } catch (error) {
             console.error("Error al obtener el historial:", error);
             setHistory([]);
-            toast.error('Error al cargar el historial del ticket');
+            Notiflix.Notify.failure('Error al cargar el historial del ticket');
         } finally {
             setLoading(false);
         }
@@ -78,61 +59,22 @@ export function useTicketHistory(ticketId?: number) {
         new_values?: any;
     }) => {
         try {
-            // Validate required fields
+            // Validar campos requeridos
             if (!entry.ticket_id || !entry.action_type || !entry.description) {
-                console.error('Missing required fields for history entry:', entry);
+                console.error('Faltan datos requeridos para la entrada de historial:', entry);
                 throw new Error('Datos requeridos faltantes para la entrada de historial');
             }
 
-            console.log('Creating history entry for ticket:', entry.ticket_id, 'action:', entry.action_type);
-            
-            const headers = getAuthHeaders();
-            const requestBody = JSON.stringify(entry);
-            
-            const response = await fetch(
-                'https://mefasa-backend-nestjs.onrender.com/api/v1/ticket-history',
-                {
-                    method: 'POST',
-                    headers: headers,
-                    body: requestBody,
-                }
-            );
+            const response = await api.post('/ticket-history', entry);
 
-            console.log('History response status:', response.status);
-
-            if (response.ok) {
-                const result = await response.json();
-                console.log('History entry created successfully:', result);
-                // Refetch history after creating new entry
-                await fetchHistory();
-                return result;
-            } else {
-                // Get response text first to see what the server is actually returning
-                const responseText = await response.text();
-                console.error('Raw server response:', responseText);
-                
-                let errorData;
-                try {
-                    errorData = JSON.parse(responseText);
-                } catch (parseError) {
-                    console.error('Failed to parse error response as JSON:', parseError);
-                    errorData = { message: `Server returned: ${responseText}` };
-                }
-                
-                console.error('Error creating history entry:', {
-                    status: response.status,
-                    statusText: response.statusText,
-                    url: response.url,
-                    error: errorData,
-                    requestBody: entry
-                });
-                
-                // Don't show toast for history errors since they're not critical
-                throw new Error(`Error del servidor (${response.status}): ${errorData.message || 'Error desconocido'}`);
-            }
+            await fetchHistory();
+            Notiflix.Notify.success('Entrada de historial creada correctamente');
+            return response;
         } catch (error) {
-            console.error('Error creating history entry:', error);
-            // Re-throw so the calling function can handle it
+            console.error('Error al crear la entrada de historial:', error);
+            Notiflix.Notify.failure(
+                error instanceof Error ? `Error al crear la entrada de historial: ${error.message}` : 'Error al crear la entrada de historial'
+            );
             throw error;
         }
     };

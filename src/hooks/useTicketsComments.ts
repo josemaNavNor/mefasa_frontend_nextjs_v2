@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import Notiflix from 'notiflix';
 import { eventEmitter } from './useEventListener';
+import { api } from '@/lib/httpClient'
+
 
 interface TicketComment {
   id: string;
@@ -31,44 +33,26 @@ interface CreateCommentData {
 export function useTicketComments(ticketId?: number) {
   const [comments, setComments] = useState<TicketComment[]>([]);
   const [loading, setLoading] = useState(false);
-
-  const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
-    return {
-      'Content-Type': 'application/json',
-      ...(token && { 'Authorization': `Bearer ${token}` })
-    };
-  }
-
+  
   async function fetchCommentsByTicket(id: number) {
     setLoading(true);
     try {
-      const response = await fetch(`https://mefasa-backend-nestjs.onrender.com/api/v1/tickets-comments/by-ticket/${id}`, {
-        method: 'GET',
-        headers: getAuthHeaders(),
-      });
+      const response = await api.get(`/tickets-comments/by-ticket/${id}`);
 
-      if (response.status === 401) {
-        Notiflix.Notify.failure('Sesión expirada. Por favor, inicia sesión nuevamente.');
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = '/login';
-        return;
-      }
-
-      const data = await response.json();
-      if (Array.isArray(data)) {
-        setComments(data);
-      } else if (data && Array.isArray(data.floors)) {
-        setComments(data.floors);
+      if (Array.isArray(response)) {
+        setComments(response);
+      } else if (response && Array.isArray(response.comments)) {
+        setComments(response.comments);
+      } else if (response && typeof response === 'object' && !Array.isArray(response)) {
+        setComments([response]);
       } else {
-        console.error('Unexpected data structure:', data);
+        console.error('Unexpected data structure:', response);
         setComments([]);
       }
     } catch (error) {
       console.error('Error al obtener los comentarios:', error);
       Notiflix.Notify.failure('Error al cargar los comentarios');
-      return [];
+      setComments([]);
     } finally {
       setLoading(false);
     }
@@ -77,40 +61,22 @@ export function useTicketComments(ticketId?: number) {
   async function createComment(commentData: CreateCommentData) {
     setLoading(true);
     try {
-      const response = await fetch('https://mefasa-backend-nestjs.onrender.com/api/v1/tickets-comments', {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        credentials: 'include',
-        body: JSON.stringify(commentData),
-      });
+      const response = await api.post('/tickets-comments', commentData);
 
-      if (response.status === 401) {
-        Notiflix.Notify.failure('Sesión expirada. Por favor, inicia sesión nuevamente.');
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = '/login';
-        return;
+      if (ticketId) {
+        await fetchCommentsByTicket(ticketId);
       }
 
-      const data = await response.json();
-
-      if (response.ok) {
-        // En lugar de actualizar el estado local inmediatamente, hacer refetch para obtener datos completos
-        if (ticketId) {
-          await fetchCommentsByTicket(ticketId);
-        }
-
-        eventEmitter.emit('data-changed', 'ticket-comments');
-        eventEmitter.emit('ticket-comments-updated');
-        eventEmitter.emit('ticket-history-updated', ticketId);
-        Notiflix.Notify.success('Respuesta enviada con éxito');
-        return data;
-      } else {
-        Notiflix.Notify.failure('Respuesta no enviada');
-      }
+      eventEmitter.emit('data-changed', 'ticket-comments');
+      eventEmitter.emit('ticket-comments-updated');
+      eventEmitter.emit('ticket-history-updated', ticketId);
+      Notiflix.Notify.success('Respuesta enviada con éxito');
+      return response;
     } catch (error) {
       console.error('Error al crear el comentario:', error);
-      Notiflix.Notify.failure('Error al crear el comentario');
+      Notiflix.Notify.failure(
+        error instanceof Error ? `Error al crear el comentario: ${error.message}` : 'Error al crear el comentario'
+      );
       throw error;
     } finally {
       setLoading(false);

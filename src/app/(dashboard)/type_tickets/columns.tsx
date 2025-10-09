@@ -1,7 +1,7 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { MoreHorizontal } from "lucide-react"
+import { MoreHorizontal, Edit, Trash2 } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import {
@@ -13,39 +13,14 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ArrowUpDown } from "lucide-react"
+import { TicketType } from "@/types/ticketType"
 
-export type TicketType = {
-    id: string,
-    type_name: string,
-    description: string,
-    created_at: string,
-    updated_at: string,
-    deleted_at: string,
+interface ColumnsProps {
+    onEdit?: (ticketType: TicketType) => void;
+    onDelete?: (ticketType: TicketType) => void;
 }
 
-export const columns: ColumnDef<TicketType>[] = [
-    {
-        id: "select",
-        header: ({ table }) => (
-            <Checkbox
-                checked={
-                    table.getIsAllPageRowsSelected() ||
-                    (table.getIsSomePageRowsSelected() && "indeterminate")
-                }
-                onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-                aria-label="Select all"
-            />
-        ),
-        cell: ({ row }) => (
-            <Checkbox
-                checked={row.getIsSelected()}
-                onCheckedChange={(value) => row.toggleSelected(!!value)}
-                aria-label="Select row"
-            />
-        ),
-        enableSorting: false,
-        enableHiding: false,
-    },
+export const createColumns = ({ onEdit, onDelete }: ColumnsProps = {}): ColumnDef<TicketType>[] => [
     {
         accessorKey: "type_name",
         header: ({ column }) => {
@@ -150,9 +125,30 @@ export const columns: ColumnDef<TicketType>[] = [
                         >
                             Copiar ID del tipo
                         </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        {onEdit && (
+                            <DropdownMenuItem
+                                onClick={() => onEdit(ticketType)}
+                            >
+                                <Edit className="h-4 w-4 mr-2" />
+                                Editar tipo
+                            </DropdownMenuItem>
+                        )}
+                        {onDelete && (
+                            <DropdownMenuItem
+                                onClick={() => onDelete(ticketType)}
+                                className="text-red-600 focus:text-red-600"
+                            >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Eliminar tipo
+                            </DropdownMenuItem>
+                        )}
                     </DropdownMenuContent>
                 </DropdownMenu>
             )
         },
     },
 ]
+
+// Mantener compatibilidad con la exportación anterior
+export const columns = createColumns();

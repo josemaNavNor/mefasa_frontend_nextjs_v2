@@ -1,11 +1,12 @@
 "use client";
 import { useType } from "@/hooks/use_typeTickets";
-import { columns } from "./columns"
+import { createColumns } from "./columns"
+import Notiflix from 'notiflix';
 import { DataTable } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { ticketTypeSchema } from "@/lib/zod";
 import { useEventListener } from "@/hooks/useEventListener";
 import {
@@ -20,10 +21,17 @@ import {
 } from "@/components/ui/sheet"
 
 export default function TypeTicketsPage() {
-    const { types, createTicketType, refetch } = useType();
+    const { types, createTicketType, updateTicketType, deleteTicketType, refetch } = useType();
     const [description, setDescription] = useState("");
     const [type_name, setTicketTypeName] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    
+    // Estados para editar tipo de ticket
+    const [editingType, setEditingType] = useState<any>(null);
+    const [editTypeName, setEditTypeName] = useState("");
+    const [editDescription, setEditDescription] = useState("");
+    const [editErrors, setEditErrors] = useState<{ [key: string]: string }>({});
+    const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
 
     // Escuchar eventos de cambios en tipos de tickets
     const handleDataChange = useCallback((dataType: string) => {
@@ -34,6 +42,43 @@ export default function TypeTicketsPage() {
 
     useEventListener('data-changed', handleDataChange);
     useEventListener('types-updated', refetch);
+
+    // Función para manejar la edición
+    const handleEdit = useCallback((ticketType: any) => {
+        setEditingType(ticketType);
+        setEditTypeName(ticketType.type_name);
+        setEditDescription(ticketType.description);
+        setEditErrors({});
+        setIsEditSheetOpen(true);
+    }, []);
+
+    // Función para manejar la eliminación
+    const handleDelete = useCallback((ticketType: any) => {
+        Notiflix.Confirm.show(
+            'Confirmar eliminación',
+            `¿Estás seguro de que quieres eliminar el tipo de ticket "${ticketType.type_name}"?`,
+            'Eliminar',
+            'Cancelar',
+            async () => {
+                await deleteTicketType(ticketType.id);
+            },
+            () => {
+                // Cancelado, no hacer nada
+            },
+            {
+                width: '320px',
+                borderRadius: '8px',
+                titleColor: '#f43f5e',
+                okButtonBackground: '#f43f5e',
+            }
+        );
+    }, [deleteTicketType]);
+
+    // Crear las columnas con las funciones handleEdit y handleDelete usando useMemo
+    const columns = useMemo(() => createColumns({ 
+        onEdit: handleEdit, 
+        onDelete: handleDelete 
+    }), [handleEdit, handleDelete]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -59,6 +104,34 @@ export default function TypeTicketsPage() {
         setDescription("");
         setErrors({});
     }
+
+    const handleEditSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setEditErrors({});
+        
+        const result = ticketTypeSchema.safeParse({ type_name: editTypeName, description: editDescription });
+
+        if (!result.success) {
+            const formatted = result.error.format();
+            setEditErrors({
+                type_name: formatted.type_name?._errors[0] || '',
+                description: formatted.description?._errors[0] || '',
+            });
+            return;
+        }
+
+        await updateTicketType(editingType.id, {
+            type_name: editTypeName,
+            description: editDescription,
+        });
+
+        // Limpiar formulario y cerrar modal
+        setEditingType(null);
+        setEditTypeName("");
+        setEditDescription("");
+        setEditErrors({});
+        setIsEditSheetOpen(false);
+    };
 
     return (
         <div className="w-full px-4 py-4">
@@ -112,6 +185,53 @@ export default function TypeTicketsPage() {
                     </form>
                 </SheetContent>
             </Sheet>
+
+            {/* Sheet para editar tipo de ticket */}
+            <Sheet open={isEditSheetOpen} onOpenChange={setIsEditSheetOpen}>
+                <SheetContent>
+                    <SheetHeader>
+                        <SheetTitle>Editar Tipo de Ticket</SheetTitle>
+                        <SheetDescription>
+                            Modifica los campos necesarios para actualizar el tipo de ticket.
+                        </SheetDescription>
+                    </SheetHeader>
+                    <form onSubmit={handleEditSubmit} className="grid flex-1 auto-rows-min gap-6 px-4">
+                        <div className="grid gap-3">
+                            <Label htmlFor="edit_type_name">Tipo de Ticket</Label>
+                            <Input
+                                id="edit_type_name"
+                                type="text"
+                                autoComplete="off"
+                                placeholder="Nombre del tipo de ticket"
+                                value={editTypeName}
+                                onChange={(e) => setEditTypeName(e.target.value)}
+                                className={`w-full border-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder:text-gray-300${editErrors.type_name ? ' border-red-500' : ' border-gray-200'}`}
+                            />
+                            {editErrors.type_name && <p className="text-red-500 text-xs mt-1">{editErrors.type_name}</p>}
+                        </div>
+                        <div className="grid gap-3">
+                            <Label htmlFor="edit_description">Descripción</Label>
+                            <Input
+                                id="edit_description"
+                                type="text"
+                                autoComplete="off"
+                                placeholder="Descripción del tipo de ticket"
+                                value={editDescription}
+                                onChange={(e) => setEditDescription(e.target.value)}
+                                className={`w-full border-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder:text-gray-300${editErrors.description ? ' border-red-500' : ' border-gray-200'}`}
+                            />
+                            {editErrors.description && <p className="text-red-500 text-xs mt-1">{editErrors.description}</p>}
+                        </div>
+                        <SheetFooter>
+                            <Button type="submit">Actualizar Tipo de Ticket</Button>
+                            <SheetClose asChild>
+                                <Button variant="outline">Cerrar</Button>
+                            </SheetClose>
+                        </SheetFooter>
+                    </form>
+                </SheetContent>
+            </Sheet>
+
             <DataTable columns={columns} data={types} />
         </div>
     );

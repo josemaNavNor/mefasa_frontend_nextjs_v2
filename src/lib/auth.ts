@@ -34,13 +34,8 @@ class AuthService {
   }
 
   async logout() {
-    // Limpiar localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    
-    // Limpiar sessionStorage también por si acaso
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('user');
   }
 
   getToken(): string | null {

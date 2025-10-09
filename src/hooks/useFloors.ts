@@ -1,43 +1,17 @@
 import { useState, useEffect } from "react"
-import Swal from 'sweetalert2'
+import Notiflix from 'notiflix';
 import { eventEmitter } from './useEventListener'
+import { api } from '@/lib/httpClient'
 
 export function useFloors() {
     const [floors, setFloors] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
 
-    const getAuthHeaders = () => {
-        const token = localStorage.getItem('token');
-        return {
-            'Content-Type': 'application/json',
-            ...(token && { 'Authorization': `Bearer ${token}` })
-        };
-    };
-
     async function fetchFloors() {
         setLoading(true);
         try {
-            const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/floors", {
-                method: 'GET',
-                headers: getAuthHeaders(),
-            });
-            
-            if (response.status === 401) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'No autorizado',
-                    text: 'Sesión expirada. Por favor, inicia sesión nuevamente.',
-                });
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                window.location.href = '/login';
-                return;
-            }
-            
-            const data = await response.json();
-            
-            // Manejo seguro de la respuesta
-            if (Array.isArray(data)) {
+            const data = await api.get('/floors');
+            if(Array.isArray(data)){
                 setFloors(data);
             } else if (data && Array.isArray(data.floors)) {
                 setFloors(data.floors);
@@ -46,7 +20,6 @@ export function useFloors() {
                 setFloors([]);
             }
         } catch (error) {
-            console.error("Error al obtener las plantas:", error);
             setFloors([]);
         } finally {
             setLoading(false);
@@ -56,51 +29,58 @@ export function useFloors() {
     async function createFloor(floor: { floor_name: string, description: string }) {
         setLoading(true);
         try {
-            const response = await fetch("https://mefasa-backend-nestjs.onrender.com/api/v1/floors", {
-                method: "POST",
-                headers: getAuthHeaders(),
-                body: JSON.stringify(floor),
-            });
-            
-            if (response.status === 401) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'No autorizado',
-                    text: 'Sesión expirada. Por favor, inicia sesión nuevamente.',
-                });
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                window.location.href = '/login';
-                return;
-            }
-            
-            const data = await response.json();
-            
-            if (response.ok) {
-                setFloors((prevFloors) => [...prevFloors, data]);
-                
-                eventEmitter.emit('data-changed', 'floors');
-                eventEmitter.emit('floors-updated');
-                
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Planta creada',
-                    text: `${data.message}`,
-                });
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error al crear la planta',
-                    text: `${data.message || ''}`,
-                });
-            }
+            const response = await api.post('/floors', floor);
+            setFloors((prevFloors) => [...prevFloors, response]);
+            eventEmitter.emit('data-changed', 'floors');
+            eventEmitter.emit('floors-updated');
+            Notiflix.Notify.success('Planta creada exitosamente');
         } catch (error) {
-            console.error("Error al crear la planta:", error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error al crear la planta',
-            });
+            console.error("Error al crear el piso:", error);
+            Notiflix.Notify.failure(
+                error instanceof Error ? `Error al crear el piso: ${error.message}` : 'Error al crear el piso: Error desconocido'
+            );
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function updateFloor(id: number, floor: { floor_name?: string, description?: string }) {
+        setLoading(true);
+        try {
+            const response = await api.patch(`/floors/${id}`, floor);
+            setFloors((prevFloors) =>
+                prevFloors.map((f) => (f.id === id ? { ...f, ...response } : f))
+            );
+            eventEmitter.emit('data-changed', 'floors');
+            eventEmitter.emit('floors-updated');
+            Notiflix.Notify.success('Planta actualizada correctamente');
+            return response;
+        } catch (error) {
+            console.error("Error al actualizar la planta:", error);
+            Notiflix.Notify.failure(
+                error instanceof Error ? `Error al actualizar la planta: ${error.message}` : 'Error al actualizar la planta: Error desconocido'
+            );
+            return null;
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function deleteFloor(id: number) {
+        setLoading(true);
+        try {
+            await api.delete(`/floors/${id}`);
+            setFloors((prevFloors) => prevFloors.filter((floor) => floor.id !== id));
+            eventEmitter.emit('data-changed', 'floors');
+            eventEmitter.emit('floors-updated');
+            Notiflix.Notify.success('Planta eliminada correctamente');
+            return true;
+        } catch (error) {
+            console.error("Error al eliminar la planta:", error);
+            Notiflix.Notify.failure(
+                error instanceof Error ? `Error al eliminar la planta: ${error.message}` : 'Error al eliminar la planta: Error desconocido'
+            );
+            return false;
         } finally {
             setLoading(false);
         }
@@ -114,5 +94,5 @@ export function useFloors() {
         fetchFloors();
     }, []);
 
-    return { floors, loading, createFloor, refetch };
+    return { floors, loading, createFloor, refetch, updateFloor, deleteFloor };
 }

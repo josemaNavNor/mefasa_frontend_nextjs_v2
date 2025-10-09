@@ -113,7 +113,7 @@ export function AppSidebar() {
                                 </DropdownMenuItem>
                                 <DropdownMenuItem>
                                     <Settings className="mr-2 h-4 w-4" />
-                                    <span>Configuración</span>
+                                    <a href="/settings">Configuración</a>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={handleSignOut}>
                                     <LogOut className="mr-2 h-4 w-4" />

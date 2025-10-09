@@ -1,6 +1,7 @@
 "use client";
 import { useUsers } from "@/hooks/useUsersAdmin";
 import { createColumns } from "./columns"
+import Notiflix from 'notiflix';
 import { DataTable } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -30,7 +31,7 @@ import {
 } from "@/components/ui/select"
 
 export default function UsersPage() {
-    const { users, createUser, updateUser, refetch } = useUsers();
+    const { users, createUser, updateUser, deleteUser, refetch } = useUsers();
     const { roles } = useRoles();
     
     // Estados para crear usuario
@@ -66,8 +67,32 @@ export default function UsersPage() {
         setIsEditSheetOpen(true);
     }, []);
 
-    // Crear las columnas con la función handleEdit usando useMemo
-    const columns = useMemo(() => createColumns({ onEdit: handleEdit }), [handleEdit]);
+    const handleDelete = useCallback((user: any) => {
+        Notiflix.Confirm.show(
+            'Confirmar eliminación',
+            `¿Estás seguro de que quieres eliminar al usuario "${user.name} ${user.last_name}"?`,
+            'Eliminar',
+            'Cancelar',
+            async () => {
+                await deleteUser(user.id);
+            },
+            () => {
+                // Cancelado, no hacer nada
+            },
+            {
+                width: '320px',
+                borderRadius: '8px',
+                titleColor: '#f43f5e',
+                okButtonBackground: '#f43f5e',
+            }
+        );
+    }, [deleteUser]);
+
+    // Crear las columnas con las funciones handleEdit y handleDelete usando useMemo
+    const columns = useMemo(() => createColumns({ 
+        onEdit: handleEdit, 
+        onDelete: handleDelete 
+    }), [handleEdit, handleDelete]);
 
     // Escuchar eventos de cambios en usuarios
     const handleDataChange = useCallback((dataType: string) => {

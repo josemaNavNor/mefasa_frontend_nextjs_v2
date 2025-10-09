@@ -9,12 +9,8 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Calendar as CalendarIcon, Edit2, Check, X as XIcon } from "lucide-react"
-import { format } from "date-fns"
-import { es } from "date-fns/locale"
-import { cn } from "@/lib/utils"
+import { Edit2, Check, X as XIcon } from "lucide-react"
+import { SimpleDatePicker } from "@/components/ui/simple-date-picker"
 import { Ticket, User, TicketType } from "@/types/ticket"
 
 interface TicketBasicInfoProps {
@@ -34,31 +30,32 @@ export function TicketBasicInfo({ ticket, users, types, onTicketUpdate }: Ticket
         setTempValues({ ...tempValues, [field]: currentValue })
     }
 
+    // Guardar el cambio y llamar al callback
     const handleSave = async (field: string) => {
         const oldValue = getFieldValue(field)
         const newValue = tempValues[field]
-        
+
         if (oldValue !== newValue) {
             await onTicketUpdate(field, newValue, oldValue)
-            // Los eventos se emiten desde useTickets.updateTicket(), no necesitamos duplicarlos aquí
         }
-        
+
         setEditingField(null)
         setTempValues({})
     }
 
+    // Cancelar la edición
     const handleCancel = () => {
         setEditingField(null)
         setTempValues({})
         setCalendarOpen(false)
     }
 
+    // Obtener el valor actual del ticket para un campo dado
     const getFieldValue = (field: string) => {
         switch (field) {
             case 'status': return ticket?.status
             case 'priority': return ticket?.priority
-            case 'technician_id': 
-                // Priorizar technician_id si existe, sino usar technician.id
+            case 'technician_id':
                 return ticket?.technician_id || ticket?.technician?.id || null
             case 'type_id': return ticket?.type_id
             case 'due_date': return ticket?.due_date
@@ -66,10 +63,11 @@ export function TicketBasicInfo({ ticket, users, types, onTicketUpdate }: Ticket
         }
     }
 
+    // Obtener el valor a mostrar en funcion del campo 
     const getDisplayValue = (field: string, value: any) => {
         switch (field) {
             case 'technician_id':
-                // Si value es un ID (número), buscar en la lista de users
+                // Si value es un numero, busca en la lista de users
                 if (typeof value === 'number' && value !== 0) {
                     const technician = users.find(u => u.id === value)
                     return technician ? `${technician.name} ${technician.last_name}` : 'Sin asignar'
@@ -90,6 +88,7 @@ export function TicketBasicInfo({ ticket, users, types, onTicketUpdate }: Ticket
         }
     }
 
+    // Renderizar el input de edición segun el campo
     const renderEditInput = (field: string, currentValue: any) => {
         const tempValue = tempValues[field] !== undefined ? tempValues[field] : currentValue
 
@@ -124,24 +123,23 @@ export function TicketBasicInfo({ ticket, users, types, onTicketUpdate }: Ticket
 
             case 'technician_id':
                 const canBeTechnician = (user: any) => {
-                    // El backend devuelve 'rol_name' no 'role_name'
                     const roleName = user.role?.rol_name || user.role?.role_name
                     if (!roleName) return false
                     const roleNameLower = roleName.toLowerCase()
-                    const canBe = roleNameLower.includes('técnico') || 
-                           roleNameLower.includes('tecnico') || 
-                           roleNameLower.includes('administrador') ||
-                           roleNameLower.includes('admin')
-                    console.log(`User ${user.name} (${roleName}) can be technician:`, canBe)
+                    const canBe = roleNameLower.includes('técnico') ||
+                        roleNameLower.includes('tecnico') ||
+                        roleNameLower.includes('administrador') ||
+                        roleNameLower.includes('admin')
+                    console.log(`Usuario ${user.name} (${roleName}) puede ser tecnico:`, canBe)
                     return canBe
                 }
 
                 const availableUsers = users.filter(canBeTechnician)
-                console.log('Available users for technician select:', availableUsers)
-                
+                //console.log('Usuario disponible para tecnico:', availableUsers)
+
                 return (
-                    <Select 
-                        value={tempValue?.toString() || (ticket?.technician?.id ? ticket.technician.id.toString() : (ticket?.technician_id ? ticket.technician_id.toString() : '0'))} 
+                    <Select
+                        value={tempValue?.toString() || (ticket?.technician?.id ? ticket.technician.id.toString() : (ticket?.technician_id ? ticket.technician_id.toString() : '0'))}
                         onValueChange={(value) => setTempValues({ ...tempValues, [field]: value === '0' ? null : parseInt(value) })}
                     >
                         <SelectTrigger className="h-8 text-xs">
@@ -164,8 +162,8 @@ export function TicketBasicInfo({ ticket, users, types, onTicketUpdate }: Ticket
 
             case 'type_id':
                 return (
-                    <Select 
-                        value={tempValue?.toString() || ''} 
+                    <Select
+                        value={tempValue?.toString() || ''}
                         onValueChange={(value) => setTempValues({ ...tempValues, [field]: parseInt(value) })}
                     >
                         <SelectTrigger className="h-8 text-xs">
@@ -183,36 +181,14 @@ export function TicketBasicInfo({ ticket, users, types, onTicketUpdate }: Ticket
 
             case 'due_date':
                 return (
-                    <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-                        <PopoverTrigger asChild>
-                            <Button
-                                variant="outline"
-                                className={cn(
-                                    "h-8 text-xs justify-start text-left font-normal",
-                                    !tempValue && "text-muted-foreground"
-                                )}
-                            >
-                                <CalendarIcon className="mr-2 h-3 w-3" />
-                                {tempValue ? format(new Date(tempValue), "PPP", { locale: es }) : "Seleccionar fecha"}
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                                mode="single"
-                                selected={tempValue ? new Date(tempValue) : undefined}
-                                onSelect={(date: Date | undefined) => {
-                                    if (date) {
-                                        setTempValues({ ...tempValues, [field]: date.toISOString().split('T')[0] })
-                                        setCalendarOpen(false)
-                                    }
-                                }}
-                                disabled={(date: Date) => date < new Date()}
-                                initialFocus
-                            />
-                        </PopoverContent>
-                    </Popover>
+                    <SimpleDatePicker
+                        value={tempValue || ''}
+                        onChange={(date: string) => {
+                            setTempValues({ ...tempValues, [field]: date })
+                        }}
+                        minDate={new Date().toISOString().split('T')[0]}
+                    />
                 )
-
             default:
                 return null
         }
@@ -220,11 +196,11 @@ export function TicketBasicInfo({ ticket, users, types, onTicketUpdate }: Ticket
 
     const renderField = (field: string, label: string, currentValue: any) => {
         const isEditing = editingField === field
-        
+
         return (
             <div key={field} className="flex flex-col space-y-2">
                 <span className="font-medium text-sm">{label}:</span>
-                
+
                 {isEditing ? (
                     <div className="flex items-center space-x-2">
                         <div className="flex-1">
@@ -269,11 +245,11 @@ export function TicketBasicInfo({ ticket, users, types, onTicketUpdate }: Ticket
                     {renderField('technician_id', 'Asignado a', getFieldValue('technician_id'))}
                     {renderField('type_id', 'Tipo', ticket?.type_id)}
                     {renderField('due_date', 'Fecha límite', ticket?.due_date)}
-                    
+
                     <div className="flex flex-col space-y-1">
                         <span className="font-medium">Creador:</span>
                         <span className="text-sm text-gray-600">
-                            {ticket?.end_user 
+                            {ticket?.end_user
                                 ? `${ticket.end_user}`
                                 : "Sin creador"
                             }

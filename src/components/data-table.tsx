@@ -12,6 +12,7 @@ import {
     ColumnFiltersState,
     getFilteredRowModel,
 } from "@tanstack/react-table"
+import { Input } from "@/components/ui/input"
 import Loading from "@/components/loading"
 import {
     Table,
@@ -83,7 +84,7 @@ export function DataTable<TData, TValue>({
             <div className="flex items-center">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="ml-auto">
+                        <Button variant="outline" className="ml-auto mb-5">
                             Columnas
                         </Button>
                     </DropdownMenuTrigger>
@@ -136,7 +137,7 @@ export function DataTable<TData, TValue>({
                                     key={row.id}
                                     data-state={row.getIsSelected() && "selected"}
                                     onClick={() => onRowClick?.(row.original)}
-                                    className="cursor-pointer hover:bg-gray-50"
+                                    className="cursor-pointer hover:bg-muted/50 dark:hover:bg-muted/20"
                                 >
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell key={cell.id}>

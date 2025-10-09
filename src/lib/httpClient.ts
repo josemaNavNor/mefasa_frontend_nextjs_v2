@@ -1,4 +1,3 @@
-// Interceptor HTTP para añadir automáticamente el token JWT
 class HttpClient {
   private baseUrl: string;
 
@@ -14,9 +13,8 @@ class HttpClient {
 
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
-      //console.log('Token incluido en request');
     } else {
-      //console.log('No hay token disponible');
+      console.log('No hay token disponible');
     }
 
     return headers;
@@ -24,7 +22,6 @@ class HttpClient {
 
   private async handleResponse(response: Response) {
     if (response.status === 401) {
-      // Token expirado o inválido, limpiar y redirigir al login
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       sessionStorage.removeItem('token');
@@ -35,7 +32,6 @@ class HttpClient {
     }
 
     if (response.status === 403) {
-      // Acceso denegado por rol
       window.location.href = '/unauthorized';
       throw new Error('Acceso denegado');
     }

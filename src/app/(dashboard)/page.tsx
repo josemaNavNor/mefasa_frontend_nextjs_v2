@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useEffect, useState } from 'react';
 
 export default function DashboardHome() {
-  const { user, isAdmin, isTech, isUserFinal, loading } = useAuthContext();
+  const { user, loading } = useAuthContext();
   const [, forceUpdate] = useState({});
 
   // Escuchar cambios en el usuario para forzar re-render
@@ -46,7 +46,7 @@ export default function DashboardHome() {
       <div className="mb-6">
         <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
         <p className="text-gray-600">
-          Bienvenido, <span className="font-semibold">{user?.name}</span> - {user?.role}
+          Bienvenido <span className="font-semibold">{user?.name}</span> - {user?.role}
         </p>
       </div>
 
@@ -58,14 +58,6 @@ export default function DashboardHome() {
           <p><strong>Usuario:</strong> {user?.name}</p>
           <p><strong>Email:</strong> {user?.email}</p>
           <p><strong>Rol:</strong> {user?.role}</p>
-          <p><strong>Permisos:</strong></p>
-          <ul className="ml-4 list-disc space-y-1">
-            {isAdmin && <li>Gestión completa del sistema</li>}
-            {isTech && <li>Gestión de tickets y plantas</li>}
-            {isUserFinal && <li>Creación y seguimiento de tickets</li>}
-            <li>Ver tickets propios</li>
-            <li>Acceso al dashboard</li>
-          </ul>
         </CardContent>
       </Card>
     </div>

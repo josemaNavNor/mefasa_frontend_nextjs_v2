@@ -1,12 +1,12 @@
 "use client";
 import { useFloors } from "@/hooks/useFloors";
-import { columns } from "./columns"
+import { createColumns } from "./columns"
+import { createFloorHandlers } from "./handlers";
 import { DataTable } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useState, useCallback } from "react";
-import { floorSchema } from "@/lib/zod";
+import { useState, useCallback, useMemo } from "react";
 import { useEventListener } from "@/hooks/useEventListener";
 import {
     Sheet,
@@ -20,10 +20,24 @@ import {
 } from "@/components/ui/sheet"
 
 export default function FloorsPage() {
-    const { floors, createFloor, refetch } = useFloors();
+    const { floors, createFloor, updateFloor, deleteFloor, refetch } = useFloors();
     const [floor_name, setFloorName] = useState("");
     const [description, setDescription] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    
+    // Estados para editar planta
+    const [editingFloor, setEditingFloor] = useState<any>(null);
+    const [editFloorName, setEditFloorName] = useState("");
+    const [editDescription, setEditDescription] = useState("");
+    const [editErrors, setEditErrors] = useState<{ [key: string]: string }>({});
+    const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
+
+    // Crear handlers
+    const handlers = createFloorHandlers({
+        createFloor,
+        updateFloor,
+        deleteFloor
+    });
 
     // Escuchar eventos de cambios en plantas
     const handleDataChange = useCallback((dataType: string) => {
@@ -35,30 +49,52 @@ export default function FloorsPage() {
     useEventListener('data-changed', handleDataChange);
     useEventListener('floors-updated', refetch);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setErrors({});
-        const result = floorSchema.safeParse({ floor_name, description });
+    // Wrapper functions para los handlers con los estados
+    const handleEdit = useCallback((floor: any) => {
+        handlers.handleEdit(
+            floor,
+            setEditingFloor,
+            setEditFloorName,
+            setEditDescription,
+            setEditErrors,
+            setIsEditSheetOpen
+        );
+    }, [handlers]);
 
-        if (!result.success) {
-            const formatted = result.error.format();
-            setErrors({
-                floor_name: formatted.floor_name?._errors[0] || '',
-                description: formatted.description?._errors[0] || '',
-            });
-            return;
-        }
-        
-        await createFloor({
+    const handleDelete = useCallback((floor: any) => {
+        handlers.handleDelete(floor);
+    }, [handlers]);
+
+    const handleSubmit = useCallback(async (e: React.FormEvent) => {
+        await handlers.handleSubmit(
+            e,
             floor_name,
             description,
-        });
-        
-        // Limpiar formulario solo si fue exitoso
-        setFloorName("");
-        setDescription("");
-        setErrors({});
-    }
+            setErrors,
+            setFloorName,
+            setDescription
+        );
+    }, [handlers, floor_name, description]);
+
+    const handleEditSubmit = useCallback(async (e: React.FormEvent) => {
+        await handlers.handleEditSubmit(
+            e,
+            editingFloor,
+            editFloorName,
+            editDescription,
+            setEditErrors,
+            setEditingFloor,
+            setEditFloorName,
+            setEditDescription,
+            setIsEditSheetOpen
+        );
+    }, [handlers, editingFloor, editFloorName, editDescription]);
+
+    // Crear las columnas con las funciones handleEdit y handleDelete usando useMemo
+    const columns = useMemo(() => createColumns({ 
+        onEdit: handleEdit, 
+        onDelete: handleDelete 
+    }), [handleEdit, handleDelete]);
 
     return (
         <div className="w-full px-4 py-4">
@@ -112,6 +148,53 @@ export default function FloorsPage() {
                     </form>
                 </SheetContent>
             </Sheet>
+
+            {/* Sheet para editar planta */}
+            <Sheet open={isEditSheetOpen} onOpenChange={setIsEditSheetOpen}>
+                <SheetContent>
+                    <SheetHeader>
+                        <SheetTitle>Editar Planta</SheetTitle>
+                        <SheetDescription>
+                            Modifica los campos necesarios para actualizar la planta.
+                        </SheetDescription>
+                    </SheetHeader>
+                    <form onSubmit={handleEditSubmit} className="grid flex-1 auto-rows-min gap-6 px-4">
+                        <div className="grid gap-3">
+                            <Label htmlFor="edit_floor_name">Nombre</Label>
+                            <Input
+                                id="edit_floor_name"
+                                type="text"
+                                autoComplete="off"
+                                placeholder="Nombre de la planta"
+                                value={editFloorName}
+                                onChange={(e) => setEditFloorName(e.target.value)}
+                                className={`w-full border-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder:text-gray-300${editErrors.floor_name ? ' border-red-500' : ' border-gray-200'}`}
+                            />
+                            {editErrors.floor_name && <p className="text-red-500 text-xs mt-1">{editErrors.floor_name}</p>}
+                        </div>
+                        <div className="grid gap-3">
+                            <Label htmlFor="edit_description">Descripción</Label>
+                            <Input
+                                id="edit_description"
+                                type="text"
+                                autoComplete="off"
+                                placeholder="Descripción de la planta"
+                                value={editDescription}
+                                onChange={(e) => setEditDescription(e.target.value)}
+                                className={`w-full border-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder:text-gray-300${editErrors.description ? ' border-red-500' : ' border-gray-200'}`}
+                            />
+                            {editErrors.description && <p className="text-red-500 text-xs mt-1">{editErrors.description}</p>}
+                        </div>
+                        <SheetFooter>
+                            <Button type="submit">Actualizar Planta</Button>
+                            <SheetClose asChild>
+                                <Button variant="outline">Cerrar</Button>
+                            </SheetClose>
+                        </SheetFooter>
+                    </form>
+                </SheetContent>
+            </Sheet>
+
             <DataTable columns={columns} data={floors} />
         </div>
     );

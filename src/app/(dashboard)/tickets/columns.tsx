@@ -1,7 +1,7 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { MoreHorizontal } from "lucide-react"
+import { MoreHorizontal, Edit, Trash2 } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import {
@@ -13,49 +13,14 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ArrowUpDown } from "lucide-react"
 import Link from "next/link"
-
-export type Ticket = {
-    id: string,
-    ticket_number: string
-    summary: string
-    end_user: string
-    technician: { name: string, last_name: string } | null,
-    type: { type_name: string } | null,
-    priority: string,
-    status: string,
-    due_date: string,
-    created_at: string,
-    updated_at: string,
-    deleted_at: string | null,
-}
+import { TicketPage as Ticket } from "@/types/ticket"
 
 interface ColumnsProps {
     onEditTicket?: (ticket: Ticket) => void;
+    onDeleteTicket?: (ticket: Ticket) => void;
 }
 
-export const createColumns = ({ onEditTicket }: ColumnsProps = {}): ColumnDef<Ticket>[] => [
-    {
-        id: "select",
-        header: ({ table }) => (
-            <Checkbox
-                checked={
-                    table.getIsAllPageRowsSelected() ||
-                    (table.getIsSomePageRowsSelected() && "indeterminate")
-                }
-                onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-                aria-label="Select all"
-            />
-        ),
-        cell: ({ row }) => (
-            <Checkbox
-                checked={row.getIsSelected()}
-                onCheckedChange={(value) => row.toggleSelected(!!value)}
-                aria-label="Select row"
-            />
-        ),
-        enableSorting: false,
-        enableHiding: false,
-    },
+export const createColumns = ({ onDeleteTicket }: ColumnsProps = {}): ColumnDef<Ticket>[] => [
     {
         accessorKey: "ticket_number",
         header: ({ column }) => {
@@ -212,47 +177,17 @@ export const createColumns = ({ onEditTicket }: ColumnsProps = {}): ColumnDef<Ti
         ),
     },
     {
-        accessorKey: "updated_at",
-        header: ({ column }) => {
-            return (
-                <Button
-                    variant="ghost"
-                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                >
-                    Updated At
-                    <ArrowUpDown className="h-4 w-4" />
-                </Button>
-            )
-        },
-        cell: ({ row }) => (
-            <div className="text-left">{row.getValue("updated_at")}</div>
-        ),
-    },
-    {
-        accessorKey: "deleted_at",
-        header: ({ column }) => {
-            return (
-                <Button
-                    variant="ghost"
-                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                >
-                    Deleted At
-                    <ArrowUpDown className="h-4 w-4" />
-                </Button>
-            )
-        },
-        cell: ({ row }) => (
-            <div className="text-center">{row.getValue("deleted_at") ? row.getValue("deleted_at") : "Activo"}</div>
-        ),
-    },
-    {
         id: "actions",
         cell: ({ row }) => {
             const user = row.original
             return (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
+                        <Button 
+                            variant="ghost" 
+                            className="h-8 w-8 p-0"
+                            onClick={(e) => e.stopPropagation()}
+                        >
                             <span className="sr-only">Open menu</span>
                             <MoreHorizontal className="h-4 w-4" />
                         </Button>
@@ -260,19 +195,25 @@ export const createColumns = ({ onEditTicket }: ColumnsProps = {}): ColumnDef<Ti
                     <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuItem
-                            onClick={() => navigator.clipboard.writeText(user.ticket_number)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                navigator.clipboard.writeText(user.ticket_number);
+                            }}
                         >
                             Copiar Numero de ticket
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
-                            <Link href={`/tickets/${user.id}`}>
-                                Ver detalles del ticket
-                            </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onEditTicket?.(user)}>
-                            Editar ticket
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>Eliminar ticket</DropdownMenuItem>
+                        {onDeleteTicket && (
+                            <DropdownMenuItem
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onDeleteTicket(user);
+                                }}
+                                className="text-red-600 focus:text-red-600"
+                            >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Eliminar ticket
+                            </DropdownMenuItem>
+                        )}
                     </DropdownMenuContent>
                 </DropdownMenu>
             )

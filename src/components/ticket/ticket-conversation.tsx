@@ -20,7 +20,6 @@ export function TicketConversation({ ticket, comments, loading }: TicketConversa
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {/* Mensaje inicial del ticket */}
                 <div className="p-3 bg-blue-100 border-l-4 border-blue-400 rounded-lg">
                     <div className="flex justify-between items-start mb-2">
                         <span className="font-medium text-blue-800">

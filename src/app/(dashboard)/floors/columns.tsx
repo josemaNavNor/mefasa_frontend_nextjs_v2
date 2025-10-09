@@ -1,7 +1,7 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { MoreHorizontal } from "lucide-react"
+import { MoreHorizontal, Edit, Trash2 } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 
 import { Button } from "@/components/ui/button"
@@ -14,39 +14,36 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ArrowUpDown } from "lucide-react"
+import { Floor } from "@/types/floor"
 
-export type Floor = {
-    id: string,
-    floor_name: string
-    description: string,
-    created_at: string,
-    updated_at: string,
-    deleted_at: string | 'Activo',
+interface ColumnsProps {
+    onEdit?: (floor: Floor) => void;
+    onDelete?: (floor: Floor) => void;
 }
 
-export const columns: ColumnDef<Floor>[] = [
-    {
-        id: "select",
-        header: ({ table }) => (
-            <Checkbox
-                checked={
-                    table.getIsAllPageRowsSelected() ||
-                    (table.getIsSomePageRowsSelected() && "indeterminate")
-                }
-                onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-                aria-label="Select all"
-            />
-        ),
-        cell: ({ row }) => (
-            <Checkbox
-                checked={row.getIsSelected()}
-                onCheckedChange={(value) => row.toggleSelected(!!value)}
-                aria-label="Select row"
-            />
-        ),
-        enableSorting: false,
-        enableHiding: false,
-    },
+export const createColumns = ({ onEdit, onDelete }: ColumnsProps = {}): ColumnDef<Floor>[] => [
+    // {
+    //     id: "select",
+    //     header: ({ table }) => (
+    //         <Checkbox
+    //             checked={
+    //                 table.getIsAllPageRowsSelected() ||
+    //                 (table.getIsSomePageRowsSelected() && "indeterminate")
+    //             }
+    //             onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+    //             aria-label="Select all"
+    //         />
+    //     ),
+    //     cell: ({ row }) => (
+    //         <Checkbox
+    //             checked={row.getIsSelected()}
+    //             onCheckedChange={(value) => row.toggleSelected(!!value)}
+    //             aria-label="Select row"
+    //         />
+    //     ),
+    //     enableSorting: false,
+    //     enableHiding: false,
+    // },
     {
         accessorKey: "floor_name",
         header: ({ column }) => {
@@ -152,9 +149,29 @@ export const columns: ColumnDef<Floor>[] = [
                             Copy floor ID
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
+                        {onEdit && (
+                            <DropdownMenuItem
+                                onClick={() => onEdit(floor)}
+                            >
+                                <Edit className="h-4 w-4 mr-2" />
+                                Edit floor
+                            </DropdownMenuItem>
+                        )}
+                        {onDelete && (
+                            <DropdownMenuItem
+                                onClick={() => onDelete(floor)}
+                                className="text-red-600 focus:text-red-600"
+                            >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete floor
+                            </DropdownMenuItem>
+                        )}
                     </DropdownMenuContent>
                 </DropdownMenu>
             )
         },
     },
 ]
+
+// Mantener compatibilidad con la exportación anterior
+export const columns = createColumns();

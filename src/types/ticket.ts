@@ -1,5 +1,3 @@
-// Tipos compartidos para los componentes de tickets
-
 export interface TicketComment {
     id: string | number
     body: string
@@ -31,7 +29,7 @@ export interface User {
     last_name: string
     email: string
     role?: {
-        rol_name: string  // El backend devuelve 'rol_name' no 'role_name'
+        rol_name: string  
     }
 }
 
@@ -47,8 +45,8 @@ export interface Ticket {
     description?: string
     status: string
     priority: string
-    technician_id?: number  // Para actualizaciones
-    technician?: {         // Como viene del backend
+    technician_id?: number  
+    technician?: {         
         id: number
         name: string
         last_name: string
@@ -58,3 +56,19 @@ export interface Ticket {
     created_at: string
     end_user: string
 }
+
+export type TicketPage = {
+    id: string,
+    ticket_number: string
+    summary: string
+    end_user: string
+    technician: { name: string, last_name: string } | null,
+    type: { type_name: string } | null,
+    priority: string,
+    status: string,
+    due_date: string,
+    created_at: string,
+    updated_at: string,
+    deleted_at: string | null,
+}
+

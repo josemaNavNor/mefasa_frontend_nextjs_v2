@@ -12,7 +12,6 @@ interface TicketHistoryProps {
 export function TicketHistory({ history }: TicketHistoryProps) {
     const [isUpdating, setIsUpdating] = useState(false)
 
-    // Escuchar eventos de actualización del historial para mostrar indicador visual
     useEventListener('ticket-history-updated', () => {
         setIsUpdating(true)
         setTimeout(() => {

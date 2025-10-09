@@ -1,4 +1,3 @@
-// Utilidades para el manejo de tickets
 export const createHistoryDescription = (field: string, oldValue: any, newValue: any, users: any[], types: any[]) => {
     const fieldName = getFieldDisplayName(field)
     

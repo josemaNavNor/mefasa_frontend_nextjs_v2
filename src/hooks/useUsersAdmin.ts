@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import Swal from 'sweetalert2'
+import Notiflix from 'notiflix';
 import { eventEmitter } from './useEventListener'
 import { api } from '@/lib/httpClient'
 
@@ -10,26 +10,21 @@ export function useUsers() {
     async function fetchUsers() {
         setLoading(true);
         try {
-            const data = await api.get('/users');
-            //console.log('API Response:', data);
-            //console.log('Is Array:', Array.isArray(data));
-            //console.log('Data type:', typeof data);
+            const response = await api.get('/users');
             
-            // Verificar si data es un array, si no, usar data directamente
-            if (Array.isArray(data)) {
-                setUsers(data);
-            } else if (data && Array.isArray(data.users)) {
-                // Si la respuesta tiene estructura { users: [...] }
-                setUsers(data.users);
-            } else if (data && typeof data === 'object') {
-                // Si es un objeto, convertir a array con un elemento
-                setUsers([data]);
+            if (Array.isArray(response)) {
+                setUsers(response);
+            } else if (response && Array.isArray(response.users)) {
+                setUsers(response.users);
+            } else if (response && typeof response === 'object' && !Array.isArray(response)) {
+                setUsers([response]);
             } else {
-                console.error('Unexpected data structure:', data);
+                console.error('Unexpected data structure:', response);
                 setUsers([]);
             }
         } catch (error) {
-            //console.error("Error al obtener los usuarios:", error);
+            console.error('Error fetching users:', error);
+            Notiflix.Notify.failure('Error al cargar usuarios');
             setUsers([]);
         } finally {
             setLoading(false);
@@ -50,27 +45,16 @@ export function useUsers() {
     }) {
         setLoading(true);
         try {
-            const data = await api.post('/users', user);
-            
-            // actualizar estado local inmediatamente
-            setUsers((prevUsers) => [...prevUsers, data]);
-            
-            // eventos globales
+            const response = await api.post('/users', user);
+            setUsers((prevUsers) => [...prevUsers, response]);
             eventEmitter.emit('data-changed', 'users');
             eventEmitter.emit('users-updated');
-            
-            Swal.fire({
-                icon: 'success',
-                title: 'Usuario creado',
-                text: 'Usuario creado exitosamente',
-            });
+            Notiflix.Notify.success('Usuario creado exitosamente');
         } catch (error) {
             console.error("Error al crear el usuario:", error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error al crear el usuario',
-                text: error instanceof Error ? error.message : 'Error desconocido',
-            });
+            Notiflix.Notify.failure(
+                error instanceof Error ? `Error al crear el usuario: ${error.message}` : 'Error al crear el usuario: Error desconocido'
+            );
         } finally {
             setLoading(false);
         }
@@ -90,33 +74,44 @@ export function useUsers() {
     }) {
         setLoading(true);
         try {
-            const data = await api.patch(`/users/${id}`, user);
-            
-            // Actualizar estado local
+            const response = await api.patch(`/users/${id}`, user);
             setUsers((prevUsers) =>
-                prevUsers.map((u) => (u.id === id ? { ...u, ...data } : u))
+                prevUsers.map((u) => (u.id === id ? { ...u, ...response } : u))
             );
-
-            // Eventos globales
             eventEmitter.emit('data-changed', 'users');
             eventEmitter.emit('users-updated');
-
-            Swal.fire({
-                icon: 'success',
-                title: 'Usuario actualizado',
-                text: 'Usuario actualizado exitosamente',
-            });
+            Notiflix.Notify.success('Usuario actualizado correctamente');
+            return response;
         } catch (error) {
             console.error("Error al actualizar el usuario:", error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error al actualizar el usuario',
-                text: error instanceof Error ? error.message : 'Error desconocido',
-            });
+            Notiflix.Notify.failure(
+                error instanceof Error ? `Error al actualizar el usuario: ${error.message}` : 'Error al actualizar el usuario: Error desconocido'
+            );
+            return null;
         } finally {
             setLoading(false);
         }
     };
+
+    async function deleteUser(id: number) {
+        setLoading(true);
+        try {
+            await api.delete(`/users/${id}`);
+            setUsers((prevUsers) => prevUsers.filter((user) => user.id !== id));
+            eventEmitter.emit('data-changed', 'users');
+            eventEmitter.emit('users-updated');
+            Notiflix.Notify.success('Usuario eliminado correctamente');
+            return true;
+        } catch (error) {
+            console.error("Error al eliminar el usuario:", error);
+            Notiflix.Notify.failure(
+                error instanceof Error ? `Error al eliminar el usuario: ${error.message}` : 'Error al eliminar el usuario: Error desconocido'
+            );
+            return false;
+        } finally {
+            setLoading(false);
+        }
+    }
 
     const refetch = () => {
         fetchUsers();
@@ -126,5 +121,5 @@ export function useUsers() {
         fetchUsers();
     }, []);
 
-    return { users, loading, createUser, refetch, updateUser };
+    return { users, loading, createUser, refetch, updateUser, deleteUser };
 }
