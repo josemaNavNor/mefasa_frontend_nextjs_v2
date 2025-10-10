@@ -1,11 +1,6 @@
 import { floorSchema } from "@/lib/zod";
 import Notiflix from 'notiflix';
-
-interface Floor {
-    id: number;
-    floor_name: string;
-    description: string;
-}
+import {FormsFloor as Floor} from "@/types/floor";
 
 interface FloorHandlersProps {
     createFloor: (data: { floor_name: string; description: string }) => Promise<void>;

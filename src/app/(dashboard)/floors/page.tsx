@@ -1,13 +1,11 @@
 "use client";
-import { useFloors } from "@/hooks/useFloors";
 import { createColumns } from "./columns"
-import { createFloorHandlers } from "./handlers";
 import { DataTable } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useState, useCallback, useMemo } from "react";
-import { useEventListener } from "@/hooks/useEventListener";
+import { useMemo } from "react";
+import { useFloorManagement } from "@/hooks/useFloorManagement";
 import {
     Sheet,
     SheetClose,
@@ -20,75 +18,13 @@ import {
 } from "@/components/ui/sheet"
 
 export default function FloorsPage() {
-    const { floors, createFloor, updateFloor, deleteFloor, refetch } = useFloors();
-    const [floor_name, setFloorName] = useState("");
-    const [description, setDescription] = useState("");
-    const [errors, setErrors] = useState<{ [key: string]: string }>({});
-    
-    // Estados para editar planta
-    const [editingFloor, setEditingFloor] = useState<any>(null);
-    const [editFloorName, setEditFloorName] = useState("");
-    const [editDescription, setEditDescription] = useState("");
-    const [editErrors, setEditErrors] = useState<{ [key: string]: string }>({});
-    const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
-
-    // Crear handlers
-    const handlers = createFloorHandlers({
-        createFloor,
-        updateFloor,
-        deleteFloor
-    });
-
-    // Escuchar eventos de cambios en plantas
-    const handleDataChange = useCallback((dataType: string) => {
-        if (dataType === 'floors' || dataType === 'all') {
-            refetch();
-        }
-    }, [refetch]);
-
-    useEventListener('data-changed', handleDataChange);
-    useEventListener('floors-updated', refetch);
-
-    // Wrapper functions para los handlers con los estados
-    const handleEdit = useCallback((floor: any) => {
-        handlers.handleEdit(
-            floor,
-            setEditingFloor,
-            setEditFloorName,
-            setEditDescription,
-            setEditErrors,
-            setIsEditSheetOpen
-        );
-    }, [handlers]);
-
-    const handleDelete = useCallback((floor: any) => {
-        handlers.handleDelete(floor);
-    }, [handlers]);
-
-    const handleSubmit = useCallback(async (e: React.FormEvent) => {
-        await handlers.handleSubmit(
-            e,
-            floor_name,
-            description,
-            setErrors,
-            setFloorName,
-            setDescription
-        );
-    }, [handlers, floor_name, description]);
-
-    const handleEditSubmit = useCallback(async (e: React.FormEvent) => {
-        await handlers.handleEditSubmit(
-            e,
-            editingFloor,
-            editFloorName,
-            editDescription,
-            setEditErrors,
-            setEditingFloor,
-            setEditFloorName,
-            setEditDescription,
-            setIsEditSheetOpen
-        );
-    }, [handlers, editingFloor, editFloorName, editDescription]);
+    const { 
+        floors, 
+        createFloorForm, 
+        editFloorForm, 
+        handleEdit, 
+        handleDelete 
+    } = useFloorManagement();
 
     // Crear las columnas con las funciones handleEdit y handleDelete usando useMemo
     const columns = useMemo(() => createColumns({ 
@@ -112,7 +48,7 @@ export default function FloorsPage() {
                             Completa los campos a continuación para agregar una nueva planta.
                         </SheetDescription>
                     </SheetHeader>
-                    <form onSubmit={handleSubmit} className="grid flex-1 auto-rows-min gap-6 px-4">
+                    <form onSubmit={createFloorForm.handleSubmit} className="grid flex-1 auto-rows-min gap-6 px-4">
                         <div className="grid gap-3">
                             <Label htmlFor="floor_name">Nombre</Label>
                             <Input
@@ -120,11 +56,11 @@ export default function FloorsPage() {
                                 type="text"
                                 autoComplete="off"
                                 placeholder="Nombre de la planta"
-                                value={floor_name}
-                                onChange={(e) => setFloorName(e.target.value)}
-                                className={`w-full border-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder:text-gray-300${errors.floor_name ? ' border-red-500' : ' border-gray-200'}`}
+                                value={createFloorForm.floor_name}
+                                onChange={(e) => createFloorForm.setFloorName(e.target.value)}
+                                className={`w-full border-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder:text-gray-300${createFloorForm.errors.floor_name ? ' border-red-500' : ' border-gray-200'}`}
                             />
-                            {errors.floor_name && <p className="text-red-500 text-xs mt-1">{errors.floor_name}</p>}
+                            {createFloorForm.errors.floor_name && <p className="text-red-500 text-xs mt-1">{createFloorForm.errors.floor_name}</p>}
                         </div>
                         <div className="grid gap-3">
                             <Label htmlFor="description">Descripción</Label>
@@ -133,11 +69,11 @@ export default function FloorsPage() {
                                 type="text"
                                 autoComplete="off"
                                 placeholder="Descripción de la planta"
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                                className={`w-full border-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder:text-gray-300${errors.description ? ' border-red-500' : ' border-gray-200'}`}
+                                value={createFloorForm.description}
+                                onChange={(e) => createFloorForm.setDescription(e.target.value)}
+                                className={`w-full border-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder:text-gray-300${createFloorForm.errors.description ? ' border-red-500' : ' border-gray-200'}`}
                             />
-                            {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
+                            {createFloorForm.errors.description && <p className="text-red-500 text-xs mt-1">{createFloorForm.errors.description}</p>}
                         </div>
                         <SheetFooter>
                             <Button type="submit">Agregar Planta</Button>
@@ -150,7 +86,7 @@ export default function FloorsPage() {
             </Sheet>
 
             {/* Sheet para editar planta */}
-            <Sheet open={isEditSheetOpen} onOpenChange={setIsEditSheetOpen}>
+            <Sheet open={editFloorForm.isEditSheetOpen} onOpenChange={editFloorForm.setIsEditSheetOpen}>
                 <SheetContent>
                     <SheetHeader>
                         <SheetTitle>Editar Planta</SheetTitle>
@@ -158,7 +94,7 @@ export default function FloorsPage() {
                             Modifica los campos necesarios para actualizar la planta.
                         </SheetDescription>
                     </SheetHeader>
-                    <form onSubmit={handleEditSubmit} className="grid flex-1 auto-rows-min gap-6 px-4">
+                    <form onSubmit={editFloorForm.handleEditSubmit} className="grid flex-1 auto-rows-min gap-6 px-4">
                         <div className="grid gap-3">
                             <Label htmlFor="edit_floor_name">Nombre</Label>
                             <Input
@@ -166,11 +102,11 @@ export default function FloorsPage() {
                                 type="text"
                                 autoComplete="off"
                                 placeholder="Nombre de la planta"
-                                value={editFloorName}
-                                onChange={(e) => setEditFloorName(e.target.value)}
-                                className={`w-full border-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder:text-gray-300${editErrors.floor_name ? ' border-red-500' : ' border-gray-200'}`}
+                                value={editFloorForm.editFloorName}
+                                onChange={(e) => editFloorForm.setEditFloorName(e.target.value)}
+                                className={`w-full border-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder:text-gray-300${editFloorForm.editErrors.floor_name ? ' border-red-500' : ' border-gray-200'}`}
                             />
-                            {editErrors.floor_name && <p className="text-red-500 text-xs mt-1">{editErrors.floor_name}</p>}
+                            {editFloorForm.editErrors.floor_name && <p className="text-red-500 text-xs mt-1">{editFloorForm.editErrors.floor_name}</p>}
                         </div>
                         <div className="grid gap-3">
                             <Label htmlFor="edit_description">Descripción</Label>
@@ -179,11 +115,11 @@ export default function FloorsPage() {
                                 type="text"
                                 autoComplete="off"
                                 placeholder="Descripción de la planta"
-                                value={editDescription}
-                                onChange={(e) => setEditDescription(e.target.value)}
-                                className={`w-full border-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder:text-gray-300${editErrors.description ? ' border-red-500' : ' border-gray-200'}`}
+                                value={editFloorForm.editDescription}
+                                onChange={(e) => editFloorForm.setEditDescription(e.target.value)}
+                                className={`w-full border-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder:text-gray-300${editFloorForm.editErrors.description ? ' border-red-500' : ' border-gray-200'}`}
                             />
-                            {editErrors.description && <p className="text-red-500 text-xs mt-1">{editErrors.description}</p>}
+                            {editFloorForm.editErrors.description && <p className="text-red-500 text-xs mt-1">{editFloorForm.editErrors.description}</p>}
                         </div>
                         <SheetFooter>
                             <Button type="submit">Actualizar Planta</Button>

@@ -38,7 +38,8 @@ class HttpClient {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ message: 'Error desconocido' }));
-      throw new Error(error.message || 'Error en la petición');
+      const errorMessage = error.message || `Error ${response.status}: ${response.statusText}`;
+      throw new Error(errorMessage);
     }
 
     return response.json();

@@ -213,8 +213,6 @@ export const createColumns = ({ onEdit, onDelete }: ColumnsProps = {}): ColumnDe
                                 Delete user
                             </DropdownMenuItem>
                         )}
-                        <DropdownMenuItem>View user</DropdownMenuItem>
-                        <DropdownMenuItem>View user details</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             )

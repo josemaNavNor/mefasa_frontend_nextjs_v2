@@ -1,4 +1,4 @@
-import { email, z } from "zod";
+import { z } from "zod";
 
 export const userSchema = z.object({
     name: z.string()
@@ -7,7 +7,8 @@ export const userSchema = z.object({
     last_name: z.string()
         .min(1, { message: "El apellido es requerido" })
         .max(100, { message: "El apellido debe tener menos de 100 caracteres" }),
-    email: email({ message: "Email inválido" })
+    email: z.string()
+        .email({ message: "Email inválido" })
         .min(1, { message: "El email es requerido" }),
     password: z.string()
         .min(1, { message: "La contraseña es requerida" })

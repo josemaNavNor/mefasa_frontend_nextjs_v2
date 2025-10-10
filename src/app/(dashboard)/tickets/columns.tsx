@@ -12,7 +12,6 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ArrowUpDown } from "lucide-react"
-import Link from "next/link"
 import { TicketPage as Ticket } from "@/types/ticket"
 
 interface ColumnsProps {

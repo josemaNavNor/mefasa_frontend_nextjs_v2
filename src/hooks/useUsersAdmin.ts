@@ -84,10 +84,9 @@ export function useUsers() {
             return response;
         } catch (error) {
             console.error("Error al actualizar el usuario:", error);
-            Notiflix.Notify.failure(
-                error instanceof Error ? `Error al actualizar el usuario: ${error.message}` : 'Error al actualizar el usuario: Error desconocido'
-            );
-            return null;
+            const errorMessage = error instanceof Error ? error.message : 'Error al actualizar el usuario: Error desconocido';
+            Notiflix.Notify.failure(errorMessage);
+            throw error; // Re-throw para que el handler pueda manejarlo
         } finally {
             setLoading(false);
         }

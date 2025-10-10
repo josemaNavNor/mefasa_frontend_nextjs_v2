@@ -82,30 +82,14 @@ export default function TicketsPage() {
 
     const handleSubmit = useCallback(async (e: React.FormEvent) => {
         const formData = {
-            ticket_number,
-            summary,
-            description,
-            end_user,
-            technician_id,
-            type_id,
-            floor_id,
-            area_id,
-            priority,
-            status,
-            due_date
+            ticket_number, summary, description, end_user,
+            technician_id, type_id, floor_id, area_id, priority,
+            status, due_date
         };
 
         const setters = {
-            setSummary,
-            setDescription,
-            setEndUser,
-            setTechnicianId,
-            setTypeId,
-            setFloorId,
-            setAreaId,
-            setPriority,
-            setStatus,
-            setDueDate,
+            setSummary, setDescription, setEndUser, setTechnicianId,
+            setTypeId, setFloorId, setAreaId, setPriority, setStatus, setDueDate,
             setErrors
         };
 
@@ -144,9 +128,9 @@ export default function TicketsPage() {
             </div>
             <div className="flex gap-2 mb-4">
                 <Sheet>
-                    <SheetTrigger asChild>
+                    {/* <SheetTrigger asChild>
                         <Button variant="outline">Agregar Ticket</Button>
-                    </SheetTrigger>
+                    </SheetTrigger> */}
                     <SheetContent className="overflow-y-auto">
                         <SheetHeader>
                             <SheetTitle>Agregar Ticket</SheetTitle>
