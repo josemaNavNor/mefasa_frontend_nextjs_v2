@@ -33,9 +33,9 @@ export function useRoles() {
             setRoles((prevRoles) => [...prevRoles, data]);
             eventEmitter.emit('data-changed', 'roles');
             eventEmitter.emit('roles-updated');
-            Notiflix.Notify.success('Rol creado exitosamente');
+            Notiflix.Notify.success(`Rol ${role.rol_name} creado correctamente`);
         } catch (error) {
-            console.error("Error al crear el rol:", error);
+            //console.error("Error al crear el rol:", error);
             Notiflix.Notify.failure(
                 error instanceof Error ? `Error al crear el rol: ${error.message}` : 'Error al crear el rol: Error desconocido'
             );
@@ -53,10 +53,10 @@ export function useRoles() {
             );
             eventEmitter.emit('data-changed', 'roles');
             eventEmitter.emit('roles-updated');
-            Notiflix.Notify.success('Rol actualizado correctamente');
+            Notiflix.Notify.success(`Rol ${role.rol_name ?? ''} actualizado correctamente`);
             return response;
         } catch (error) {
-            console.error("Error al actualizar el rol:", error);
+            //console.error("Error al actualizar el rol:", error);
             Notiflix.Notify.failure(
                 error instanceof Error ? `Error al actualizar el rol: ${error.message}` : 'Error al actualizar el rol: Error desconocido'
             );
@@ -76,7 +76,7 @@ export function useRoles() {
             Notiflix.Notify.success('Rol eliminado correctamente');
             return true;
         } catch (error) {
-            console.error("Error al eliminar el rol:", error);
+            //console.error("Error al eliminar el rol:", error);
             Notiflix.Notify.failure(
                 error instanceof Error ? `Error al eliminar el rol: ${error.message}` : 'Error al eliminar el rol: Error desconocido'
             );

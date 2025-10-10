@@ -89,7 +89,7 @@ export function DataTable<TData, TValue>({
                 {showFilters && (
                     <>
                         <Input
-                            placeholder="Filtrar por número de ticket..."
+                            placeholder="Buscar por número de ticket..."
                             value={(table.getColumn("ticket_number")?.getFilterValue() as string) ?? ""}
                             onChange={(event) =>
                                 table.getColumn("ticket_number")?.setFilterValue(event.target.value)
@@ -97,7 +97,7 @@ export function DataTable<TData, TValue>({
                             className="max-w-sm"
                         />
                         <Input
-                            placeholder="Filtrar por título..."
+                            placeholder="Buscar por título..."
                             value={(table.getColumn("summary")?.getFilterValue() as string) ?? ""}
                             onChange={(event) =>
                                 table.getColumn("summary")?.setFilterValue(event.target.value)

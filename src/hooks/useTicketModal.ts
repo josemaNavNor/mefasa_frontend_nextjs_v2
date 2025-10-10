@@ -95,7 +95,7 @@ export const useTicketModal = (ticket: Ticket | null) => {
 
             setResponseText("")
             setSelectedFiles([])
-            Notiflix.Notify.success('Comentario enviado correctamente')
+            //Notiflix.Notify.success('Comentario enviado correctamente')
 
         } catch (error) {
             console.error('Error al enviar respuesta:', error)

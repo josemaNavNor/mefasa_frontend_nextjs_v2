@@ -69,15 +69,17 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <Card className="w-full max-w-sm">
-        <ImgLogo />
+        <div className="flex justify-center mt-6">
+            <ImgLogo />
+        </div>
         <CardHeader>
           <CardTitle>Iniciar sesion</CardTitle>
           <CardDescription>
             Ingresa tus credenciales para iniciar sesion
           </CardDescription>
-          <CardAction>
+          {/* <CardAction>
             <Button variant="link">Registro</Button>
-          </CardAction>
+          </CardAction> */}
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit}>
@@ -99,12 +101,6 @@ export default function Login() {
               <div className="grid gap-2">
                 <div className="flex items-center">
                   <Label htmlFor="password">Contraseña</Label>
-                  <a
-                    href="#"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
-                    Olvidaste tu contraseña?
-                  </a>
                 </div>
                 <Input 
                   id="password" 
@@ -119,7 +115,7 @@ export default function Login() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="otp">Codigo de verificacion</Label>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center gap-2">
                   <InputOTP 
                     maxLength={6}
                     value={otp}

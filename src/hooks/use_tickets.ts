@@ -31,12 +31,12 @@ export function useTickets() {
 
             // Detectar nuevos tickets
             const currentCount = newTickets.length;
-            console.log('Polling check:', { 
-                currentCount, 
-                lastTicketCount, 
-                showNotification, 
-                isNewTicket: currentCount > lastTicketCount 
-            });
+            // console.log('Polling check:', { 
+            //     currentCount, 
+            //     lastTicketCount, 
+            //     showNotification, 
+            //     isNewTicket: currentCount > lastTicketCount 
+            // });
             
             if (lastTicketCount > 0 && currentCount > lastTicketCount && showNotification) {
                 const newTicketsCount = currentCount - lastTicketCount;
@@ -55,7 +55,7 @@ export function useTickets() {
             setLastTicketCount(currentCount);
             
         } catch (error) {
-            console.error("Error al obtener los tickets:", error);
+            //console.error("Error al obtener los tickets:", error);
             if (!isPolling) {
                 Notiflix.Notify.failure('Error al cargar tickets');
                 setTickets([]);
@@ -72,7 +72,7 @@ export function useTickets() {
             
             return response;
         } catch (error) {
-            console.error("Error al obtener el ticket:", error);
+            //console.error("Error al obtener el ticket:", error);
             Notiflix.Notify.failure(
                 error instanceof Error ? `Error al cargar ticket: ${error.message}` : 'Error al cargar ticket'
             );
@@ -89,7 +89,7 @@ export function useTickets() {
 
             setTickets((prevTickets) => {
                 const updatedTickets = prevTickets.map(t => t.id === id ? { ...t, ...response } : t);
-                // Mantener el ordenamiento por fecha de creación (más nuevo primero)
+                // Ordenamien por fecha de creacio
                 return updatedTickets.sort((a, b) => {
                     const dateA = new Date(a.created_at || 0).getTime();
                     const dateB = new Date(b.created_at || 0).getTime();
@@ -101,7 +101,7 @@ export function useTickets() {
             eventEmitter.emit('ticket-history-updated', parseInt(id));
             return response;
         } catch (error) {
-            console.error("Error al actualizar el ticket:", error);
+            //console.error("Error al actualizar el ticket:", error);
             Notiflix.Notify.failure(
                 error instanceof Error ? `Error al actualizar el ticket: ${error.message}` : 'Error al actualizar el ticket'
             );
@@ -127,9 +127,9 @@ export function useTickets() {
             });
             eventEmitter.emit('data-changed', 'tickets');
             eventEmitter.emit('tickets-updated');
-            Notiflix.Notify.success('Ticket creado correctamente');
+            Notiflix.Notify.success(`Ticket ${ticket.ticket_number} creado correctamente`);
         } catch (error) {
-            console.error("Error al crear el ticket:", error);
+            //console.error("Error al crear el ticket:", error);
             Notiflix.Notify.failure(
                 error instanceof Error ? `Error al crear el ticket: ${error.message}` : 'Error al crear el ticket'
             );
@@ -148,7 +148,7 @@ export function useTickets() {
             Notiflix.Notify.success('Ticket eliminado correctamente');
             return true;
         } catch (error) {
-            console.error("Error al eliminar el ticket:", error);
+            //console.error("Error al eliminar el ticket:", error);
             Notiflix.Notify.failure(
                 error instanceof Error ? `Error al eliminar el ticket: ${error.message}` : 'Error al eliminar el ticket: Error desconocido'
             );
@@ -255,9 +255,8 @@ export function useTickets() {
         // Solo iniciar polling si está habilitado en configuraciones
         if (autoRefreshEnabled) {
             setIsPolling(true);
-            console.log(`Starting ticket polling every ${autoRefreshInterval / 1000} seconds`);
+            console.log(`Empezando polling cada ${autoRefreshInterval / 1000} segundos`);
             pollingInterval = setInterval(() => {
-                console.log('Polling for new tickets...');
                 fetchTickets(true); // true para mostrar notificaciones de nuevos tickets
             }, autoRefreshInterval);
         } else {
