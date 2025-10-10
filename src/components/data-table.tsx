@@ -37,12 +37,16 @@ interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[]
     onRowClick?: (row: TData) => void
+    showFilters?: boolean
+    filterColumns?: string[]
 }
 
 export function DataTable<TData, TValue>({
     columns,
     data,
     onRowClick,
+    showFilters = false,
+    filterColumns = [],
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -81,10 +85,30 @@ export function DataTable<TData, TValue>({
 
     return (
         <div>
-            <div className="flex items-center">
+            <div className={`flex items-center py-4 gap-4 ${!showFilters ? 'justify-end' : ''}`}>
+                {showFilters && (
+                    <>
+                        <Input
+                            placeholder="Filtrar por número de ticket..."
+                            value={(table.getColumn("ticket_number")?.getFilterValue() as string) ?? ""}
+                            onChange={(event) =>
+                                table.getColumn("ticket_number")?.setFilterValue(event.target.value)
+                            }
+                            className="max-w-sm"
+                        />
+                        <Input
+                            placeholder="Filtrar por título..."
+                            value={(table.getColumn("summary")?.getFilterValue() as string) ?? ""}
+                            onChange={(event) =>
+                                table.getColumn("summary")?.setFilterValue(event.target.value)
+                            }
+                            className="max-w-sm"
+                        />
+                    </>
+                )}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="ml-auto mb-5">
+                        <Button variant="outline" className={showFilters ? "ml-auto" : ""}>
                             Columnas
                         </Button>
                     </DropdownMenuTrigger>

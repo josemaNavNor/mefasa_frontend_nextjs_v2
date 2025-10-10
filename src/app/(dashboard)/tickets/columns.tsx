@@ -29,8 +29,8 @@ export const createColumns = ({ onDeleteTicket }: ColumnsProps = {}): ColumnDef<
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Numero de ticket
-                    <ArrowUpDown className="h-4 w-4" />
+                    Número de Ticket
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
             )
         },
@@ -46,8 +46,8 @@ export const createColumns = ({ onDeleteTicket }: ColumnsProps = {}): ColumnDef<
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Titulo
-                    <ArrowUpDown className="h-4 w-4" />
+                    Título
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
             )
         },
@@ -64,7 +64,7 @@ export const createColumns = ({ onDeleteTicket }: ColumnsProps = {}): ColumnDef<
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
                     Creador
-                    <ArrowUpDown className="h-4 w-4" />
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
             )
         },
@@ -81,7 +81,7 @@ export const createColumns = ({ onDeleteTicket }: ColumnsProps = {}): ColumnDef<
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
                     Asignado a
-                    <ArrowUpDown className="h-4 w-4" />
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
             )
         },
@@ -98,8 +98,8 @@ export const createColumns = ({ onDeleteTicket }: ColumnsProps = {}): ColumnDef<
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Tipo de ticket
-                    <ArrowUpDown className="h-4 w-4" />
+                    Tipo de Ticket
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
             )
         },
@@ -117,7 +117,7 @@ export const createColumns = ({ onDeleteTicket }: ColumnsProps = {}): ColumnDef<
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
                     Prioridad
-                    <ArrowUpDown className="h-4 w-4" />
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
             )
         },
@@ -134,7 +134,7 @@ export const createColumns = ({ onDeleteTicket }: ColumnsProps = {}): ColumnDef<
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
                     Estado
-                    <ArrowUpDown className="h-4 w-4" />
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
             )
         },
@@ -150,8 +150,8 @@ export const createColumns = ({ onDeleteTicket }: ColumnsProps = {}): ColumnDef<
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Due Date
-                    <ArrowUpDown className="h-4 w-4" />
+                    Fecha Límite
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
             )
         },
@@ -167,8 +167,8 @@ export const createColumns = ({ onDeleteTicket }: ColumnsProps = {}): ColumnDef<
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Created At
-                    <ArrowUpDown className="h-4 w-4" />
+                    Fecha de Creación
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
             )
         },

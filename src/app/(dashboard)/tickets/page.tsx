@@ -289,6 +289,7 @@ export default function TicketsPage() {
                 columns={columns} 
                 data={tickets} 
                 onRowClick={handleRowClick}
+                showFilters={true}
             />
             
             {/* Dialogo de edicion */}
