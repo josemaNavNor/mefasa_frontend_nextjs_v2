@@ -38,43 +38,50 @@ export const useUserManagement = () => {
     const [editErrors, setEditErrors] = useState<{ [key: string]: string }>({});
     const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
 
-    // Preparar los objetos de estado y acciones
+    // Esto crea un objeto con los estados del formulario de creacion
     const formState: FormState = useMemo(() => ({
         name, last_name, email, phone_number,
         password, confirmPassword, roleId
     }), [name, last_name, email, phone_number, password, confirmPassword, roleId]);
 
+
+    // Esto crea un objeto con las acciones del formulario de creación
     const formActions: FormActions = useMemo(() => ({
         setName, setLastName, setEmail, setPhoneNumber,
         setPassword, setConfirmPassword, setRoleId, setErrors, setIsCreateSheetOpen
     }), []);
 
+    // Esto crea un objeto con los estados del formulario de edición
     const editFormState: EditFormState = useMemo(() => ({
         editName, editLastName, editEmail, editPhoneNumber,
         editPassword, editConfirmPassword, editRoleId
     }), [editName, editLastName, editEmail, editPhoneNumber, editPassword, editConfirmPassword, editRoleId]);
 
+
+    // Esto crea un objeto con las acciones del formulario de edición
     const editFormActions: EditFormActions = useMemo(() => ({
         setEditName, setEditLastName, setEditEmail, setEditPhoneNumber,
         setEditPassword, setEditConfirmPassword, setEditRoleId, 
         setEditErrors, setEditingUser, setIsEditSheetOpen
     }), []);
 
+    // Esto crea un objeto con los handlers de usuario
     const userHandlers: UserHandlersProps = useMemo(() => ({
         createUser, updateUser, deleteUser
     }), [createUser, updateUser, deleteUser]);
 
-    // Crear los handlers
+    // Esto crea los handlers para editar y eliminar usuarios
     const handleEdit = useCallback(createHandleEdit(editFormActions), [editFormActions]);
     const handleDelete = useCallback(createHandleDelete(userHandlers), [userHandlers]);
 
-    // Escuchar eventos de cambios en usuarios
+    // Esto hace que al recibir el evento data-changed o users-updated se refresquen los usuarios
     const handleDataChange = useCallback((dataType: string) => {
         if (dataType === 'users' || dataType === 'all') {
             refetch();
         }
     }, [refetch]);
 
+    // Esto crea los listeners para los eventos de cambios en los usuarios
     useEventListener('data-changed', handleDataChange);
     useEventListener('users-updated', refetch);
 
@@ -84,12 +91,13 @@ export const useUserManagement = () => {
         [userHandlers, formState, formActions]
     );
 
+    // Crear el handler para el formulario de edicion
     const handleEditSubmit = useCallback(
         createHandleEditSubmit(userHandlers, editFormState, editFormActions, editingUser),
         [userHandlers, editFormState, editFormActions, editingUser]
     );
 
-    // Estados del formulario de creación
+    // Estados del formulario de creacion
     const createUserForm = {
         name, setName,
         last_name, setLastName,
@@ -103,7 +111,7 @@ export const useUserManagement = () => {
         handleSubmit
     };
 
-    // Estados del formulario de edición
+    // Estados del formulario de edicion
     const editUserForm = {
         editingUser,
         editName, setEditName,

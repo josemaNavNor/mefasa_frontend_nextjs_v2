@@ -2,12 +2,14 @@ import Notiflix from 'notiflix';
 import { userSchema } from "@/lib/zod";
 import { UserFormData, EditUserFormData, FormState, EditFormState  } from "@/types/forms-user";
 
+// Esto define las acciones disponibles para manejar usuarios
 export interface UserHandlersProps {
     createUser: (data: any) => Promise<void>;
     updateUser: (id: number, data: any) => Promise<void>;
     deleteUser: (id: number) => Promise<boolean>;
 }
 
+// Esto define las acciones del formulario de creacion
 export interface FormActions {
     setName: (value: string) => void;
     setLastName: (value: string) => void;
@@ -20,6 +22,7 @@ export interface FormActions {
     setIsCreateSheetOpen: (open: boolean) => void;
 }
 
+// Esto define las acciones del formulario de edicion
 export interface EditFormActions {
     setEditName: (value: string) => void;
     setEditLastName: (value: string) => void;
@@ -33,7 +36,7 @@ export interface EditFormActions {
     setIsEditSheetOpen: (open: boolean) => void;
 }
 
-// Handler para editar usuario
+// Esto crea el handler para editar usuario
 export const createHandleEdit = (editActions: EditFormActions) => {
     return (user: any) => {
         editActions.setEditingUser(user);
@@ -79,13 +82,14 @@ export const createHandleSubmit = (
     formState: FormState,
     formActions: FormActions
 ) => {
-    return async (e: React.FormEvent) => {
+    return async (e: React.FormEvent) => {``
         e.preventDefault();
         formActions.setErrors({});
         
+        // Esto extrae los valores del estado del formulario
         const { name, last_name, email, phone_number, password, confirmPassword, roleId } = formState;
         
-        // Verificar que las contraseñas coincidan
+        // Verificar que las pass coincidan
         if (password !== confirmPassword) {
             formActions.setErrors({
                 confirmPassword: "Las contraseñas no coinciden"
@@ -93,6 +97,7 @@ export const createHandleSubmit = (
             return;
         }
 
+        // Esto valida los datos del formulario usando zod
         const result = userSchema.safeParse({
             name,
             last_name,
@@ -154,17 +159,19 @@ export const createHandleEditSubmit = (
         e.preventDefault();
         editActions.setEditErrors({});
         
+        // Esto extrae los valores del estado del formulario de edicion
         const { editName, editLastName, editEmail, editPhoneNumber, editPassword, editConfirmPassword, editRoleId } = editFormState;
         
-        // Validación básica manual
+        // Esto valida los datos del formulario manualmente
         const validationErrors: { [key: string]: string } = {};
         
+        // Esto valida los campos obligatorios
         if (!editName.trim()) validationErrors.name = "El nombre es requerido";
         if (!editLastName.trim()) validationErrors.last_name = "El apellido es requerido";
         if (!editEmail.trim()) validationErrors.email = "El email es requerido";
         if (!editRoleId) validationErrors.role_id = "El rol es requerido";
         
-        // Si se proporciona una nueva contraseña, validar que coincidan
+        // Si se proporciona una nueva pass, validar que coincidan
         if (editPassword || editConfirmPassword) {
             if (editPassword !== editConfirmPassword) {
                 validationErrors.confirmPassword = "Las contraseñas no coinciden";
@@ -174,6 +181,7 @@ export const createHandleEditSubmit = (
             }
         }
         
+        // Esto maneja los errores de validacion
         if (Object.keys(validationErrors).length > 0) {
             editActions.setEditErrors(validationErrors);
             return;
