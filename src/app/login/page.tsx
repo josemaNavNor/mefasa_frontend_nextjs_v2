@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthContext } from '@/components/auth-provider';
 import { loginSchema } from '@/lib/zod';
 import { Button } from "@/components/ui/button"
@@ -30,6 +30,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
+  const [microsoftLoading, setMicrosoftLoading] = useState(false);
   const [error, setError] = useState('');
   const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
   
@@ -65,6 +66,50 @@ export default function Login() {
     
     setLoading(false);
   };
+
+  const handleMicrosoftLogin = async () => {
+    try {
+      setMicrosoftLoading(true);
+      setError('');
+      
+      // Obtener URL de autorización del backend
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/microsoft/login`);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response from backend:', response.status, errorText);
+        throw new Error(`Error del servidor: ${response.status} - ${errorText}`);
+      }
+      
+      const data = await response.json();
+      console.log('Response from backend:', data);
+      
+      if (data.authUrl) {
+        // Redirigir directamente a Microsoft
+        window.location.href = data.authUrl;
+      } else {
+        console.error('Response data:', data);
+        throw new Error('No se recibió URL de autorización del servidor');
+      }
+    } catch (error) {
+      console.error('Error en login con Microsoft:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      setError(`Error al iniciar sesión con Microsoft: ${errorMessage}`);
+      setMicrosoftLoading(false);
+    }
+  };
+
+  // Manejar errores de URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    
+    if (error) {
+      setError(decodeURIComponent(error));
+      // Limpiar URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
@@ -152,12 +197,18 @@ export default function Login() {
             type="submit" 
             className="w-full"
             onClick={handleSubmit}
-            disabled={loading}
+            disabled={loading || microsoftLoading}
           >
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Iniciar sesion
           </Button>
-          <Button variant="outline" className="w-full">
+          <Button 
+            variant="outline" 
+            className="w-full"
+            onClick={handleMicrosoftLogin}
+            disabled={loading || microsoftLoading}
+          >
+            {microsoftLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Iniciar sesion con Microsoft
           </Button>
         </CardFooter>
