@@ -8,11 +8,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Shield, QrCode, Key, AlertCircle, CheckCircle, Copy } from "lucide-react";
 import { use2FA } from "@/hooks/use2FA";
 import Image from 'next/image';
+import ImgLogo from '@/components/img-logo';
 
 export default function Setup2FAPage() {
   const router = useRouter();
@@ -25,7 +25,7 @@ export default function Setup2FAPage() {
   const [copiedCodes, setCopiedCodes] = useState(false);
 
   useEffect(() => {
-    // Auto-generar el código QR cuando se carga la página
+    // Auto-generar el codigo QR cuando se carga la página
     if (step === 'generate' && !qrCodeData) {
       handleGenerateQR();
     }
@@ -68,6 +68,9 @@ export default function Setup2FAPage() {
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
+          <div className="align-center mb-4 flex justify-center">
+            <ImgLogo/>
+          </div>
           <div className="flex items-center justify-center gap-2">
             <Shield className="h-8 w-8 text-blue-600" />
             <h1 className="text-3xl font-bold">Configurar Autenticación de Dos Factores</h1>

@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Shield, X } from "lucide-react";
+import ImgLogo from './img-logo';
 
 interface Setup2FAPromptProps {
   isOpen: boolean;
@@ -31,6 +32,9 @@ export function Setup2FAPrompt({ isOpen, onClose, onSetup, userName }: Setup2FAP
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
+          <div className="align-center mb-4 flex justify-center">
+            <ImgLogo />
+          </div>
           <div className="flex items-center gap-2">
             <Shield className="h-5 w-5 text-blue-600" />
             <DialogTitle>Mejorar tu seguridad</DialogTitle>
