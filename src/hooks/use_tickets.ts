@@ -169,10 +169,7 @@ export function useTickets() {
                 'Número de Ticket': ticket.ticket_number || '',
                 'Título': ticket.summary || '',
                 'Descripción': ticket.description || '',
-                'Usuario Final': ticket.end_user ?
-                    `${ticket.end_user.name} ${ticket.end_user.last_name}` :
-                    'Sin asignar',
-                'Email Usuario': ticket.end_user?.email || '',
+                'Usuario Final': ticket.end_user || 'Sin asignar',
                 'Técnico Asignado': ticket.technician ?
                     `${ticket.technician.name} ${ticket.technician.last_name}` :
                     'Sin asignar',
@@ -211,7 +208,6 @@ export function useTickets() {
                 { wch: 30 }, // titulo
                 { wch: 50 }, // descripcion
                 { wch: 25 }, // usuario Final
-                { wch: 30 }, // email Usuario
                 { wch: 25 }, // tecnico Asignado
                 { wch: 20 }, // tipo
                 { wch: 12 }, // prioridad
