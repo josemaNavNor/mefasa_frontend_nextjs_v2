@@ -1,7 +1,7 @@
 'use client';
 export const dynamic = "force-dynamic";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +14,7 @@ import { use2FA } from "@/hooks/use2FA";
 import Image from 'next/image';
 import ImgLogo from '@/components/img-logo';
 
-export default function Setup2FAPage() {
+function Setup2FAContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isLoading, error, qrCodeData, generate2FASecret, enable2FA, clearError } = use2FA();
@@ -301,5 +301,25 @@ export default function Setup2FAPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function Setup2FAPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background p-4 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="align-center mb-4 flex justify-center">
+            <ImgLogo/>
+          </div>
+          <div className="flex items-center justify-center gap-2">
+            <Shield className="h-8 w-8 text-blue-600 animate-pulse" />
+            <h1 className="text-2xl font-bold">Cargando configuración 2FA...</h1>
+          </div>
+        </div>
+      </div>
+    }>
+      <Setup2FAContent />
+    </Suspense>
   );
 }
