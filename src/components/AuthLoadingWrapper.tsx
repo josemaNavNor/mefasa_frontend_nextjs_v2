@@ -9,7 +9,7 @@ interface AuthLoadingWrapperProps {
 }
 
 export const AuthLoadingWrapper = ({ children }: AuthLoadingWrapperProps) => {
-  const { loading, user, isAuthenticated } = useAuthContext();
+  const { loading, isAuthenticated } = useAuthContext();
   const router = useRouter();
 
   useEffect(() => {
