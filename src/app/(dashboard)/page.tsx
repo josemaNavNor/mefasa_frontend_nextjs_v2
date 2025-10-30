@@ -29,17 +29,8 @@ export default function DashboardHome() {
     );
   }
 
-  // Si no hay usuario después de cargar, mostrar mensaje
-  if (!user) {
-    return (
-      <div className="p-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
-          <p className="text-gray-600">No se pudo cargar la información del usuario.</p>
-        </div>
-      </div>
-    );
-  }
+  // El AuthLoadingWrapper se encarga de redirigir si no hay usuario
+  // Si llegamos aquí, significa que hay un usuario autenticado
 
   return (
     <div className="p-6">
