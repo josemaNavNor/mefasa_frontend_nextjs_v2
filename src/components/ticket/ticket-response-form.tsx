@@ -1,9 +1,10 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { TiptapEditor } from "@/components/ui/tiptap-editor"
+import { isHtmlEmpty } from "@/hooks/useTiptapHelpers"
 import { Send, Paperclip, X } from "lucide-react"
 
 interface TicketResponseFormProps {
@@ -43,13 +44,11 @@ export function TicketResponseForm({
             <form onSubmit={onSubmit} className="space-y-4">
                 <div>
                     <Label htmlFor="response">Escribir respuesta</Label>
-                    <Textarea
-                        id="response"
+                    <TiptapEditor
+                        content={responseText}
+                        onChange={setResponseText}
                         placeholder="Escribe tu respuesta aquí..."
-                        value={responseText}
-                        onChange={(e) => setResponseText(e.target.value)}
-                        className="min-h-[10px] resize-none w-200"
-                        required
+                        className="mt-2"
                     />
                 </div>
 
@@ -97,7 +96,11 @@ export function TicketResponseForm({
                         <Button type="button" variant="outline" onClick={onClose}>
                             Cerrar
                         </Button>
-                        <Button type="submit" disabled={!responseText.trim()} className="flex items-center">
+                        <Button 
+                            type="submit" 
+                            disabled={isHtmlEmpty(responseText)} 
+                            className="flex items-center"
+                        >
                             <Send className="h-4 w-4 mr-2" />
                             Enviar
                         </Button>
