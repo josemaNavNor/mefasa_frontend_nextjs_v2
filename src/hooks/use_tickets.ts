@@ -82,7 +82,7 @@ export function useTickets() {
         }
     }
 
-    async function updateTicket(id: string, ticket: { summary?: string, description?: string, technician_id?: number, type_id?: number, priority?: string, status?: string, floor_id?: number, area_id?: number, due_date?: string }) {
+    async function updateTicket(id: string, ticket: { summary?: string, description?: string, technician_id?: number, type_id?: number, priority?: string, status?: string, floor_id?: number, due_date?: string }) {
         setLoading(true);
         try {
             const response = await api.patch(`/tickets/${id}`, ticket);
@@ -111,7 +111,7 @@ export function useTickets() {
         }
     }
 
-    async function createTicket(ticket: { ticket_number: string, summary: string, description: string, end_user: string, technician_id: number, type_id: number, priority: string, status: string, floor_id: number, area_id: number, due_date: string }) {
+    async function createTicket(ticket: { summary: string, description: string, technician_id: number, type_id: number, priority: string, status: string, floor_id: number, due_date: string }) {
         setLoading(true);
         try {
             const response = await api.post('/tickets', ticket);
@@ -127,7 +127,7 @@ export function useTickets() {
             });
             eventEmitter.emit('data-changed', 'tickets');
             eventEmitter.emit('tickets-updated');
-            Notiflix.Notify.success(`Ticket ${ticket.ticket_number} creado correctamente`);
+            Notiflix.Notify.success(`Ticket creado correctamente`);
         } catch (error) {
             //console.error("Error al crear el ticket:", error);
             Notiflix.Notify.failure(

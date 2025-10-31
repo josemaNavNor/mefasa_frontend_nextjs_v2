@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useTickets } from "@/hooks/use_tickets";
 import { useUsers } from "@/hooks/useUsersAdmin";
 import { useType } from "@/hooks/use_typeTickets";
-import { useFloors } from "@/hooks/useFloors";
+import { useFloors } from "@/hooks/use_floors";
 
 interface EditTicketDialogProps {
   ticket: any;

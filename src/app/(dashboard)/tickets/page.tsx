@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { useState, useCallback, useMemo } from "react";
 import { useTickets } from "@/hooks/use_tickets";
 import { useType } from "@/hooks/use_typeTickets";
+import { useFloors } from "@/hooks/use_floors";
 import { useEventListener } from "@/hooks/useEventListener";
 import { useSettings } from "@/contexts/SettingsContext";
 import { EditTicketDialog } from "@/components/edit-ticket-dialog";
@@ -37,6 +38,7 @@ export default function TicketsPage() {
     const { tickets, createTicket, deleteTicket, refetch, exportToExcel, isPolling } = useTickets();
     const { types } = useType();
     const { users } = useUsers();
+    const { floors } = useFloors();
     const { autoRefreshEnabled } = useSettings();
 
     const [ticket_number] = useState("");
@@ -45,17 +47,17 @@ export default function TicketsPage() {
     const [end_user, setEndUser] = useState("");
     const [technician_id, setTechnicianId] = useState("");
     const [type_id, setTypeId] = useState("");
-    const [floor_id, setFloorId] = useState(""); 
-    const [area_id, setAreaId] = useState(""); 
+    const [floor_id, setFloorId] = useState("");
+    const [area_id, setAreaId] = useState("");
     const [priority, setPriority] = useState("");
     const [status, setStatus] = useState("");
     const [due_date, setDueDate] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
-    
+
     // Estado para edición de tickets
     const [editingTicket, setEditingTicket] = useState<any>(null);
     const [showEditDialog, setShowEditDialog] = useState(false);
-    
+
     // Estado para el modal de detalles
     const [selectedTicket, setSelectedTicket] = useState<any>(null);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -128,9 +130,9 @@ export default function TicketsPage() {
             </div>
             <div className="flex gap-2 mb-4">
                 <Sheet>
-                    {/* <SheetTrigger asChild>
+                    <SheetTrigger asChild>
                         <Button variant="outline">Agregar Ticket</Button>
-                    </SheetTrigger> */}
+                    </SheetTrigger>
                     <SheetContent className="overflow-y-auto">
                         <SheetHeader>
                             <SheetTitle>Agregar Ticket</SheetTitle>
@@ -138,144 +140,148 @@ export default function TicketsPage() {
                                 Completa los campos a continuación para agregar un nuevo ticket.
                             </SheetDescription>
                         </SheetHeader>
-                    <form onSubmit={handleSubmit} className="grid flex-1 auto-rows-min gap-4 px-4">
-                        <div className="grid gap-3">
-                            <Label htmlFor="summary">Título</Label>
-                            <Input
-                                id="summary"
-                                type="text"
-                                autoComplete="off"
-                                placeholder="Título del ticket"
-                                value={summary}
-                                onChange={(e) => setSummary(e.target.value)}
-                                className="w-full"
-                                required
-                            />
-                        </div>
+                        <form onSubmit={handleSubmit} className="grid flex-1 auto-rows-min gap-4 px-4">
+                            <div className="grid gap-3">
+                                <Label htmlFor="summary">Título</Label>
+                                <Input
+                                    id="summary"
+                                    type="text"
+                                    autoComplete="off"
+                                    placeholder="Título del ticket"
+                                    value={summary}
+                                    onChange={(e) => setSummary(e.target.value)}
+                                    className="w-full"
+                                    required
+                                />
+                            </div>
 
-                        <div className="grid gap-3">
-                            <Label htmlFor="description">Descripción</Label>
-                            <Input
-                                id="description"
-                                type="text"
-                                autoComplete="off"
-                                placeholder="Descripción del ticket"
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                                className="w-full"
-                                required
-                            />
-                        </div>
+                            <div className="grid gap-3">
+                                <Label htmlFor="description">Descripción</Label>
+                                <Input
+                                    id="description"
+                                    type="text"
+                                    autoComplete="off"
+                                    placeholder="Descripción del ticket"
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    className="w-full"
+                                    required
+                                />
+                            </div>
 
-                        <div className="grid gap-3">
-                            <Label htmlFor="type_id">Tipo de ticket</Label>
-                            <Select value={type_id} onValueChange={setTypeId} required>
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Selecciona un tipo de ticket" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {types.map((type) => (
-                                        <SelectItem key={type.id} value={String(type.id)}>
-                                            {type.type_name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
+                            <div className="grid gap-3">
+                                <Label htmlFor="type_id">Tipo de ticket</Label>
+                                <Select value={type_id} onValueChange={setTypeId} required>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Selecciona un tipo de ticket" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {types.map((type) => (
+                                            <SelectItem key={type.id} value={String(type.id)}>
+                                                {type.type_name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
 
-                        <div className="grid gap-3">
-                            <Label htmlFor="technician_id">Asignar técnico</Label>
-                            <Select value={technician_id} onValueChange={setTechnicianId}>
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Selecciona un técnico" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {users?.filter(user => user.role?.name === 'Tecnico' || user.role?.name === 'Administrador').map((user) => (
-                                        <SelectItem key={user.id} value={String(user.id)}>
-                                            {user.name} {user.last_name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
+                            <div className="grid gap-3">
+                                <Label htmlFor="technician_id">Asignar técnico</Label>
+                                <Select value={technician_id} onValueChange={setTechnicianId}>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Selecciona un técnico" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {users.map((user) => (
+                                            <SelectItem key={user.id} value={String(user.id)}>
+                                                {user.name} {user.last_name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
 
-                        <div className="grid gap-3">
-                            <Label htmlFor="floor_id">Planta</Label>
-                            <Input
-                                id="floor_id"
-                                type="number"
-                                placeholder="ID de la planta"
-                                value={floor_id}
-                                onChange={(e) => setFloorId(e.target.value)}
-                                className="w-full"
-                                required
-                            />
-                        </div>
+                            <div className="grid gap-3">
+                                <Label htmlFor="floor_id">Planta</Label>
+                                <Select value={floor_id} onValueChange={setFloorId} required>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Selecciona una planta" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {floors.map((floor) => (
+                                            <SelectItem key={floor.id} value={String(floor.id)}>
+                                                {floor.floor_name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
 
-                        <div className="grid gap-3">
-                            <Label htmlFor="area_id">Área</Label>
-                            <Input
-                                id="area_id"
-                                type="number"
-                                placeholder="ID del área"
-                                value={area_id}
-                                onChange={(e) => setAreaId(e.target.value)}
-                                className="w-full"
-                                required
-                            />
-                        </div>
+                            <div className="grid gap-3">
+                                <Label htmlFor="priority">Prioridad</Label>
+                                <Select value={priority} onValueChange={setPriority}>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Selecciona prioridad" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="LOW">Baja</SelectItem>
+                                        <SelectItem value="MEDIUM">Media</SelectItem>
+                                        <SelectItem value="HIGH">Alta</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
 
-                        <div className="grid gap-3">
-                            <Label htmlFor="priority">Prioridad</Label>
-                            <Select value={priority} onValueChange={setPriority}>
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Selecciona prioridad" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="LOW">Baja</SelectItem>
-                                    <SelectItem value="MEDIUM">Media</SelectItem>
-                                    <SelectItem value="HIGH">Alta</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
+                            <div className="grid gap-3">
+                                <Label htmlFor="status">Estado</Label>
+                                <Select value={status} onValueChange={setStatus}>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Selecciona estado" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="OPEN">Abierto</SelectItem>
+                                        <SelectItem value="IN_PROGRESS">En Progreso</SelectItem>
+                                        <SelectItem value="CLOSED">Cerrado</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
 
-                        <div className="grid gap-3">
-                            <Label htmlFor="due_date">Fecha límite</Label>
-                            <Input
-                                id="due_date"
-                                type="date"
-                                value={due_date}
-                                onChange={(e) => setDueDate(e.target.value)}
-                                className="w-full"
-                            />
-                        </div>
+                            <div className="grid gap-3">
+                                <Label htmlFor="due_date">Fecha límite</Label>
+                                <Input
+                                    id="due_date"
+                                    type="date"
+                                    value={due_date}
+                                    onChange={(e) => setDueDate(e.target.value)}
+                                    className="w-full"
+                                />
+                            </div>
 
-                        <SheetFooter>
-                            <Button type="submit">Agregar Ticket</Button>
-                            <SheetClose asChild>
-                                <Button variant="outline">Cerrar</Button>
-                            </SheetClose>
-                        </SheetFooter>
-                    </form>
-                </SheetContent>
-            </Sheet>
-            <Button 
-                variant="default" 
-                onClick={handleExportToExcel}
-                className="ml-2"
-            >
-                <Download className="h-4 w-4 mr-2" />
-                Exportar a Excel
-            </Button>
+                            <SheetFooter>
+                                <Button type="submit">Agregar Ticket</Button>
+                                <SheetClose asChild>
+                                    <Button variant="outline">Cerrar</Button>
+                                </SheetClose>
+                            </SheetFooter>
+                        </form>
+                    </SheetContent>
+                </Sheet>
+                <Button
+                    variant="default"
+                    onClick={handleExportToExcel}
+                    className="ml-2"
+                >
+                    <Download className="h-4 w-4 mr-2" />
+                    Exportar a Excel
+                </Button>
             </div>
-            
-            <DataTable 
-                columns={columns} 
-                data={tickets} 
+
+            <DataTable
+                columns={columns}
+                data={tickets}
                 onRowClick={handleRowClick}
                 showFilters={true}
             />
-            
+
             {/* Dialogo de edicion */}
             <EditTicketDialog
                 ticket={editingTicket}
@@ -287,7 +293,7 @@ export default function TicketsPage() {
                     }
                 }}
             />
-            
+
             {/* Modal de detalles del ticket */}
             <TicketDetailsModal
                 ticket={selectedTicket}
