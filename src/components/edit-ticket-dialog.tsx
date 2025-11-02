@@ -33,7 +33,6 @@ export function EditTicketDialog({ ticket, open, onOpenChange }: EditTicketDialo
     priority: "",
     status: "",
     floor_id: "0",
-    area_id: "0",
     due_date: ""
   });
 
@@ -50,7 +49,6 @@ export function EditTicketDialog({ ticket, open, onOpenChange }: EditTicketDialo
         priority: ticket.priority || "",
         status: ticket.status || "",
         floor_id: ticket.floor_id?.toString() || "0",
-        area_id: ticket.area_id?.toString() || "0",
         due_date: ticket.due_date ? new Date(ticket.due_date).toISOString().split('T')[0] : ""
       });
       setErrors({});
@@ -100,12 +98,6 @@ export function EditTicketDialog({ ticket, open, onOpenChange }: EditTicketDialo
       updateData.floor_id = parseInt(formData.floor_id);
     } else {
       updateData.floor_id = null;
-    }
-
-    if (formData.area_id && formData.area_id !== "0") {
-      updateData.area_id = parseInt(formData.area_id);
-    } else {
-      updateData.area_id = null;
     }
 
     const result = await updateTicket(ticket.id, updateData);

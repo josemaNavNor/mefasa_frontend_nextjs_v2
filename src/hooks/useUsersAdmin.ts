@@ -51,7 +51,6 @@ export function useUsers() {
             eventEmitter.emit('users-updated');
             Notiflix.Notify.success(`Usuario ${user.name} ${user.last_name} creado correctamente`);
         } catch (error) {
-            //console.error("Error al crear el usuario:", error);
             Notiflix.Notify.failure(
                 error instanceof Error ? `Error al crear el usuario: ${error.message}` : 'Error al crear el usuario: Error desconocido'
             );

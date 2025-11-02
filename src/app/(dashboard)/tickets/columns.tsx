@@ -68,7 +68,7 @@ export const createColumns = ({ onDeleteTicket }: ColumnsProps = {}): ColumnDef<
             )
         },
         cell: ({ row }) => (
-            <div className="text-left">{row.getValue("end_user")}</div>
+            <div className="text-left">{row.getValue("end_user") ? row.getValue("end_user") : "Creado desde el portal"}</div>
         ),
     },
     {

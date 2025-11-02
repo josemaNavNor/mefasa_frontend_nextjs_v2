@@ -15,6 +15,8 @@ import { useSettings } from "@/contexts/SettingsContext";
 import { EditTicketDialog } from "@/components/edit-ticket-dialog";
 import { TicketDetailsModal } from "@/components/ticket-details-modal";
 import { Download } from "lucide-react";
+import { SimpleDatePicker } from "@/components/ui/simple-date-picker"
+
 
 import {
     Sheet,
@@ -48,7 +50,6 @@ export default function TicketsPage() {
     const [technician_id, setTechnicianId] = useState("");
     const [type_id, setTypeId] = useState("");
     const [floor_id, setFloorId] = useState("");
-    const [area_id, setAreaId] = useState("");
     const [priority, setPriority] = useState("");
     const [status, setStatus] = useState("");
     const [due_date, setDueDate] = useState("");
@@ -85,18 +86,18 @@ export default function TicketsPage() {
     const handleSubmit = useCallback(async (e: React.FormEvent) => {
         const formData = {
             ticket_number, summary, description, end_user,
-            technician_id, type_id, floor_id, area_id, priority,
+            technician_id, type_id, floor_id, priority,
             status, due_date
         };
 
         const setters = {
             setSummary, setDescription, setEndUser, setTechnicianId,
-            setTypeId, setFloorId, setAreaId, setPriority, setStatus, setDueDate,
+            setTypeId, setFloorId,setPriority, setStatus, setDueDate,
             setErrors
         };
 
         await handlers.handleSubmit(e, formData, setters);
-    }, [handlers, ticket_number, summary, description, end_user, technician_id, type_id, floor_id, area_id, priority, status, due_date]);
+    }, [handlers, ticket_number, summary, description, end_user, technician_id, type_id, floor_id, priority, status, due_date]);
 
     const handleExportToExcel = useCallback(() => {
         handlers.handleExportToExcel();
@@ -224,9 +225,9 @@ export default function TicketsPage() {
                                         <SelectValue placeholder="Selecciona prioridad" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="LOW">Baja</SelectItem>
-                                        <SelectItem value="MEDIUM">Media</SelectItem>
-                                        <SelectItem value="HIGH">Alta</SelectItem>
+                                        <SelectItem value="Baja">Baja</SelectItem>
+                                        <SelectItem value="Media">Media</SelectItem>
+                                        <SelectItem value="Alta">Alta</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -238,22 +239,23 @@ export default function TicketsPage() {
                                         <SelectValue placeholder="Selecciona estado" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="OPEN">Abierto</SelectItem>
-                                        <SelectItem value="IN_PROGRESS">En Progreso</SelectItem>
-                                        <SelectItem value="CLOSED">Cerrado</SelectItem>
+                                        <SelectItem value="Abierto">Abierto</SelectItem>
+                                        <SelectItem value="En Progreso">En Progreso</SelectItem>
+                                        <SelectItem value="Cerrado">Cerrado</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
 
                             <div className="grid gap-3">
                                 <Label htmlFor="due_date">Fecha límite</Label>
-                                <Input
-                                    id="due_date"
-                                    type="date"
-                                    value={due_date}
-                                    onChange={(e) => setDueDate(e.target.value)}
-                                    className="w-full"
+                                <SimpleDatePicker
+                                    value={due_date || ''}
+                                    onChange={(date: string) => {
+                                        setDueDate(date);
+                                    }}
+                                    minDate={new Date().toISOString().split('T')[0]}
                                 />
+
                             </div>
 
                             <SheetFooter>
