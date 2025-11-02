@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { TiptapEditor } from "@/components/ui/tiptap-editor"
 import { isHtmlEmpty } from "@/hooks/useTiptapHelpers"
-import { Send, Paperclip, X } from "lucide-react"
+import { Send, Paperclip, X, MessageSquare, ChevronUp, ChevronDown } from "lucide-react"
+import { useState } from "react"
 
 interface TicketResponseFormProps {
     responseText: string
@@ -28,6 +29,8 @@ export function TicketResponseForm({
     onSubmit,
     onClose
 }: TicketResponseFormProps) {
+    const [isResponseVisible, setIsResponseVisible] = useState(true)
+
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const newFiles = Array.from(e.target.files)
@@ -41,16 +44,34 @@ export function TicketResponseForm({
 
     return (
         <div className="border-t pt-4 mt-4">
+            <div className="flex items-center justify-between mb-4">
+                <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setIsResponseVisible(!isResponseVisible)}
+                    className="flex items-center gap-2 text-sm font-medium"
+                >
+                    <MessageSquare className="h-4 w-4" />
+                    Escribir respuesta
+                    {isResponseVisible ? (
+                        <ChevronUp className="h-4 w-4" />
+                    ) : (
+                        <ChevronDown className="h-4 w-4" />
+                    )}
+                </Button>
+            </div>
+
             <form onSubmit={onSubmit} className="space-y-4">
-                <div>
-                    <Label htmlFor="response">Escribir respuesta</Label>
-                    <TiptapEditor
-                        content={responseText}
-                        onChange={setResponseText}
-                        placeholder="Escribe tu respuesta aquí..."
-                        className="mt-2"
-                    />
-                </div>
+                {isResponseVisible && (
+                    <div>
+                        <TiptapEditor
+                            content={responseText}
+                            onChange={setResponseText}
+                            placeholder="Escribe tu respuesta aquí..."
+                            className="mt-2"
+                        />
+                    </div>
+                )}
 
                 <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
@@ -98,7 +119,7 @@ export function TicketResponseForm({
                         </Button>
                         <Button 
                             type="submit" 
-                            disabled={isHtmlEmpty(responseText)} 
+                            disabled={isHtmlEmpty(responseText) || !isResponseVisible} 
                             className="flex items-center"
                         >
                             <Send className="h-4 w-4 mr-2" />
