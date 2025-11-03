@@ -23,7 +23,6 @@ export interface CommentFile {
         ticket_id: number
         file_data: string
         uploaded_at: string
-        uploaded_by: number
     }
 }
 
