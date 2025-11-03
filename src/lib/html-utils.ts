@@ -24,9 +24,9 @@ export function sanitizeHtml(html: string): string {
 }
 
 /**
- * Procesa las imágenes en el contenido HTML de emails
+ * Procesa las imágenes en el contenido HTML de emails (modo conservador)
  * @param html - Contenido HTML con imágenes
- * @returns HTML con imágenes procesadas
+ * @returns HTML con imágenes procesadas de forma conservadora
  */
 function processEmailImages(html: string): string {
   // Reemplazar imágenes que no se pueden cargar con un placeholder o removerlas
@@ -42,24 +42,69 @@ function processEmailImages(html: string): string {
     const src = srcMatch[1];
     const alt = altMatch ? altMatch[1] : 'Imagen del email';
     
-    // Si es una imagen base64, mantenerla pero con mejor estilo
+    // Si es una imagen base64, mantenerla pero con límite más estricto por defecto
     if (src.startsWith('data:image/')) {
-      // Si es muy larga (> 100KB aprox), mostrar placeholder
-      if (src.length > 100000) {
+      // En modo conservador, límite más bajo (50KB aprox)
+      if (src.length > 50000) {
+        const sizeKB = Math.round(src.length / 1024);
         return `<div class="email-image-placeholder">
           <span class="email-image-icon">🖼️</span>
-          <span class="email-image-text">Imagen grande: ${alt}</span>
+          <span class="email-image-text">Imagen grande (${sizeKB}KB): ${alt}</span>
+          <span class="email-image-hint">Activa "Mostrar imágenes" para verla</span>
         </div>`;
       }
-      // Si es tamaño razonable, mostrarla
+      // Si es tamaño pequeño, mostrarla
       return `<img src="${src}" alt="${alt}" class="email-image" />`;
     }
     
     // Para URLs externas o problemáticas, mostrar placeholder directamente
-    // Esto evita la carga de imágenes externas que pueden fallar
     return `<div class="email-image-placeholder">
       <span class="email-image-icon">🖼️</span>
-      <span class="email-image-text">Imagen: ${alt || 'Sin descripción'}</span>
+      <span class="email-image-text">Imagen externa: ${alt || 'Sin descripción'}</span>
+      <span class="email-image-hint">Activa "Mostrar imágenes" para intentar cargarla</span>
+    </div>`;
+  });
+}
+
+/**
+ * Procesa las imágenes en el contenido HTML de emails (modo permisivo)
+ * @param html - Contenido HTML con imágenes
+ * @returns HTML con todas las imágenes habilitadas
+ */
+function processEmailImagesPermissive(html: string): string {
+  return html.replace(/<img[^>]*>/gi, (imgTag) => {
+    // Extraer el src de la imagen
+    const srcMatch = imgTag.match(/src=["']([^"']*)["']/i);
+    const altMatch = imgTag.match(/alt=["']([^"']*)["']/i);
+    
+    if (!srcMatch) {
+      return ''; // Remover imágenes sin src
+    }
+    
+    const src = srcMatch[1];
+    const alt = altMatch ? altMatch[1] : 'Imagen del email';
+    
+    // En modo permisivo, mostrar todas las imágenes base64
+    if (src.startsWith('data:image/')) {
+      // Agregar indicador de carga para imágenes muy grandes
+      if (src.length > 100000) {
+        const sizeKB = Math.round(src.length / 1024);
+        return `<div class="email-image-container">
+          <div class="email-image-loading">Cargando imagen (${sizeKB}KB)...</div>
+          <img src="${src}" alt="${alt}" class="email-image large-image" 
+               onload="this.previousElementSibling.style.display='none'" 
+               onerror="this.style.display='none'; this.previousElementSibling.innerHTML='❌ Error al cargar imagen grande';" />
+        </div>`;
+      }
+      return `<img src="${src}" alt="${alt}" class="email-image" />`;
+    }
+    
+    // Para URLs externas, intentar cargarlas con fallback
+    return `<div class="email-image-container">
+      <div class="email-image-loading">Cargando imagen externa...</div>
+      <img src="${src}" alt="${alt}" class="email-image external-image" 
+           onload="this.previousElementSibling.style.display='none'" 
+           onerror="this.style.display='none'; this.previousElementSibling.innerHTML='❌ Imagen no disponible: ${alt || 'Sin descripción'}';" />
     </div>`;
   });
 }
@@ -89,22 +134,21 @@ export function applyEmailStyles(html: string, options: { showImages?: boolean }
 }
 
 /**
- * Versión que permite mostrar imágenes externas
+ * Versión que permite mostrar todas las imágenes (incluyendo grandes y externas)
  * @param html - Contenido HTML
- * @returns HTML con imágenes externas habilitadas
+ * @returns HTML con todas las imágenes habilitadas
  */
 export function applyEmailStylesWithImages(html: string): string {
   if (!html) return '';
   
   // Solo sanitizar elementos peligrosos, mantener imágenes
-  const cleanHtml = html
+  let cleanHtml = html
     .replace(/<script[^>]*>.*?<\/script>/gi, '')
     .replace(/<style[^>]*>.*?<\/style>/gi, '')
-    .replace(/on\w+="[^"]*"/gi, '') // Remover event handlers
     .replace(/javascript:/gi, ''); // Remover javascript: URLs
   
-  // Aplicar clase a todas las imágenes para estilo consistente
-  const processedHtml = cleanHtml.replace(/<img([^>]*)>/gi, '<img$1 class="email-image" />');
+  // Procesar imágenes de forma permisiva
+  cleanHtml = processEmailImagesPermissive(cleanHtml);
   
   return `<div class="email-content" style="
     line-height: 1.6; 
@@ -114,8 +158,54 @@ export function applyEmailStylesWithImages(html: string): string {
     max-width: 100%;
     overflow-wrap: break-word;
   ">
-    ${processedHtml}
+    ${cleanHtml}
   </div>`;
+}
+
+/**
+ * Analiza el contenido HTML para obtener información sobre las imágenes
+ * @param html - Contenido HTML
+ * @returns Información sobre las imágenes encontradas
+ */
+export function analyzeEmailImages(html: string): {
+  totalImages: number;
+  base64Images: number;
+  externalImages: number;
+  largeImages: number;
+  totalSizeKB: number;
+} {
+  if (!html) return { totalImages: 0, base64Images: 0, externalImages: 0, largeImages: 0, totalSizeKB: 0 };
+  
+  const imgMatches = html.match(/<img[^>]*>/gi) || [];
+  let base64Images = 0;
+  let externalImages = 0;
+  let largeImages = 0;
+  let totalSizeKB = 0;
+  
+  imgMatches.forEach(imgTag => {
+    const srcMatch = imgTag.match(/src=["']([^"']*)["']/i);
+    if (srcMatch) {
+      const src = srcMatch[1];
+      if (src.startsWith('data:image/')) {
+        base64Images++;
+        const sizeKB = Math.round(src.length / 1024);
+        totalSizeKB += sizeKB;
+        if (sizeKB > 50) {
+          largeImages++;
+        }
+      } else if (src.startsWith('http')) {
+        externalImages++;
+      }
+    }
+  });
+  
+  return {
+    totalImages: imgMatches.length,
+    base64Images,
+    externalImages,
+    largeImages,
+    totalSizeKB
+  };
 }
 
 /**

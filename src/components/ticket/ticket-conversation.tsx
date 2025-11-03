@@ -1,10 +1,10 @@
 "use client"
 
-import { User, ChevronDown, ChevronUp, Image, ImageOff } from "lucide-react"
+import { User, ChevronDown, ChevronUp, Image, ImageOff, Info } from "lucide-react"
 import { TicketComment, Ticket } from "@/types/ticket"
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
-import { applyEmailStyles, applyEmailStylesWithImages } from "@/lib/html-utils"
+import { useState, useMemo } from "react"
+import { applyEmailStyles, applyEmailStylesWithImages, analyzeEmailImages } from "@/lib/html-utils"
 
 interface TicketConversationProps {
     ticket: Ticket
@@ -15,6 +15,29 @@ interface TicketConversationProps {
 export function TicketConversation({ ticket, comments, loading }: TicketConversationProps) {
     const [showHistory, setShowHistory] = useState(true)
     const [showImages, setShowImages] = useState(false)
+    
+    // Analizar imágenes en el contenido
+    const imageAnalysis = useMemo(() => {
+        const ticketImages = analyzeEmailImages(ticket.description || ticket.summary || '');
+        const commentImages = comments.reduce((acc, comment) => {
+            const analysis = analyzeEmailImages(comment.body || '');
+            return {
+                totalImages: acc.totalImages + analysis.totalImages,
+                base64Images: acc.base64Images + analysis.base64Images,
+                externalImages: acc.externalImages + analysis.externalImages,
+                largeImages: acc.largeImages + analysis.largeImages,
+                totalSizeKB: acc.totalSizeKB + analysis.totalSizeKB
+            };
+        }, { totalImages: 0, base64Images: 0, externalImages: 0, largeImages: 0, totalSizeKB: 0 });
+        
+        return {
+            totalImages: ticketImages.totalImages + commentImages.totalImages,
+            base64Images: ticketImages.base64Images + commentImages.base64Images,
+            externalImages: ticketImages.externalImages + commentImages.externalImages,
+            largeImages: ticketImages.largeImages + commentImages.largeImages,
+            totalSizeKB: ticketImages.totalSizeKB + commentImages.totalSizeKB
+        };
+    }, [ticket, comments])
 
     return (
         <div className="flex-1 flex flex-col border rounded-lg min-w-0">
@@ -25,25 +48,36 @@ export function TicketConversation({ ticket, comments, loading }: TicketConversa
                         Conversación del Ticket
                     </h3>
                     <div className="flex items-center gap-2">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setShowImages(!showImages)}
-                            className="flex items-center gap-1 text-gray-600 hover:text-gray-800"
-                            title={showImages ? "Ocultar imágenes" : "Mostrar imágenes"}
-                        >
-                            {showImages ? (
-                                <>
-                                    <ImageOff className="h-4 w-4" />
-                                    Ocultar imágenes
-                                </>
-                            ) : (
-                                <>
-                                    <Image className="h-4 w-4" />
-                                    Mostrar imágenes
-                                </>
-                            )}
-                        </Button>
+                        {imageAnalysis.totalImages > 0 && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setShowImages(!showImages)}
+                                className="flex items-center gap-1 text-gray-600 hover:text-gray-800"
+                                title={
+                                    showImages 
+                                        ? "Ocultar imágenes" 
+                                        : `Mostrar ${imageAnalysis.totalImages} imagen(es) - ${imageAnalysis.totalSizeKB > 0 ? `${imageAnalysis.totalSizeKB}KB` : 'Externas'}`
+                                }
+                            >
+                                {showImages ? (
+                                    <>
+                                        <ImageOff className="h-4 w-4" />
+                                        Ocultar ({imageAnalysis.totalImages})
+                                    </>
+                                ) : (
+                                    <>
+                                        <Image className="h-4 w-4" />
+                                        Mostrar ({imageAnalysis.totalImages})
+                                        {imageAnalysis.largeImages > 0 && (
+                                            <span className="text-xs bg-amber-100 text-amber-800 px-1 rounded">
+                                                {imageAnalysis.largeImages} grandes
+                                            </span>
+                                        )}
+                                    </>
+                                )}
+                            </Button>
+                        )}
                         <Button
                             variant="ghost"
                             size="sm"
