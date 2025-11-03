@@ -21,7 +21,7 @@ export const useTicketModal = (ticket: Ticket | null) => {
     const { comments, loading, createComment } = useTicketComments(
         ticket?.id ? (typeof ticket.id === 'string' ? parseInt(ticket.id) : ticket.id) : undefined
     )
-    const { updateTicket } = useTickets()
+    const { updateTicket, markTicketAsViewed } = useTickets()
     const { history, createHistoryEntry } = useTicketHistory(
         ticket?.id ? (typeof ticket.id === 'string' ? parseInt(ticket.id) : ticket.id) : undefined
     )
@@ -36,7 +36,13 @@ export const useTicketModal = (ticket: Ticket | null) => {
     // Actualizar datos del ticket cuando cambie el prop
     useEffect(() => {
         setTicketData(ticket)
-    }, [ticket])
+        
+        // Marcar ticket como visto cuando se abre el modal
+        if (ticket && ticket.id) {
+            const ticketId = typeof ticket.id === 'string' ? ticket.id : ticket.id.toString()
+            markTicketAsViewed(ticketId)
+        }
+    }, [ticket, markTicketAsViewed])
 
     const handleTicketUpdate = async (field: string, newValue: any, oldValue: any) => {
         if (!ticket || !currentUserId) {

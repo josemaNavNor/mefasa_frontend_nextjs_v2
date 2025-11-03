@@ -1,7 +1,7 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { MoreHorizontal, Edit, Trash2 } from "lucide-react"
+import { MoreHorizontal, Edit, Trash2, Sparkles } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import {
@@ -33,9 +33,19 @@ export const createColumns = ({ onDeleteTicket }: ColumnsProps = {}): ColumnDef<
                 </Button>
             )
         },
-        cell: ({ row }) => (
-            <div className="text-center">{row.getValue("ticket_number")}</div>
-        ),
+        cell: ({ row }) => {
+            const ticket = row.original as any;
+            return (
+                <div className="text-center flex items-center justify-center gap-2">
+                    <span>{row.getValue("ticket_number")}</span>
+                    {ticket.isNew && (
+                        <div title="Ticket nuevo - No visto">
+                            <Sparkles className="h-4 w-4 text-blue-500 animate-pulse" />
+                        </div>
+                    )}
+                </div>
+            );
+        },
     },
     {
         accessorKey: "summary",

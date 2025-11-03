@@ -15,7 +15,8 @@ export function useTickets() {
     async function fetchTickets(showNotification = false) {
         if (!isPolling) setLoading(true);
         try {
-            const response = await api.get('/tickets');
+            // Usar el endpoint con estado de visualización
+            const response = await api.get('/tickets/with-view-status');
             let newTickets: any[] = [];
             
             if (Array.isArray(response)) {
@@ -45,7 +46,18 @@ export function useTickets() {
             }
             
             // Ordenar tickets por fecha de creación (más nuevo primero)
-            const sortedTickets = newTickets.sort((a, b) => {
+            // Si el ticket tiene estructura con .ticket (del nuevo endpoint), extraer el ticket
+            const sortedTickets = newTickets.map((item: any) => {
+                if (item.ticket) {
+                    // Agregar propiedades de visualización al ticket
+                    return {
+                        ...item.ticket,
+                        isNew: item.isNew,
+                        viewedAt: item.viewedAt
+                    };
+                }
+                return item;
+            }).sort((a, b) => {
                 const dateA = new Date(a.created_at || 0).getTime();
                 const dateB = new Date(b.created_at || 0).getTime();
                 return dateB - dateA; // Orden descendente (más nuevo primero)
@@ -68,7 +80,7 @@ export function useTickets() {
     async function fetchTicketById(id: string) {
         setLoading(true);
         try {
-            const response = await api.get(`/tickets/${id}`);
+            const response = await api.get(`/tickets/${id}/with-view-status`);
             
             return response;
         } catch (error) {
@@ -79,6 +91,26 @@ export function useTickets() {
             return null;
         } finally {
             setLoading(false);
+        }
+    }
+
+    async function markTicketAsViewed(id: string) {
+        try {
+            await api.post(`/tickets/${id}/mark-as-viewed`, {});
+            
+            // Actualizar el estado local del ticket
+            setTickets((prevTickets) => 
+                prevTickets.map(ticket => 
+                    ticket.id === parseInt(id) 
+                        ? { ...ticket, isNew: false, viewedAt: new Date() }
+                        : ticket
+                )
+            );
+            
+            return true;
+        } catch (error) {
+            console.error("Error al marcar ticket como visto:", error);
+            return false;
         }
     }
 
@@ -276,6 +308,7 @@ export function useTickets() {
         updateTicket, 
         deleteTicket, 
         fetchTicketById, 
+        markTicketAsViewed,
         refetch, 
         exportToExcel,
         isPolling
