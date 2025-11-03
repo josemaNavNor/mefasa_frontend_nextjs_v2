@@ -122,3 +122,93 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Estilos específicos para contenido de email en tickets */
+.email-content {
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+.email-content p {
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+}
+
+.email-content h1, 
+.email-content h2, 
+.email-content h3, 
+.email-content h4, 
+.email-content h5, 
+.email-content h6 {
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.email-content ul, 
+.email-content ol {
+  margin-left: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.email-content li {
+  margin-bottom: 0.25rem;
+}
+
+.email-content a {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.email-content a:hover {
+  color: #1d4ed8;
+}
+
+.email-content blockquote {
+  border-left: 4px solid #e5e7eb;
+  padding-left: 1rem;
+  margin: 1rem 0;
+  font-style: italic;
+  color: #6b7280;
+}
+
+.email-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.email-content th, 
+.email-content td {
+  border: 1px solid #e5e7eb;
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.email-content th {
+  background-color: #f9fafb;
+  font-weight: 600;
+}
+
+.email-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.375rem;
+}
+
+.email-content pre {
+  background-color: #f9fafb;
+  padding: 1rem;
+  border-radius: 0.375rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.email-content code {
+  background-color: #f3f4f6;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-family: ui-monospace, 'SF Mono', monospace;
+  font-size: 0.875rem;
+}

@@ -4,6 +4,7 @@ import { User, ChevronDown, ChevronUp } from "lucide-react"
 import { TicketComment, Ticket } from "@/types/ticket"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
+import { applyEmailStyles } from "@/lib/html-utils"
 
 interface TicketConversationProps {
     ticket: Ticket
@@ -54,7 +55,7 @@ export function TicketConversation({ ticket, comments, loading }: TicketConversa
                                 {new Date(ticket.created_at).toLocaleString('es-ES')}
                             </span>
                         </div>
-                        <p className="text-gray-800">{ticket.description || ticket.summary}</p>
+                        <div className="text-gray-800" dangerouslySetInnerHTML={{ __html: applyEmailStyles(ticket.description || ticket.summary) }} />
                     </div>
 
                     {/* Conversacion */}
@@ -82,7 +83,7 @@ export function TicketConversation({ ticket, comments, loading }: TicketConversa
                                         {new Date(comment.created_at).toLocaleString('es-ES')}
                                     </span>
                                 </div>
-                                <div className="text-gray-800" dangerouslySetInnerHTML={{ __html: comment.body }} />
+                                <div className="text-gray-800" dangerouslySetInnerHTML={{ __html: applyEmailStyles(comment.body) }} />
                                 {comment.comments_files && comment.comments_files.length > 0 && (
                                     <div className="mt-2">
                                         <span className="text-xs text-gray-500">
