@@ -176,14 +176,33 @@ export const createColumns = ({ onDeleteTicket }: ColumnsProps = {}): ColumnDef<
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Fecha de Creación
+                    Fecha y Hora de Creación
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
             )
         },
-        cell: ({ row }) => (
-            <div className="text-left">{row.getValue("created_at")}</div>
-        ),
+        cell: ({ row }) => {
+            const dateValue = row.getValue("created_at") as string;
+            const formatDate = (dateString: string) => {
+                if (!dateString) return "Sin fecha";
+                try {
+                    const date = new Date(dateString);
+                    return date.toLocaleString('es-ES', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                } catch (error) {
+                    return dateString;
+                }
+            };
+            return (
+                <div className="text-left">{formatDate(dateValue)}</div>
+            );
+        },
     },
     {
         id: "actions",
