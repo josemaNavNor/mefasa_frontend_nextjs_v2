@@ -1,10 +1,10 @@
 "use client"
 
-import { User, ChevronDown, ChevronUp } from "lucide-react"
+import { User, ChevronDown, ChevronUp, Image, ImageOff } from "lucide-react"
 import { TicketComment, Ticket } from "@/types/ticket"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
-import { applyEmailStyles } from "@/lib/html-utils"
+import { applyEmailStyles, applyEmailStylesWithImages } from "@/lib/html-utils"
 
 interface TicketConversationProps {
     ticket: Ticket
@@ -14,6 +14,7 @@ interface TicketConversationProps {
 
 export function TicketConversation({ ticket, comments, loading }: TicketConversationProps) {
     const [showHistory, setShowHistory] = useState(true)
+    const [showImages, setShowImages] = useState(false)
 
     return (
         <div className="flex-1 flex flex-col border rounded-lg min-w-0">
@@ -23,24 +24,45 @@ export function TicketConversation({ ticket, comments, loading }: TicketConversa
                         <User className="h-4 w-4 mr-2" />
                         Conversación del Ticket
                     </h3>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowHistory(!showHistory)}
-                        className="flex items-center gap-1 text-gray-600 hover:text-gray-800"
-                    >
-                        {showHistory ? (
-                            <>
-                                <ChevronUp className="h-4 w-4" />
-                                Ocultar historial
-                            </>
-                        ) : (
-                            <>
-                                <ChevronDown className="h-4 w-4" />
-                                Mostrar historial
-                            </>
-                        )}
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setShowImages(!showImages)}
+                            className="flex items-center gap-1 text-gray-600 hover:text-gray-800"
+                            title={showImages ? "Ocultar imágenes" : "Mostrar imágenes"}
+                        >
+                            {showImages ? (
+                                <>
+                                    <ImageOff className="h-4 w-4" />
+                                    Ocultar imágenes
+                                </>
+                            ) : (
+                                <>
+                                    <Image className="h-4 w-4" />
+                                    Mostrar imágenes
+                                </>
+                            )}
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setShowHistory(!showHistory)}
+                            className="flex items-center gap-1 text-gray-600 hover:text-gray-800"
+                        >
+                            {showHistory ? (
+                                <>
+                                    <ChevronUp className="h-4 w-4" />
+                                    Ocultar historial
+                                </>
+                            ) : (
+                                <>
+                                    <ChevronDown className="h-4 w-4" />
+                                    Mostrar historial
+                                </>
+                            )}
+                        </Button>
+                    </div>
                 </div>
             </div>
 
@@ -55,7 +77,11 @@ export function TicketConversation({ ticket, comments, loading }: TicketConversa
                                 {new Date(ticket.created_at).toLocaleString('es-ES')}
                             </span>
                         </div>
-                        <div className="text-gray-800" dangerouslySetInnerHTML={{ __html: applyEmailStyles(ticket.description || ticket.summary) }} />
+                        <div className="text-gray-800" dangerouslySetInnerHTML={{ 
+                            __html: showImages 
+                                ? applyEmailStylesWithImages(ticket.description || ticket.summary)
+                                : applyEmailStyles(ticket.description || ticket.summary) 
+                        }} />
                     </div>
 
                     {/* Conversacion */}
@@ -83,7 +109,11 @@ export function TicketConversation({ ticket, comments, loading }: TicketConversa
                                         {new Date(comment.created_at).toLocaleString('es-ES')}
                                     </span>
                                 </div>
-                                <div className="text-gray-800" dangerouslySetInnerHTML={{ __html: applyEmailStyles(comment.body) }} />
+                                <div className="text-gray-800" dangerouslySetInnerHTML={{ 
+                                    __html: showImages 
+                                        ? applyEmailStylesWithImages(comment.body)
+                                        : applyEmailStyles(comment.body) 
+                                }} />
                                 {comment.comments_files && comment.comments_files.length > 0 && (
                                     <div className="mt-2">
                                         <span className="text-xs text-gray-500">
