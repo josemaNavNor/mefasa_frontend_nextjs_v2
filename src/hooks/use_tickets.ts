@@ -153,15 +153,9 @@ export function useTickets() {
             
             const response = await api.post('/tickets', { ...ticket, end_user: endUser });
 
-            setTickets((prevTickets) => {
-                const updatedTickets = [...prevTickets, response];
-                // Mantener el ordenamiento por fecha de creación (más nuevo primero)
-                return updatedTickets.sort((a, b) => {
-                    const dateA = new Date(a.created_at || 0).getTime();
-                    const dateB = new Date(b.created_at || 0).getTime();
-                    return dateB - dateA; // Orden descendente
-                });
-            });
+            // En lugar de agregar el ticket básico, refrescar toda la lista para obtener los datos completos
+            await fetchTickets();
+            
             eventEmitter.emit('data-changed', 'tickets');
             eventEmitter.emit('tickets-updated');
             Notiflix.Notify.success(`Ticket creado correctamente`);

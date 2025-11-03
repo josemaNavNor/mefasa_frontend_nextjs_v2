@@ -63,6 +63,9 @@ export default function TicketsPage() {
     const [selectedTicket, setSelectedTicket] = useState<any>(null);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
 
+    // Estado para controlar el Sheet de creación
+    const [sheetOpen, setSheetOpen] = useState(false);
+
     // Crear handlers
     const handlers = createTicketHandlers({
         createTicket,
@@ -96,7 +99,9 @@ export default function TicketsPage() {
             setErrors
         };
 
-        await handlers.handleSubmit(e, formData, setters);
+        await handlers.handleSubmit(e, formData, setters, () => {
+            setSheetOpen(false); // Cerrar el sheet cuando se crea exitosamente
+        });
     }, [handlers, ticket_number, summary, description, end_user, technician_id, type_id, floor_id, priority, status, due_date]);
 
     const handleExportToExcel = useCallback(() => {
@@ -130,7 +135,7 @@ export default function TicketsPage() {
                 </div>
             </div>
             <div className="flex gap-2 mb-4">
-                <Sheet>
+                <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
                     <SheetTrigger asChild>
                         <Button variant="outline">Agregar Ticket</Button>
                     </SheetTrigger>

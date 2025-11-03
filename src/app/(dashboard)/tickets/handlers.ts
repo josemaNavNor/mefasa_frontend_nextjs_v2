@@ -83,34 +83,45 @@ export const createTicketHandlers = ({
             setStatus: (value: string) => void;
             setDueDate: (value: string) => void;
             setErrors: (errors: { [key: string]: string }) => void;
-        }
+        },
+        onSuccess?: () => void
     ) => {
         e.preventDefault();
         setters.setErrors({});
 
-        await createTicket({
-            ticket_number: formData.ticket_number,
-            summary: formData.summary,
-            description: formData.description,
-            end_user: formData.end_user,
-            technician_id: Number(formData.technician_id),
-            type_id: Number(formData.type_id),
-            floor_id: Number(formData.floor_id),
-            priority: formData.priority,
-            status: formData.status,
-            due_date: formData.due_date
-        });
+        try {
+            await createTicket({
+                ticket_number: formData.ticket_number,
+                summary: formData.summary,
+                description: formData.description,
+                end_user: formData.end_user,
+                technician_id: Number(formData.technician_id),
+                type_id: Number(formData.type_id),
+                floor_id: Number(formData.floor_id),
+                priority: formData.priority,
+                status: formData.status,
+                due_date: formData.due_date
+            });
 
-        // Reset form
-        setters.setSummary("");
-        setters.setDescription("");
-        setters.setEndUser("");
-        setters.setTechnicianId("");
-        setters.setTypeId("");
-        setters.setFloorId("");
-        setters.setPriority("");
-        setters.setStatus("");
-        setters.setDueDate("");
+            // Reset form
+            setters.setSummary("");
+            setters.setDescription("");
+            setters.setEndUser("");
+            setters.setTechnicianId("");
+            setters.setTypeId("");
+            setters.setFloorId("");
+            setters.setPriority("");
+            setters.setStatus("");
+            setters.setDueDate("");
+
+            // Call success callback to close the sheet
+            if (onSuccess) {
+                onSuccess();
+            }
+        } catch (error) {
+            // Error ya manejado en createTicket
+            console.error('Error creating ticket:', error);
+        }
     };
 
     const handleRowClick = (
