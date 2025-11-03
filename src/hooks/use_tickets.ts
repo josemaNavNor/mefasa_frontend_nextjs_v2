@@ -32,16 +32,9 @@ export function useTickets() {
 
             // Detectar nuevos tickets
             const currentCount = newTickets.length;
-            // console.log('Polling check:', { 
-            //     currentCount, 
-            //     lastTicketCount, 
-            //     showNotification, 
-            //     isNewTicket: currentCount > lastTicketCount 
-            // });
             
             if (lastTicketCount > 0 && currentCount > lastTicketCount && showNotification) {
                 const newTicketsCount = currentCount - lastTicketCount;
-                //console.log(`Ticket  ${newTicketsCount} new tickets`);
                 Notiflix.Notify.info(`¡${newTicketsCount} nuevo${newTicketsCount > 1 ? 's' : ''} ticket${newTicketsCount > 1 ? 's' : ''} registrado${newTicketsCount > 1 ? 's' : ''}!`);
             }
             
@@ -67,7 +60,6 @@ export function useTickets() {
             setLastTicketCount(currentCount);
             
         } catch (error) {
-            //console.error("Error al obtener los tickets:", error);
             if (!isPolling) {
                 Notiflix.Notify.failure('Error al cargar tickets');
                 setTickets([]);
@@ -84,7 +76,6 @@ export function useTickets() {
             
             return response;
         } catch (error) {
-            //console.error("Error al obtener el ticket:", error);
             Notiflix.Notify.failure(
                 error instanceof Error ? `Error al cargar ticket: ${error.message}` : 'Error al cargar ticket'
             );
@@ -143,10 +134,24 @@ export function useTickets() {
         }
     }
 
-    async function createTicket(ticket: { summary: string, description: string, technician_id: number, type_id: number, priority: string, status: string, floor_id: number, due_date: string }) {
+    // debe de tomar end user dewsde local storage o contexto de auth
+    async function createTicket(ticket: { summary: string, description: string, end_user: string, technician_id: number, type_id: number, priority: string, status: string, floor_id: number, due_date: string }) {
         setLoading(true);
         try {
-            const response = await api.post('/tickets', ticket);
+            const userFromStorage = localStorage.getItem('user');
+            let endUser = '';
+            
+            if (userFromStorage) {
+                try {
+                    const userData = JSON.parse(userFromStorage);
+                    endUser = userData.email || '';
+                } catch (error) {
+                    console.error('Error parsing user data from localStorage:', error);
+                    endUser = '';
+                }
+            }
+            
+            const response = await api.post('/tickets', { ...ticket, end_user: endUser });
 
             setTickets((prevTickets) => {
                 const updatedTickets = [...prevTickets, response];

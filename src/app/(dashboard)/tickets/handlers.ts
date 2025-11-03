@@ -11,7 +11,6 @@ interface Ticket {
     priority: string;
     status: string;
     floor_id: number;
-    area_id: number;
     due_date: string;
 }
 
@@ -26,7 +25,6 @@ interface TicketHandlersProps {
         priority: string;
         status: string;
         floor_id: number;
-        area_id: number;
         due_date: string;
     }) => Promise<void>;
     deleteTicket: (id: string) => Promise<boolean>;
@@ -70,7 +68,6 @@ export const createTicketHandlers = ({
             technician_id: string;
             type_id: string;
             floor_id: string;
-            area_id: string;
             priority: string;
             status: string;
             due_date: string;
@@ -82,7 +79,6 @@ export const createTicketHandlers = ({
             setTechnicianId: (value: string) => void;
             setTypeId: (value: string) => void;
             setFloorId: (value: string) => void;
-            setAreaId: (value: string) => void;
             setPriority: (value: string) => void;
             setStatus: (value: string) => void;
             setDueDate: (value: string) => void;
@@ -100,7 +96,6 @@ export const createTicketHandlers = ({
             technician_id: Number(formData.technician_id),
             type_id: Number(formData.type_id),
             floor_id: Number(formData.floor_id),
-            area_id: Number(formData.area_id),
             priority: formData.priority,
             status: formData.status,
             due_date: formData.due_date
@@ -113,7 +108,6 @@ export const createTicketHandlers = ({
         setters.setTechnicianId("");
         setters.setTypeId("");
         setters.setFloorId("");
-        setters.setAreaId("");
         setters.setPriority("");
         setters.setStatus("");
         setters.setDueDate("");
