@@ -9,7 +9,22 @@ export interface TicketComment {
         last_name: string
         email: string
     }
-    comments_files?: any[]
+    comments_files?: CommentFile[]
+}
+
+export interface CommentFile {
+    id: number
+    ticket_comment: number
+    file_id: number
+    file?: {
+        id: number
+        filename: string
+        file_type: string
+        ticket_id: number
+        file_data: string
+        uploaded_at: string
+        uploaded_by: number
+    }
 }
 
 export interface TicketHistoryItem {

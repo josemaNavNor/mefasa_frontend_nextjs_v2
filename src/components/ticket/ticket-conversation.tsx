@@ -1,7 +1,7 @@
 "use client"
 
 import { User, ChevronDown, ChevronUp, Image, ImageOff, Info } from "lucide-react"
-import { TicketComment, Ticket } from "@/types/ticket"
+import { TicketComment, Ticket, CommentFile } from "@/types/ticket"
 import { Button } from "@/components/ui/button"
 import { useState, useMemo } from "react"
 import { applyEmailStyles, applyEmailStylesWithImages, analyzeEmailImages } from "@/lib/html-utils"
@@ -149,10 +149,78 @@ export function TicketConversation({ ticket, comments, loading }: TicketConversa
                                         : applyEmailStyles(comment.body) 
                                 }} />
                                 {comment.comments_files && comment.comments_files.length > 0 && (
-                                    <div className="mt-2">
-                                        <span className="text-xs text-gray-500">
-                                            {comment.comments_files.length} archivo(s) adjunto(s)
+                                    <div className="mt-3 space-y-2">
+                                        <span className="text-xs text-gray-500 block">
+                                            {comment.comments_files.length} archivo(s) adjunto(s):
                                         </span>
+                                        <div className="space-y-2">
+                                            {comment.comments_files.map((commentFile: CommentFile, index: number) => {
+                                                // Verificar si es una imagen
+                                                const isImage = commentFile.file?.file_type?.startsWith('image/');
+                                                const fileId = commentFile.file?.id;
+                                                const filename = commentFile.file?.filename || `archivo-${index + 1}`;
+                                                
+                                                if (isImage && showImages && fileId) {
+                                                    // Mostrar imagen desde el endpoint de descarga
+                                                    return (
+                                                        <div key={commentFile.id || index} className="border rounded-lg p-2">
+                                                            <div className="text-xs text-gray-600 mb-2">{filename}</div>
+                                                            <img 
+                                                                src={`/api/files/${fileId}/download`}
+                                                                alt={filename}
+                                                                className="email-image max-w-full h-auto rounded"
+                                                                onError={(e) => {
+                                                                    // Si falla la carga, mostrar placeholder
+                                                                    const img = e.target as HTMLImageElement;
+                                                                    img.style.display = 'none';
+                                                                    const placeholder = img.nextElementSibling as HTMLElement;
+                                                                    if (placeholder) placeholder.style.display = 'block';
+                                                                }}
+                                                            />
+                                                            <div className="email-image-placeholder" style={{display: 'none'}}>
+                                                                <span className="email-image-icon">🖼️</span>
+                                                                <span className="email-image-text">Error al cargar: {filename}</span>
+                                                                <a 
+                                                                    href={`/api/files/${fileId}/download`}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-blue-600 hover:underline text-xs"
+                                                                >
+                                                                    Descargar archivo
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                } else if (isImage && !showImages) {
+                                                    // Mostrar placeholder para imagen cuando las imágenes están ocultas
+                                                    return (
+                                                        <div key={commentFile.id || index} className="email-image-placeholder">
+                                                            <span className="email-image-icon">🖼️</span>
+                                                            <span className="email-image-text">Imagen: {filename}</span>
+                                                            <span className="email-image-hint">Activa "Mostrar imágenes" para verla</span>
+                                                        </div>
+                                                    );
+                                                } else {
+                                                    // Mostrar enlace para archivos no imagen
+                                                    return (
+                                                        <div key={commentFile.id || index} className="flex items-center gap-2 p-2 bg-gray-50 rounded border">
+                                                            <span className="text-sm">📎</span>
+                                                            <span className="text-sm text-gray-700 flex-1">{filename}</span>
+                                                            {fileId && (
+                                                                <a 
+                                                                    href={`/api/files/${fileId}/download`}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-blue-600 hover:underline text-xs"
+                                                                >
+                                                                    Descargar
+                                                                </a>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                }
+                                            })}
+                                        </div>
                                     </div>
                                 )}
                             </div>
