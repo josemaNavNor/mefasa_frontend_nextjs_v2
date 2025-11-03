@@ -86,26 +86,19 @@ function processEmailImagesPermissive(html: string): string {
     
     // En modo permisivo, mostrar todas las imágenes base64
     if (src.startsWith('data:image/')) {
-      // Agregar indicador de carga para imágenes muy grandes
+      // Para imágenes base64, simplemente mostrarlas con información de tamaño si son grandes
       if (src.length > 100000) {
         const sizeKB = Math.round(src.length / 1024);
         return `<div class="email-image-container">
-          <div class="email-image-loading">Cargando imagen (${sizeKB}KB)...</div>
-          <img src="${src}" alt="${alt}" class="email-image large-image" 
-               onload="this.previousElementSibling.style.display='none'" 
-               onerror="this.style.display='none'; this.previousElementSibling.innerHTML='❌ Error al cargar imagen grande';" />
+          <div class="email-image-info">Imagen grande: ${sizeKB}KB</div>
+          <img src="${src}" alt="${alt}" class="email-image large-image" />
         </div>`;
       }
       return `<img src="${src}" alt="${alt}" class="email-image" />`;
     }
     
-    // Para URLs externas, intentar cargarlas con fallback
-    return `<div class="email-image-container">
-      <div class="email-image-loading">Cargando imagen externa...</div>
-      <img src="${src}" alt="${alt}" class="email-image external-image" 
-           onload="this.previousElementSibling.style.display='none'" 
-           onerror="this.style.display='none'; this.previousElementSibling.innerHTML='❌ Imagen no disponible: ${alt || 'Sin descripción'}';" />
-    </div>`;
+    // Para URLs externas, mostrarlas directamente y dejar que el navegador maneje los errores
+    return `<img src="${src}" alt="${alt}" class="email-image external-image" />`;
   });
 }
 
@@ -141,14 +134,22 @@ export function applyEmailStyles(html: string, options: { showImages?: boolean }
 export function applyEmailStylesWithImages(html: string): string {
   if (!html) return '';
   
-  // Solo sanitizar elementos peligrosos, mantener imágenes
+  // Solo sanitizar elementos peligrosos, pero mantener todas las imágenes
   let cleanHtml = html
     .replace(/<script[^>]*>.*?<\/script>/gi, '')
     .replace(/<style[^>]*>.*?<\/style>/gi, '')
+    .replace(/on\w+="[^"]*"/gi, '') // Remover event handlers por seguridad
     .replace(/javascript:/gi, ''); // Remover javascript: URLs
   
-  // Procesar imágenes de forma permisiva
-  cleanHtml = processEmailImagesPermissive(cleanHtml);
+  // Aplicar clase CSS a todas las imágenes para estilo consistente
+  cleanHtml = cleanHtml.replace(/<img([^>]*)>/gi, (match, attributes) => {
+    // Verificar si ya tiene clase
+    if (attributes.includes('class=')) {
+      return match.replace(/class=["']([^"']*)["']/i, 'class="$1 email-image"');
+    } else {
+      return `<img${attributes} class="email-image" />`;
+    }
+  });
   
   return `<div class="email-content" style="
     line-height: 1.6; 
