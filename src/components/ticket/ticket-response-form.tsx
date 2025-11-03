@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { TiptapEditor } from "@/components/ui/tiptap-editor"
 import { isHtmlEmpty } from "@/hooks/useTiptapHelpers"
 import { Send, Paperclip, X, MessageSquare, ChevronUp, ChevronDown } from "lucide-react"
@@ -13,8 +12,6 @@ interface TicketResponseFormProps {
     setResponseText: (text: string) => void
     selectedFiles: File[]
     setSelectedFiles: (files: File[]) => void
-    isPublic: boolean
-    setIsPublic: (isPublic: boolean) => void
     onSubmit: (e: React.FormEvent) => void
     onClose: () => void
 }
@@ -24,8 +21,6 @@ export function TicketResponseForm({
     setResponseText,
     selectedFiles,
     setSelectedFiles,
-    isPublic,
-    setIsPublic,
     onSubmit,
     onClose
 }: TicketResponseFormProps) {
@@ -97,19 +92,6 @@ export function TicketResponseForm({
                                     {selectedFiles.length} archivo(s)
                                 </span>
                             )}
-                        </div>
-
-                        <div className="flex items-center space-x-2">
-                            <input
-                                type="checkbox"
-                                id="isPublic"
-                                checked={isPublic}
-                                onChange={(e) => setIsPublic(e.target.checked)}
-                                className="rounded"
-                            />
-                            <Label htmlFor="isPublic" className="text-sm">
-                                Comentario público
-                            </Label>
                         </div>
                     </div>
 
