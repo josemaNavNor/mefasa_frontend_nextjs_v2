@@ -29,8 +29,6 @@ export function TicketDetailsModal({
         setResponseText,
         selectedFiles,
         setSelectedFiles,
-        isPublic,
-        setIsPublic,
         ticketData,
         comments,
         loading,

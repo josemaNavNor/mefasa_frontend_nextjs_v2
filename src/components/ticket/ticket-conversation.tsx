@@ -206,19 +206,12 @@ export function TicketConversation({ ticket, comments, loading }: TicketConversa
                         </div>
                     ) : comments && comments.length > 0 ? (
                         comments.map((comment) => (
-                            <div key={comment.id} className={`p-3 rounded-lg border-l-4 ${
-                                comment.is_public 
-                                    ? 'bg-green-100 border-green-400' 
-                                    : 'bg-amber-100 border-amber-400'
-                            }`}>
+                            <div key={comment.id} className="p-3 rounded-lg border-l-4 bg-green-100 border-green-400">
                                 <div className="flex justify-between items-start mb-2">
-                                    <span className={`font-medium ${
-                                        comment.is_public ? 'text-green-800' : 'text-amber-800'
-                                    }`}>
+                                    <span className="font-medium text-green-800">
                                         {comment.users?.name && comment.users?.last_name 
                                             ? `${comment.users.name} ${comment.users.last_name}` 
                                             : comment.users?.email || 'Usuario desconocido'}
-                                        {!comment.is_public && ' (Privado)'}
                                     </span>
                                     <span className="text-xs text-gray-600">
                                         {new Date(comment.created_at).toLocaleString('es-ES')}

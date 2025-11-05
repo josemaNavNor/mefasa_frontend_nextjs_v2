@@ -1,7 +1,6 @@
 export interface TicketComment {
     id: string | number
     body: string
-    is_public: boolean
     created_at: string
     users?: {
         id: number

@@ -15,7 +15,6 @@ import { eventEmitter } from "./useEventListener"
 export const useTicketModal = (ticket: Ticket | null) => {
     const [responseText, setResponseText] = useState("")
     const [selectedFiles, setSelectedFiles] = useState<File[]>([])
-    const [isPublic, setIsPublic] = useState(true)
     const [currentUserId, setCurrentUserId] = useState<number | null>(null)
     const [ticketData, setTicketData] = useState(ticket)
     const [markedAsViewedTickets, setMarkedAsViewedTickets] = useState<Set<string | number>>(new Set())
@@ -112,8 +111,7 @@ export const useTicketModal = (ticket: Ticket | null) => {
             await createComment({
                 ticket_id: typeof ticket!.id === 'string' ? parseInt(ticket!.id) : ticket!.id,
                 body: responseText,
-                technician_id: currentUserId,
-                is_public: isPublic,
+                technician_id: currentUserId
             })
 
             setResponseText("")
@@ -141,8 +139,6 @@ export const useTicketModal = (ticket: Ticket | null) => {
         setResponseText,
         selectedFiles,
         setSelectedFiles,
-        isPublic,
-        setIsPublic,
         ticketData,
         comments,
         loading,

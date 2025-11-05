@@ -9,7 +9,6 @@ interface TicketComment {
   ticket_id: number;
   body: string;
   technician_id: number;
-  is_public: boolean;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -27,7 +26,6 @@ interface CreateCommentData {
   ticket_id: number;
   body: string;
   technician_id: number;
-  is_public: boolean;
 }
 
 export function useTicketComments(ticketId?: number) {
