@@ -23,10 +23,20 @@ export interface TicketHistoryItem {
 export function useTicketHistory(ticketId?: number) {
     const [history, setHistory] = useState<TicketHistoryItem[]>([]);
     const [loading, setLoading] = useState(false);
+    const [lastFetchTime, setLastFetchTime] = useState<number>(0);
 
     const fetchHistory = async () => {
-        if (!ticketId) return; 
+        if (!ticketId) return;
+        
+        // Evitar múltiples llamadas muy seguidas (menos de 1 segundo)
+        const now = Date.now();
+        if (now - lastFetchTime < 1000) {
+            console.log('Fetch history bloqueado por throttle');
+            return;
+        }
+        
         setLoading(true);
+        setLastFetchTime(now);
 
         try {
             const response = await api.get(`/ticket-history/by-ticket/${ticketId}`);
@@ -85,14 +95,17 @@ export function useTicketHistory(ticketId?: number) {
         }
     }, [ticketId]);
 
-    // Escuchar eventos de actualización del historial
+    // Escuchar eventos de actualización del historial con debounce
     useEventListener('ticket-history-updated', (updatedTicketId: number) => {
         if (ticketId && updatedTicketId === ticketId) {
             console.log('Recargando historial para ticket:', ticketId);
-            // Agregar un pequeño delay para que el backend procese el historial
-            setTimeout(() => {
+            // Implementar debounce para evitar múltiples llamadas
+            const timeoutId = setTimeout(() => {
                 fetchHistory();
-            }, 500);
+            }, 1000);
+            
+            // Cleanup del timeout anterior si existe
+            return () => clearTimeout(timeoutId);
         }
     });
 

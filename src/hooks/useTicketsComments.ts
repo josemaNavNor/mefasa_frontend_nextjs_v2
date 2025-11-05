@@ -67,9 +67,9 @@ export function useTicketComments(ticketId?: number) {
         await fetchCommentsByTicket(ticketId);
       }
 
-      eventEmitter.emit('data-changed', 'ticket-comments');
-      eventEmitter.emit('ticket-comments-updated');
-      eventEmitter.emit('ticket-history-updated', ticketId);
+      eventEmitter.emitWithDebounce('data-changed', 200, 'ticket-comments');
+      eventEmitter.emitWithDebounce('ticket-comments-updated', 200);
+      eventEmitter.emitWithDebounce('ticket-history-updated', 300, ticketId);
       Notiflix.Notify.success('Respuesta enviada con éxito');
       return response;
     } catch (error) {
@@ -90,7 +90,7 @@ export function useTicketComments(ticketId?: number) {
   };
 
   useEffect(() => {
-    if (ticketId) {
+    if (ticketId && ticketId > 0) {
       fetchCommentsByTicket(ticketId);
     }
   }, [ticketId]);

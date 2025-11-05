@@ -35,14 +35,16 @@ export const useTicketModal = (ticket: Ticket | null) => {
 
     // Actualizar datos del ticket cuando cambie el prop
     useEffect(() => {
-        setTicketData(ticket)
-        
-        // Marcar ticket como visto cuando se abre el modal
-        if (ticket && ticket.id) {
-            const ticketId = typeof ticket.id === 'string' ? ticket.id : ticket.id.toString()
-            markTicketAsViewed(ticketId)
+        if (ticket) {
+            setTicketData(ticket)
+            
+            // Marcar ticket como visto cuando se abre el modal (solo una vez)
+            if (ticket.id) {
+                const ticketId = typeof ticket.id === 'string' ? ticket.id : ticket.id.toString()
+                markTicketAsViewed(ticketId)
+            }
         }
-    }, [ticket, markTicketAsViewed])
+    }, [ticket?.id]) // Solo depender del ID para evitar efectos innecesarios
 
     const handleTicketUpdate = async (field: string, newValue: any, oldValue: any) => {
         if (!ticket || !currentUserId) {
@@ -57,16 +59,19 @@ export const useTicketModal = (ticket: Ticket | null) => {
             if (result) {
                 setTicketData((prev: any) => ({ ...prev, [field]: newValue }))
                 
-                // Crear entrada en el historial
-                const historyData = {
-                    ticket_id: typeof ticket.id === 'string' ? parseInt(ticket.id) : ticket.id,
-                    user_id: currentUserId,
-                    action_type: `${field} modificado`,
-                    description: createHistoryDescription(field, oldValue, newValue, users, types),
-                    old_values: { [field]: oldValue },
-                    new_values: { [field]: newValue }
+                // Crear entrada en el historial solo si el valor realmente cambió
+                if (oldValue !== newValue) {
+                    const historyData = {
+                        ticket_id: typeof ticket.id === 'string' ? parseInt(ticket.id) : ticket.id,
+                        user_id: currentUserId,
+                        action_type: `${field} modificado`,
+                        description: createHistoryDescription(field, oldValue, newValue, users, types),
+                        old_values: { [field]: oldValue },
+                        new_values: { [field]: newValue }
+                    }
+                    // Emitir evento con debounce para evitar spam
+                    eventEmitter.emitWithDebounce('Ticket actualizado', 500, historyData.ticket_id);
                 }
-                eventEmitter.emit('Ticket actualizado', historyData.ticket_id)
 
                 Notiflix.Notify.success(`Campo actualizado correctamente`)
             } else {
