@@ -40,7 +40,7 @@ export const createColumns = ({ onDeleteTicket }: ColumnsProps = {}): ColumnDef<
                     <span>{row.getValue("ticket_number")}</span>
                     {ticket.isNew && (
                         <div title="Ticket nuevo - No visto">
-                            <Sparkles className="h-4 w-4 text-blue-500 animate-pulse" />
+                            <p className="h-4 w-4 text-blue-500 animate-pulse">¡Nuevo!</p>
                         </div>
                     )}
                 </div>
