@@ -11,8 +11,17 @@ export function useTickets() {
     const [loading, setLoading] = useState(false);
     const [lastTicketCount, setLastTicketCount] = useState(0);
     const [isPolling, setIsPolling] = useState(false);
+    const [lastFetchTime, setLastFetchTime] = useState<number>(0);
 
     async function fetchTickets(showNotification = false) {
+        // Implementar throttling para evitar múltiples llamadas muy seguidas
+        const now = Date.now();
+        if (now - lastFetchTime < 2000) { // Mínimo 2 segundos entre llamadas
+            console.log('fetchTickets bloqueado por throttling');
+            return;
+        }
+        setLastFetchTime(now);
+        
         if (!isPolling) setLoading(true);
         try {
             // Usar el endpoint con estado de visualización
@@ -87,12 +96,22 @@ export function useTickets() {
 
     async function markTicketAsViewed(id: string) {
         try {
+            // Buscar el ticket en el estado local para verificar si ya está marcado como visto
+            const ticketId = parseInt(id);
+            const currentTicket = tickets.find(t => t.id === ticketId);
+            
+            // Si el ticket ya no es nuevo (ya fue visto), no hacer la llamada
+            if (currentTicket && currentTicket.isNew === false) {
+                console.log(`Ticket ${id} ya fue marcado como visto anteriormente`);
+                return true;
+            }
+            
             await api.post(`/tickets/${id}/mark-as-viewed`, {});
             
             // Actualizar el estado local del ticket
             setTickets((prevTickets) => 
                 prevTickets.map(ticket => 
-                    ticket.id === parseInt(id) 
+                    ticket.id === ticketId 
                         ? { ...ticket, isNew: false, viewedAt: new Date() }
                         : ticket
                 )
@@ -284,6 +303,7 @@ export function useTickets() {
             setIsPolling(true);
             console.log(`Empezando polling cada ${autoRefreshInterval / 1000} segundos`);
             pollingInterval = setInterval(() => {
+                console.log('Ejecutando auto-refresh de tickets');
                 fetchTickets(true); // true para mostrar notificaciones de nuevos tickets
             }, autoRefreshInterval);
         } else {

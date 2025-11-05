@@ -17,6 +17,7 @@ export const useTicketModal = (ticket: Ticket | null) => {
     const [isPublic, setIsPublic] = useState(true)
     const [currentUserId, setCurrentUserId] = useState<number | null>(null)
     const [ticketData, setTicketData] = useState(ticket)
+    const [markedAsViewedTickets, setMarkedAsViewedTickets] = useState<Set<string | number>>(new Set())
 
     const { comments, loading, createComment } = useTicketComments(
         ticket?.id ? (typeof ticket.id === 'string' ? parseInt(ticket.id) : ticket.id) : undefined
@@ -38,13 +39,22 @@ export const useTicketModal = (ticket: Ticket | null) => {
         if (ticket) {
             setTicketData(ticket)
             
-            // Marcar ticket como visto cuando se abre el modal (solo una vez)
+            // Marcar ticket como visto cuando se abre el modal (solo una vez por ticket)
             if (ticket.id) {
                 const ticketId = typeof ticket.id === 'string' ? ticket.id : ticket.id.toString()
-                markTicketAsViewed(ticketId)
+                const ticketIdKey = ticket.id.toString()
+                
+                // Solo marcar como visto si no lo hemos hecho antes
+                if (!markedAsViewedTickets.has(ticketIdKey)) {
+                    console.log(`Marcando ticket ${ticketIdKey} como visto por primera vez`);
+                    markTicketAsViewed(ticketId)
+                    setMarkedAsViewedTickets(prev => new Set(prev).add(ticketIdKey))
+                } else {
+                    console.log(`Ticket ${ticketIdKey} ya fue marcado como visto anteriormente`);
+                }
             }
         }
-    }, [ticket?.id]) // Solo depender del ID para evitar efectos innecesarios
+    }, [ticket?.id]) // Solo depender del ID del ticket
 
     const handleTicketUpdate = async (field: string, newValue: any, oldValue: any) => {
         if (!ticket || !currentUserId) {
@@ -113,6 +123,16 @@ export const useTicketModal = (ticket: Ticket | null) => {
             Notiflix.Notify.failure('Error al enviar comentario')
         }
     }
+
+    // Cleanup cuando el ticket cambie o se cierre el modal
+    useEffect(() => {
+        return () => {
+            // Solo limpiar si el ticket es null (modal cerrado)
+            if (!ticket) {
+                setMarkedAsViewedTickets(new Set());
+            }
+        };
+    }, [ticket]);
 
     return {
         responseText,
