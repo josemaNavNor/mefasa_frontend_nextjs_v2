@@ -52,6 +52,16 @@ export interface TicketType {
     type_name: string
 }
 
+export interface TicketFile {
+    id: number
+    filename: string
+    file_type: string
+    ticket_id: number
+    file_data: string
+    uploaded_at: string
+    deleted_at?: string | null
+}
+
 export interface Ticket {
     id: string | number
     ticket_number: string
@@ -69,6 +79,7 @@ export interface Ticket {
     due_date?: string
     created_at: string
     end_user: string
+    file?: TicketFile[]  // Archivos directos del ticket
 }
 
 export type TicketPage = {

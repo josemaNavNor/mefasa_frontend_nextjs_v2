@@ -19,6 +19,10 @@ export function TicketConversation({ ticket, comments, loading }: TicketConversa
     // Analizar imágenes en el contenido
     const imageAnalysis = useMemo(() => {
         const ticketImages = analyzeEmailImages(ticket.description || ticket.summary || '');
+        
+        // Contar archivos directos del ticket
+        const ticketFiles = ticket.file?.filter(file => file.file_type?.startsWith('image/')) || [];
+        
         const commentImages = comments.reduce((acc, comment) => {
             const analysis = analyzeEmailImages(comment.body || '');
             return {
@@ -31,7 +35,7 @@ export function TicketConversation({ ticket, comments, loading }: TicketConversa
         }, { totalImages: 0, base64Images: 0, externalImages: 0, largeImages: 0, totalSizeKB: 0 });
         
         return {
-            totalImages: ticketImages.totalImages + commentImages.totalImages,
+            totalImages: ticketImages.totalImages + commentImages.totalImages + ticketFiles.length,
             base64Images: ticketImages.base64Images + commentImages.base64Images,
             externalImages: ticketImages.externalImages + commentImages.externalImages,
             largeImages: ticketImages.largeImages + commentImages.largeImages,
@@ -116,6 +120,81 @@ export function TicketConversation({ ticket, comments, loading }: TicketConversa
                                 ? applyEmailStylesWithImages(ticket.description || ticket.summary)
                                 : applyEmailStyles(ticket.description || ticket.summary) 
                         }} />
+                        
+                        {/* Mostrar archivos directos del ticket */}
+                        {ticket.file && ticket.file.length > 0 && (
+                            <div className="mt-3 space-y-2">
+                                <span className="text-xs text-blue-700 block font-medium">
+                                    {ticket.file.length} archivo(s) adjunto(s):
+                                </span>
+                                <div className="space-y-2">
+                                    {ticket.file.map((file, index: number) => {
+                                        // Verificar si es una imagen
+                                        const isImage = file.file_type?.startsWith('image/');
+                                        const fileId = file.id;
+                                        const filename = file.filename || `archivo-${index + 1}`;
+                                        
+                                        if (isImage && showImages && fileId) {
+                                            // Mostrar imagen desde el endpoint de descarga
+                                            return (
+                                                <div key={fileId} className="border rounded-lg p-2 bg-white">
+                                                    <div className="text-xs text-gray-600 mb-2">{filename}</div>
+                                                    <img 
+                                                        src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/files/${fileId}/download`}
+                                                        alt={filename}
+                                                        className="email-image max-w-full h-auto rounded"
+                                                        onError={(e) => {
+                                                            // Si falla la carga, mostrar placeholder
+                                                            const img = e.target as HTMLImageElement;
+                                                            img.style.display = 'none';
+                                                            const placeholder = img.nextElementSibling as HTMLElement;
+                                                            if (placeholder) placeholder.style.display = 'block';
+                                                        }}
+                                                    />
+                                                    <div className="email-image-placeholder" style={{display: 'none'}}>
+                                                        <span className="email-image-icon">🖼️</span>
+                                                        <span className="email-image-text">Error al cargar: {filename}</span>
+                                                        <a 
+                                                            href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/files/${fileId}/download`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-blue-600 hover:underline text-xs"
+                                                        >
+                                                            Descargar archivo
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            );
+                                        } else if (isImage && !showImages) {
+                                            // Mostrar placeholder para imagen cuando las imágenes están ocultas
+                                            return (
+                                                <div key={fileId} className="email-image-placeholder">
+                                                    <span className="email-image-icon">🖼️</span>
+                                                    <span className="email-image-text">Imagen: {filename}</span>
+                                                    <span className="email-image-hint">Activa "Mostrar imágenes" para verla</span>
+                                                </div>
+                                            );
+                                        } else {
+                                            // Mostrar enlace para archivos no imagen
+                                            return (
+                                                <div key={fileId} className="flex items-center gap-2 p-2 bg-white rounded border">
+                                                    <span className="text-sm">📎</span>
+                                                    <span className="text-sm text-gray-700 flex-1">{filename}</span>
+                                                    <a 
+                                                        href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/files/${fileId}/download`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-blue-600 hover:underline text-xs"
+                                                    >
+                                                        Descargar
+                                                    </a>
+                                                </div>
+                                            );
+                                        }
+                                    })}
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Conversacion */}
@@ -166,7 +245,7 @@ export function TicketConversation({ ticket, comments, loading }: TicketConversa
                                                         <div key={commentFile.id || index} className="border rounded-lg p-2">
                                                             <div className="text-xs text-gray-600 mb-2">{filename}</div>
                                                             <img 
-                                                                src={`/api/files/${fileId}/download`}
+                                                                src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/files/${fileId}/download`}
                                                                 alt={filename}
                                                                 className="email-image max-w-full h-auto rounded"
                                                                 onError={(e) => {
@@ -181,7 +260,7 @@ export function TicketConversation({ ticket, comments, loading }: TicketConversa
                                                                 <span className="email-image-icon">🖼️</span>
                                                                 <span className="email-image-text">Error al cargar: {filename}</span>
                                                                 <a 
-                                                                    href={`/api/files/${fileId}/download`}
+                                                                    href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/files/${fileId}/download`}
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                     className="text-blue-600 hover:underline text-xs"
@@ -208,7 +287,7 @@ export function TicketConversation({ ticket, comments, loading }: TicketConversa
                                                             <span className="text-sm text-gray-700 flex-1">{filename}</span>
                                                             {fileId && (
                                                                 <a 
-                                                                    href={`/api/files/${fileId}/download`}
+                                                                    href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/files/${fileId}/download`}
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                     className="text-blue-600 hover:underline text-xs"
