@@ -6,6 +6,7 @@ import { useTicketHistory } from "@/hooks/useTicketHistory"
 import { useTickets } from "@/hooks/use_tickets"
 import { useUsers } from "@/hooks/useUsersAdmin"
 import { useType } from "@/hooks/use_typeTickets"
+import { useFloors } from "@/hooks/use_floors"
 import Notiflix from 'notiflix';
 import { createHistoryDescription, getCurrentUserId } from "@/lib/ticket-utils"
 import { Ticket } from "@/types/ticket"
@@ -28,6 +29,7 @@ export const useTicketModal = (ticket: Ticket | null) => {
     )
     const { users } = useUsers()
     const { types } = useType()
+    const { floors } = useFloors()
 
     // Inicializar usuario actual
     useEffect(() => {
@@ -75,7 +77,7 @@ export const useTicketModal = (ticket: Ticket | null) => {
                         ticket_id: typeof ticket.id === 'string' ? parseInt(ticket.id) : ticket.id,
                         user_id: currentUserId,
                         action_type: `${field} modificado`,
-                        description: createHistoryDescription(field, oldValue, newValue, users, types),
+                        description: createHistoryDescription(field, oldValue, newValue, users, types, floors),
                         old_values: { [field]: oldValue },
                         new_values: { [field]: newValue }
                     }
@@ -147,6 +149,7 @@ export const useTicketModal = (ticket: Ticket | null) => {
         history,
         users,
         types,
+        floors,
         handleTicketUpdate,
         handleSubmitResponse
     }

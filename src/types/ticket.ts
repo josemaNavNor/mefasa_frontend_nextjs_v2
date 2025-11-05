@@ -52,6 +52,12 @@ export interface TicketType {
     type_name: string
 }
 
+export interface Floor {
+    id: number
+    floor_name: string
+    description?: string
+}
+
 export interface TicketFile {
     id: number
     filename: string
@@ -76,6 +82,8 @@ export interface Ticket {
         last_name: string
     }
     type_id?: number
+    floor_id?: number
+    floor?: Floor
     due_date?: string
     created_at: string
     end_user: string

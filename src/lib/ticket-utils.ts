@@ -1,4 +1,4 @@
-export const createHistoryDescription = (field: string, oldValue: any, newValue: any, users: any[], types: any[]) => {
+export const createHistoryDescription = (field: string, oldValue: any, newValue: any, users: any[], types: any[], floors?: any[]) => {
     const fieldName = getFieldDisplayName(field)
     
     let oldDisplayValue = oldValue
@@ -18,6 +18,13 @@ export const createHistoryDescription = (field: string, oldValue: any, newValue:
         newDisplayValue = newValue ? 
             types.find(t => t.id === newValue)?.type_name || `ID: ${newValue}`
             : 'Sin asignar'
+    } else if (field === 'floor_id' && floors) {
+        oldDisplayValue = oldValue ? 
+            floors.find(f => f.id === oldValue)?.floor_name || `ID: ${oldValue}`
+            : 'Sin asignar'
+        newDisplayValue = newValue ? 
+            floors.find(f => f.id === newValue)?.floor_name || `ID: ${newValue}`
+            : 'Sin asignar'
     } else {
         oldDisplayValue = oldValue || 'Sin asignar'
         newDisplayValue = newValue || 'Sin asignar'
@@ -32,6 +39,7 @@ export const getFieldDisplayName = (field: string) => {
         priority: 'Prioridad',
         technician_id: 'Técnico asignado',
         type_id: 'Tipo',
+        floor_id: 'Planta',
         due_date: 'Fecha límite'
     }
     return fieldNames[field] || field

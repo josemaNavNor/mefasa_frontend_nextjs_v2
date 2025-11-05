@@ -11,16 +11,17 @@ import {
 import { Button } from "@/components/ui/button"
 import { Edit2, Check, X as XIcon } from "lucide-react"
 import { SimpleDatePicker } from "@/components/ui/simple-date-picker"
-import { Ticket, User, TicketType } from "@/types/ticket"
+import { Ticket, User, TicketType, Floor } from "@/types/ticket"
 
 interface TicketBasicInfoProps {
     ticket: Ticket
     users: User[]
     types: TicketType[]
+    floors: Floor[]
     onTicketUpdate: (field: string, newValue: any, oldValue: any) => void
 }
 
-export function TicketBasicInfo({ ticket, users, types, onTicketUpdate }: TicketBasicInfoProps) {
+export function TicketBasicInfo({ ticket, users, types, floors, onTicketUpdate }: TicketBasicInfoProps) {
     const [editingField, setEditingField] = useState<string | null>(null)
     const [tempValues, setTempValues] = useState<{ [key: string]: any }>({})
     const [calendarOpen, setCalendarOpen] = useState(false)
@@ -58,6 +59,7 @@ export function TicketBasicInfo({ ticket, users, types, onTicketUpdate }: Ticket
             case 'technician_id':
                 return ticket?.technician_id || ticket?.technician?.id || null
             case 'type_id': return ticket?.type_id
+            case 'floor_id': return ticket?.floor_id
             case 'due_date': return ticket?.due_date
             default: return ''
         }
@@ -67,7 +69,7 @@ export function TicketBasicInfo({ ticket, users, types, onTicketUpdate }: Ticket
     const getDisplayValue = (field: string, value: any) => {
         switch (field) {
             case 'technician_id':
-                // Si value es un numero, busca en la lista de users
+                // Si value es un numer busca en la lista de users
                 if (typeof value === 'number' && value !== 0) {
                     const technician = users.find(u => u.id === value)
                     return technician ? `${technician.name} ${technician.last_name}` : 'Sin asignar'
@@ -81,6 +83,17 @@ export function TicketBasicInfo({ ticket, users, types, onTicketUpdate }: Ticket
                 if (!value) return 'Sin tipo'
                 const type = types.find(t => t.id === value)
                 return type ? type.type_name : 'Sin tipo'
+            case 'floor_id':
+                // Si value es un numero, busca en la lista de floors
+                if (typeof value === 'number' && value !== 0) {
+                    const floor = floors.find(f => f.id === value)
+                    return floor ? floor.floor_name : 'Sin planta'
+                }
+                // Si viene directamente del ticket como objeto floor
+                if (ticket?.floor && typeof ticket.floor === 'object') {
+                    return ticket.floor.floor_name
+                }
+                return 'Sin planta'
             case 'due_date':
                 return value ? new Date(value).toLocaleDateString('es-ES') : 'Sin fecha límite'
             default:
@@ -88,7 +101,7 @@ export function TicketBasicInfo({ ticket, users, types, onTicketUpdate }: Ticket
         }
     }
 
-    // Renderizar el input de edición segun el campo
+    // Renderizar el input de edicion segun el campo
     const renderEditInput = (field: string, currentValue: any) => {
         const tempValue = tempValues[field] !== undefined ? tempValues[field] : currentValue
 
@@ -179,6 +192,26 @@ export function TicketBasicInfo({ ticket, users, types, onTicketUpdate }: Ticket
                     </Select>
                 )
 
+            case 'floor_id':
+                return (
+                    <Select
+                        value={tempValue?.toString() || '0'}
+                        onValueChange={(value) => setTempValues({ ...tempValues, [field]: value === '0' ? null : parseInt(value) })}
+                    >
+                        <SelectTrigger className="h-8 text-xs">
+                            <SelectValue placeholder="Seleccionar planta" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="0">Sin planta</SelectItem>
+                            {floors.map((floor) => (
+                                <SelectItem key={floor.id} value={floor.id.toString()}>
+                                    {floor.floor_name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                )
+
             case 'due_date':
                 return (
                     <SimpleDatePicker
@@ -244,6 +277,7 @@ export function TicketBasicInfo({ ticket, users, types, onTicketUpdate }: Ticket
                     {renderField('priority', 'Prioridad', ticket?.priority)}
                     {renderField('technician_id', 'Asignado a', getFieldValue('technician_id'))}
                     {renderField('type_id', 'Tipo', ticket?.type_id)}
+                    {renderField('floor_id', 'Planta', ticket?.floor_id)}
                     {renderField('due_date', 'Fecha límite', ticket?.due_date)}
 
                     <div className="flex flex-col space-y-1">

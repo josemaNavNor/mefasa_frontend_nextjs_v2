@@ -38,7 +38,8 @@ export function TicketDetailsModal({
         users,
         types,
         handleTicketUpdate,
-        handleSubmitResponse
+        handleSubmitResponse,
+        floors
     } = useTicketModal(ticket)
 
     if (!ticket) return null
@@ -71,6 +72,7 @@ export function TicketDetailsModal({
                                 ticket={ticketData} 
                                 users={users}
                                 types={types}
+                                floors={floors}
                                 onTicketUpdate={handleTicketUpdate} 
                             />
                         )}
@@ -83,8 +85,6 @@ export function TicketDetailsModal({
                     setResponseText={setResponseText}
                     selectedFiles={selectedFiles}
                     setSelectedFiles={setSelectedFiles}
-                    isPublic={isPublic}
-                    setIsPublic={setIsPublic}
                     onSubmit={handleSubmitResponse}
                     onClose={() => onOpenChange(false)}
                 />
