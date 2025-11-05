@@ -303,12 +303,21 @@
 
 /* Estilos mejorados para imágenes en emails */
 .email-content .email-image {
-  max-width: 100%;
+  max-width: 300px;
+  max-height: 200px;
   height: auto;
   border-radius: 0.375rem;
   margin: 0.5rem 0;
   display: block;
-  border: 1px solid #e5e7eb;
-  background-color: #f9fafb;
-  padding: 2px;
+  object-fit: contain;
+  transition: all 0.2s ease-in-out;
+}
+
+.email-image:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dark .email-image:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }

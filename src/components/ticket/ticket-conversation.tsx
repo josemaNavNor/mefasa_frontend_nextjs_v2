@@ -142,7 +142,9 @@ export function TicketConversation({ ticket, comments, loading }: TicketConversa
                                                     <img 
                                                         src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/files/${fileId}/download`}
                                                         alt={filename}
-                                                        className="email-image max-w-full h-auto rounded"
+                                                        className="email-image max-w-xs h-auto rounded border shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                                                        style={{ maxHeight: '200px', maxWidth: '300px' }}
+                                                        onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/files/${fileId}/download`, '_blank')}
                                                         onError={(e) => {
                                                             // Si falla la carga, mostrar placeholder
                                                             const img = e.target as HTMLImageElement;
@@ -247,7 +249,9 @@ export function TicketConversation({ ticket, comments, loading }: TicketConversa
                                                             <img 
                                                                 src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/files/${fileId}/download`}
                                                                 alt={filename}
-                                                                className="email-image max-w-full h-auto rounded"
+                                                                className="email-image max-w-xs h-auto rounded border shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                                                                style={{ maxHeight: '200px', maxWidth: '300px' }}
+                                                                onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/files/${fileId}/download`, '_blank')}
                                                                 onError={(e) => {
                                                                     // Si falla la carga, mostrar placeholder
                                                                     const img = e.target as HTMLImageElement;
