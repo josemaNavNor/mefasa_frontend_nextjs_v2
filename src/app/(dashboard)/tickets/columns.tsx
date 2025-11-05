@@ -100,6 +100,24 @@ export const createColumns = ({ onDeleteTicket }: ColumnsProps = {}): ColumnDef<
         },
     },
     {
+        accessorKey: "floor",
+        header: ({ column }) => {
+            return (
+                <Button
+                    variant="ghost"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    Planta
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                </Button>
+            )
+        },
+        cell: ({ row }) => {
+            const floor = row.getValue("floor") as { name?: string, last_name?: string };
+            return <div className="text-center">{floor ? `${floor.name} ${floor.last_name}` : "Sin Asignar"}</div>;
+        },
+    },
+    {
         accessorKey: "type",
         header: ({ column }) => {
             return (
@@ -211,8 +229,8 @@ export const createColumns = ({ onDeleteTicket }: ColumnsProps = {}): ColumnDef<
             return (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button 
-                            variant="ghost" 
+                        <Button
+                            variant="ghost"
                             className="h-8 w-8 p-0"
                             onClick={(e) => e.stopPropagation()}
                         >

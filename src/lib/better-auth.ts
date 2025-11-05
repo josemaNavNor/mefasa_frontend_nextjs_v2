@@ -5,7 +5,7 @@ export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET || "QwWgN288cc4kZVSpyVl5W3WSAOWJYDkW",
   
   emailAndPassword: {
-    enabled: false, // Desactivamos email/password ya que usas solo Microsoft
+    enabled: false, // Desactivamos email/password
   },
   
   socialProviders: {
@@ -21,11 +21,10 @@ export const auth = betterAuth({
   
   callbacks: {
     async signIn({ user, account }: { user: any; account: any }) {
-      console.log('Microsoft user data:', user);
-      console.log('Account data:', account);
+      console.log('Usuario:', user);
+      console.log('Datos de cuenta:', account);
       
       try {
-        // Aquí puedes hacer la llamada a tu backend para sincronizar el usuario
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/microsoft-login`, {
           method: 'POST',
           headers: {
@@ -43,7 +42,7 @@ export const auth = betterAuth({
           const backendUser = await response.json();
           console.log('Usuario sincronizado con backend:', backendUser);
         } else {
-          console.warn('No se pudo sincronizar con el backend, continuando con datos locales');
+          console.warn('No se pudo sincronizar con el backend');
         }
       } catch (error) {
         console.error(' Error al sincronizar con backend:', error);
