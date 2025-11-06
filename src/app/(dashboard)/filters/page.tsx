@@ -46,14 +46,12 @@ export default function FiltersPage() {
   };
 
   const handleToggleFavorite = async (filter: Filter) => {
-    const success = await toggleFavorite(filter.id);
-    if (success) {
-      const isFav = isFilterFavorite(filter.id);
-      toast.success(
-        isFav 
-          ? 'Filtro agregado a favoritos' 
-          : 'Filtro removido de favoritos'
-      );
+    // toggleFavorite ahora devuelve 'added' | 'removed' | null
+    const result = await toggleFavorite(filter.id);
+    if (result === 'added') {
+      toast.success('Filtro agregado a favoritos');
+    } else if (result === 'removed') {
+      toast.success('Filtro removido de favoritos');
     } else {
       toast.error('Error al actualizar favoritos');
     }

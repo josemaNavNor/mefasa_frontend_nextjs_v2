@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Filter, CreateFilterDto, UpdateFilterDto } from '@/types/filter';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
 
 export const useFilters = () => {
   const [filters, setFilters] = useState<Filter[]>([]);
@@ -10,6 +10,9 @@ export const useFilters = () => {
 
   const getAuthHeader = () => {
     const token = localStorage.getItem('token');
+    if (!token) {
+      console.warn('Token no encontrado en localStorage');
+    }
     return {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
@@ -25,12 +28,20 @@ export const useFilters = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Error al obtener los filtros');
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Se recibio:', text.substring(0, 200));
+        throw new Error('El servidor no devolvió JSON válido. Posible error de autenticación o configuración.');
       }
 
       const data = await response.json();
       setFilters(data);
     } catch (err) {
+      console.error('Error fetching filters:', err);
       setError(err instanceof Error ? err.message : 'Error desconocido');
     } finally {
       setLoading(false);

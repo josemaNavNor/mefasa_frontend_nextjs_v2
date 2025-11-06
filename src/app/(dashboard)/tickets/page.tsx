@@ -15,7 +15,7 @@ import { useSettings } from "@/contexts/SettingsContext";
 import { EditTicketDialog } from "@/components/edit-ticket-dialog";
 import { TicketDetailsModal } from "@/components/ticket-details-modal";
 import { FavoriteFilters } from "@/components/filter";
-import { Download } from "lucide-react";
+import { Download, ChevronLeft, ChevronRight, Filter as FilterIcon } from "lucide-react";
 import { SimpleDatePicker } from "@/components/ui/simple-date-picker"
 import { Filter } from "@/types/filter";
 
@@ -70,6 +70,7 @@ export default function TicketsPage() {
     // Estado para filtros
     const [activeFilter, setActiveFilter] = useState<Filter | null>(null);
     const [filteredTickets, setFilteredTickets] = useState(tickets);
+    const [isFiltersCollapsed, setIsFiltersCollapsed] = useState(false);
 
     // Crear handlers
     const handlers = createTicketHandlers({
@@ -270,6 +271,27 @@ export default function TicketsPage() {
                         </div>
                     )}
                 </div>
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsFiltersCollapsed(!isFiltersCollapsed)}
+                        className="lg:flex hidden items-center gap-2"
+                    >
+                        {isFiltersCollapsed ? (
+                            <>
+                                <ChevronRight className="h-4 w-4" />
+                                <FilterIcon className="h-4 w-4" />
+                                Mostrar Filtros
+                            </>
+                        ) : (
+                            <>
+                                <ChevronLeft className="h-4 w-4" />
+                                Ocultar Filtros
+                            </>
+                        )}
+                    </Button>
+                </div>
             </div>
             
             <div className="flex gap-2 mb-4">
@@ -425,16 +447,43 @@ export default function TicketsPage() {
             {/* Layout principal con filtros favoritos a la izquierda */}
             <div className="flex flex-col lg:flex-row gap-6">
                 {/* Panel de filtros favoritos */}
-                <div className="lg:flex-shrink-0 w-full lg:w-auto">
-                    <FavoriteFilters
-                        onApplyFilter={applyFilter}
-                        activeFilter={activeFilter}
-                        onClearFilter={clearFilter}
-                    />
-                </div>
+                {!isFiltersCollapsed && (
+                    <div className="lg:flex-shrink-0 w-full lg:w-auto">
+                        <FavoriteFilters
+                            onApplyFilter={applyFilter}
+                            activeFilter={activeFilter}
+                            onClearFilter={clearFilter}
+                        />
+                    </div>
+                )}
 
                 {/* Tabla de tickets */}
-                <div className="flex-1 min-w-0">
+                <div className={`flex-1 min-w-0 ${isFiltersCollapsed ? 'lg:ml-0' : ''}`}>
+                    {/* Mostrar información del filtro activo cuando los filtros están ocultos */}
+                    {isFiltersCollapsed && activeFilter && (
+                        <div className="mb-4 p-3 bg-primary/10 border border-primary/20 rounded-lg">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <FilterIcon className="h-4 w-4 text-primary" />
+                                    <span className="text-sm font-medium">Filtro activo: {activeFilter.filter_name}</span>
+                                    {activeFilter.filterCriteria && (
+                                        <span className="text-xs text-muted-foreground">
+                                            ({activeFilter.filterCriteria.length} criterio{activeFilter.filterCriteria.length !== 1 ? 's' : ''})
+                                        </span>
+                                    )}
+                                </div>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={clearFilter}
+                                    className="text-xs"
+                                >
+                                    Limpiar filtro
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+                    
                     <DataTable
                         columns={columns}
                         data={filteredTickets}

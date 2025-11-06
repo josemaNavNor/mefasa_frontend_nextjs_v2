@@ -113,20 +113,27 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
       return;
     }
 
-    // Por ahora, crear solo el filtro básico sin criterios 
-    // hasta que el backend soporte filterCriteria
+    // Validar que todos los criterios estén completos
+    const incompleteCriteria = formData.criteria.filter(criterion => 
+      !criterion.field_name || !criterion.operator || !criterion.value
+    );
+
+    if (incompleteCriteria.length > 0) {
+      toast.error('Todos los criterios deben estar completos (campo, operador y valor)');
+      return;
+    }
+
     const filterData = {
       filter_name: formData.filter_name,
       description: formData.description,
       is_public: formData.is_public,
       is_system_default: false,
-      // Comentamos temporalmente los criterios hasta actualizar el backend
-      // filterCriteria: formData.criteria.map(criterion => ({
-      //   field_name: criterion.field_name,
-      //   operator: criterion.operator,
-      //   value: criterion.value,
-      //   logical_operator: criterion.logical_operator,
-      // })),
+      filterCriteria: formData.criteria.map(criterion => ({
+        field_name: criterion.field_name,
+        operator: criterion.operator,
+        value: criterion.value,
+        logical_operator: criterion.logical_operator,
+      })),
     };
 
     let success = false;
@@ -149,7 +156,7 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
     if (success) {
       toast.success(
         mode === 'create' 
-          ? 'Filtro creado correctamente (criterios pendientes de implementación)' 
+          ? 'Filtro creado correctamente con todos sus criterios' 
           : 'Filtro actualizado correctamente'
       );
       onClose();
@@ -270,12 +277,6 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
                   <Plus className="mr-2 h-4 w-4" />
                   Agregar Criterio
                 </Button>
-              </div>
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                <p className="text-sm text-yellow-800">
-                  ⚠️ <strong>Nota:</strong> La funcionalidad de criterios está en desarrollo. 
-                  Por ahora solo se guardará la información básica del filtro.
-                </p>
               </div>
             </CardHeader>
             <CardContent>

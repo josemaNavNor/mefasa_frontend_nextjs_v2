@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { UserFavFilter, CreateUserFavFilterDto, Filter } from '@/types/filter';
 import { useAuthContext } from '@/components/auth-provider';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
 
 export const useUserFavFilters = () => {
   const { user } = useAuthContext();
@@ -12,6 +12,9 @@ export const useUserFavFilters = () => {
 
   const getAuthHeader = () => {
     const token = localStorage.getItem('token');
+    if (!token) {
+      console.warn('No token found in localStorage');
+    }
     return {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
@@ -29,7 +32,14 @@ export const useUserFavFilters = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Error al obtener los filtros favoritos');
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Expected JSON but received:', text.substring(0, 200));
+        throw new Error('El servidor no devolvió JSON válido. Posible error de autenticación o configuración.');
       }
 
       const data = await response.json();
@@ -122,18 +132,27 @@ export const useUserFavFilters = () => {
       .filter((filter): filter is Filter => filter !== undefined);
   };
 
-  const toggleFavorite = async (filterId: number): Promise<boolean> => {
+  // Ahora toggleFavorite devuelve la acción realizada para evitar confusiones
+  // al mostrar mensajes en la UI (puede ser 'added', 'removed' o null en caso de error)
+  const toggleFavorite = async (filterId: number): Promise<'added' | 'removed' | null> => {
+    // Re-evaluar el estado actual con la información local
     if (isFilterFavorite(filterId)) {
-      return await removeFromFavoritesByFilterId(filterId);
+      const removed = await removeFromFavoritesByFilterId(filterId);
+      return removed ? 'removed' : null;
     } else {
       const result = await addToFavorites(filterId);
-      return result !== null;
+      return result ? 'added' : null;
     }
   };
 
   useEffect(() => {
+    // Cada vez que cambie el usuario, recargar los favoritos desde el servidor
     if (user) {
+      console.log('Cargando filtros favoritos del usuario');
       fetchUserFavFilters();
+    } else {
+      // usuario desconectado -> limpiar estado
+      setUserFavFilters([]);
     }
   }, [user]);
 
