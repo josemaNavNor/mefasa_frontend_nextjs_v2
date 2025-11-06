@@ -14,7 +14,7 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
 import ImgLogo from "@/components/img-logo"
 import { useAuthContext } from "@/components/auth-provider" 
-import { ChevronUp, Home, Settings, User2, Building2, Ticket, Notebook, Footprints, LogOut } from "lucide-react"
+import { ChevronUp, Home, Settings, User2, Building2, Ticket, Notebook, Footprints, LogOut, Filter } from "lucide-react"
 
 const menuItems = [
     {
@@ -27,6 +27,12 @@ const menuItems = [
         title: "Tickets",
         url: "/tickets",
         icon: Ticket,
+        roles: ['Administrador', 'Tecnico'], 
+    },
+    {
+        title: "Filtros",
+        url: "/filters",
+        icon: Filter,
         roles: ['Administrador', 'Tecnico'], 
     },
     {

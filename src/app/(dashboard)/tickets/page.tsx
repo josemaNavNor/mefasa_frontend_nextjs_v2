@@ -14,9 +14,10 @@ import { useEventListener } from "@/hooks/useEventListener";
 import { useSettings } from "@/contexts/SettingsContext";
 import { EditTicketDialog } from "@/components/edit-ticket-dialog";
 import { TicketDetailsModal } from "@/components/ticket-details-modal";
+import { FavoriteFilters } from "@/components/filter";
 import { Download } from "lucide-react";
 import { SimpleDatePicker } from "@/components/ui/simple-date-picker"
-
+import { Filter } from "@/types/filter";
 
 import {
     Sheet,
@@ -65,6 +66,10 @@ export default function TicketsPage() {
 
     // Estado para controlar el Sheet de creación
     const [sheetOpen, setSheetOpen] = useState(false);
+
+    // Estado para filtros
+    const [activeFilter, setActiveFilter] = useState<Filter | null>(null);
+    const [filteredTickets, setFilteredTickets] = useState(tickets);
 
     // Crear handlers
     const handlers = createTicketHandlers({
@@ -121,6 +126,89 @@ export default function TicketsPage() {
     useEventListener('data-changed', handleDataChange);
     useEventListener('roles-updated', refetch);
 
+    // Función para aplicar filtros
+    const applyFilter = useCallback((filter: Filter) => {
+        setActiveFilter(filter);
+        
+        if (!filter.filterCriteria || filter.filterCriteria.length === 0) {
+            setFilteredTickets(tickets);
+            return;
+        }
+
+        const filtered = tickets.filter(ticket => {
+            return filter.filterCriteria!.every((criterion, index) => {
+                const fieldValue = ticket[criterion.field_name as keyof typeof ticket];
+                const criterionValue = criterion.value;
+                
+                let matches = false;
+                
+                switch (criterion.operator) {
+                    case 'equals':
+                        matches = String(fieldValue).toLowerCase() === criterionValue.toLowerCase();
+                        break;
+                    case 'not_equals':
+                        matches = String(fieldValue).toLowerCase() !== criterionValue.toLowerCase();
+                        break;
+                    case 'contains':
+                        matches = String(fieldValue).toLowerCase().includes(criterionValue.toLowerCase());
+                        break;
+                    case 'not_contains':
+                        matches = !String(fieldValue).toLowerCase().includes(criterionValue.toLowerCase());
+                        break;
+                    case 'starts_with':
+                        matches = String(fieldValue).toLowerCase().startsWith(criterionValue.toLowerCase());
+                        break;
+                    case 'ends_with':
+                        matches = String(fieldValue).toLowerCase().endsWith(criterionValue.toLowerCase());
+                        break;
+                    case 'greater_than':
+                        matches = Number(fieldValue) > Number(criterionValue);
+                        break;
+                    case 'less_than':
+                        matches = Number(fieldValue) < Number(criterionValue);
+                        break;
+                    case 'greater_equal':
+                        matches = Number(fieldValue) >= Number(criterionValue);
+                        break;
+                    case 'less_equal':
+                        matches = Number(fieldValue) <= Number(criterionValue);
+                        break;
+                    case 'is_null':
+                        matches = fieldValue === null || fieldValue === undefined || fieldValue === '';
+                        break;
+                    case 'is_not_null':
+                        matches = fieldValue !== null && fieldValue !== undefined && fieldValue !== '';
+                        break;
+                    default:
+                        matches = false;
+                }
+
+                // Para el primer criterio, no se aplica operador lógico
+                if (index === 0) return matches;
+                
+                // Para criterios subsiguientes, aplicar el operador lógico
+                const previousResult = index === 0 ? true : matches;
+                return criterion.logical_operator === 'AND' ? previousResult && matches : previousResult || matches;
+            });
+        });
+        
+        setFilteredTickets(filtered);
+    }, [tickets]);
+
+    const clearFilter = useCallback(() => {
+        setActiveFilter(null);
+        setFilteredTickets(tickets);
+    }, [tickets]);
+
+    // Actualizar tickets filtrados cuando cambien los tickets originales
+    useMemo(() => {
+        if (activeFilter) {
+            applyFilter(activeFilter);
+        } else {
+            setFilteredTickets(tickets);
+        }
+    }, [tickets, activeFilter, applyFilter]);
+
     return (
         <div className="w-full px-4 py-4">
             <div className="mb-4 flex items-center justify-between">
@@ -134,6 +222,7 @@ export default function TicketsPage() {
                     )}
                 </div>
             </div>
+            
             <div className="flex gap-2 mb-4">
                 <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
                     <SheetTrigger asChild>
@@ -282,12 +371,27 @@ export default function TicketsPage() {
                 </Button>
             </div>
 
-            <DataTable
-                columns={columns}
-                data={tickets}
-                onRowClick={handleRowClick}
-                showFilters={true}
-            />
+            {/* Layout principal con filtros favoritos a la izquierda */}
+            <div className="flex gap-6">
+                {/* Panel de filtros favoritos */}
+                <div className="flex-shrink-0">
+                    <FavoriteFilters
+                        onApplyFilter={applyFilter}
+                        activeFilter={activeFilter}
+                        onClearFilter={clearFilter}
+                    />
+                </div>
+
+                {/* Tabla de tickets */}
+                <div className="flex-1 min-w-0">
+                    <DataTable
+                        columns={columns}
+                        data={filteredTickets}
+                        onRowClick={handleRowClick}
+                        showFilters={true}
+                    />
+                </div>
+            </div>
 
             {/* Dialogo de edicion */}
             <EditTicketDialog
