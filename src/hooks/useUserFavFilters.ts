@@ -33,37 +33,17 @@ export const useUserFavFilters = () => {
       }
 
       const data = await response.json();
+      console.log('Raw user fav filters data:', data);
+      
       // Filtrar solo los filtros del usuario actual
       const userFilters = data.filter((favFilter: UserFavFilter) => 
         favFilter.user_id === user.id
       );
 
-      // Para cada filtro favorito, obtener los detalles completos con criterios
-      const filtersWithCriteria = await Promise.all(
-        userFilters.map(async (favFilter: UserFavFilter) => {
-          if (favFilter.filter && favFilter.filter.id) {
-            try {
-              const filterResponse = await fetch(`${API_BASE_URL}/filters/${favFilter.filter.id}`, {
-                headers: getAuthHeader(),
-              });
-              
-              if (filterResponse.ok) {
-                const filterDetails = await filterResponse.json();
-                return {
-                  ...favFilter,
-                  filter: filterDetails
-                };
-              }
-            } catch (error) {
-              console.error(`Error al obtener detalles del filtro ${favFilter.filter.id}:`, error);
-            }
-          }
-          return favFilter;
-        })
-      );
-
-      setUserFavFilters(filtersWithCriteria);
+      console.log('User filters after filtering:', userFilters);
+      setUserFavFilters(userFilters);
     } catch (err) {
+      console.error('Error in fetchUserFavFilters:', err);
       setError(err instanceof Error ? err.message : 'Error desconocido');
     } finally {
       setLoading(false);
