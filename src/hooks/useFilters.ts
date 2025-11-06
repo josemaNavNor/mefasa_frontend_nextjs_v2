@@ -48,14 +48,18 @@ export const useFilters = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Error al crear el filtro');
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.message || `Error ${response.status}: ${response.statusText}`;
+        throw new Error(errorMessage);
       }
 
       const newFilter = await response.json();
       setFilters(prev => [...prev, newFilter]);
       return newFilter;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error desconocido');
+      const errorMessage = err instanceof Error ? err.message : 'Error desconocido al crear el filtro';
+      setError(errorMessage);
+      console.error('Error creating filter:', err);
       return null;
     } finally {
       setLoading(false);

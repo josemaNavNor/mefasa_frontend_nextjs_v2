@@ -12,6 +12,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Trash2 } from 'lucide-react';
 import { useFilters } from '@/hooks/useFilters';
+import { useFloors } from '@/hooks/use_floors';
+import { useType } from '@/hooks/use_typeTickets';
+import { useUsers } from '@/hooks/useUsersAdmin';
 import { 
   Filter, 
   FilterFormData, 
@@ -68,6 +71,9 @@ const operatorLabels: Record<string, string> = {
 
 export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProps) {
   const { createFilter, updateFilter, loading } = useFilters();
+  const { floors } = useFloors();
+  const { types } = useType();
+  const { users } = useUsers();
   
   const [formData, setFormData] = useState<FilterFormData>({
     filter_name: '',
@@ -107,54 +113,46 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
       return;
     }
 
-    if (formData.criteria.length === 0) {
-      toast.error('Debe agregar al menos un criterio');
-      return;
-    }
-
-    // Validar que todos los criterios estén completos
-    const invalidCriteria = formData.criteria.some(criterion => 
-      !criterion.field_name || !criterion.operator || !criterion.value
-    );
-
-    if (invalidCriteria) {
-      toast.error('Todos los criterios deben estar completos');
-      return;
-    }
-
+    // Por ahora, crear solo el filtro básico sin criterios 
+    // hasta que el backend soporte filterCriteria
     const filterData = {
       filter_name: formData.filter_name,
       description: formData.description,
       is_public: formData.is_public,
       is_system_default: false,
-      filterCriteria: formData.criteria.map(criterion => ({
-        field_name: criterion.field_name,
-        operator: criterion.operator,
-        value: criterion.value,
-        logical_operator: criterion.logical_operator,
-      })),
+      // Comentamos temporalmente los criterios hasta actualizar el backend
+      // filterCriteria: formData.criteria.map(criterion => ({
+      //   field_name: criterion.field_name,
+      //   operator: criterion.operator,
+      //   value: criterion.value,
+      //   logical_operator: criterion.logical_operator,
+      // })),
     };
 
     let success = false;
     if (mode === 'create') {
-      success = (await createFilter(filterData)) !== null;
+      const result = await createFilter(filterData);
+      success = result !== null;
+      if (!success) {
+        // El error ya se muestra en el hook
+        return;
+      }
     } else if (mode === 'edit' && filter) {
-      success = (await updateFilter(filter.id, filterData)) !== null;
+      const result = await updateFilter(filter.id, filterData);
+      success = result !== null;
+      if (!success) {
+        // El error ya se muestra en el hook
+        return;
+      }
     }
 
     if (success) {
       toast.success(
         mode === 'create' 
-          ? 'Filtro creado correctamente' 
+          ? 'Filtro creado correctamente (criterios pendientes de implementación)' 
           : 'Filtro actualizado correctamente'
       );
       onClose();
-    } else {
-      toast.error(
-        mode === 'create' 
-          ? 'Error al crear el filtro' 
-          : 'Error al actualizar el filtro'
-      );
     }
   };
 
@@ -181,6 +179,43 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
         i === index ? { ...criterion, [field]: value } : criterion
       ),
     }));
+  };
+
+  const getFieldOptions = (fieldName: string) => {
+    switch (fieldName) {
+      case TicketFilterField.FLOOR_ID:
+        return floors.map(floor => ({ value: floor.id.toString(), label: floor.floor_name }));
+      case TicketFilterField.TYPE_ID:
+        return types.map(type => ({ value: type.id.toString(), label: type.type_name }));
+      case TicketFilterField.ASSIGNED_TO:
+      case TicketFilterField.CREATED_BY:
+        return users.map(user => ({ value: user.id.toString(), label: `${user.name} ${user.last_name}` }));
+      case TicketFilterField.STATUS:
+        return [
+          { value: 'Abierto', label: 'Abierto' },
+          { value: 'En Progreso', label: 'En Progreso' },
+          { value: 'Cerrado', label: 'Cerrado' }
+        ];
+      case TicketFilterField.PRIORITY:
+        return [
+          { value: 'Baja', label: 'Baja' },
+          { value: 'Media', label: 'Media' },
+          { value: 'Alta', label: 'Alta' }
+        ];
+      default:
+        return [];
+    }
+  };
+
+  const shouldShowDropdown = (fieldName: string) => {
+    return [
+      TicketFilterField.FLOOR_ID,
+      TicketFilterField.TYPE_ID,
+      TicketFilterField.ASSIGNED_TO,
+      TicketFilterField.CREATED_BY,
+      TicketFilterField.STATUS,
+      TicketFilterField.PRIORITY
+    ].includes(fieldName as TicketFilterField);
   };
 
   return (
@@ -235,6 +270,12 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
                   <Plus className="mr-2 h-4 w-4" />
                   Agregar Criterio
                 </Button>
+              </div>
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <p className="text-sm text-yellow-800">
+                  ⚠️ <strong>Nota:</strong> La funcionalidad de criterios está en desarrollo. 
+                  Por ahora solo se guardará la información básica del filtro.
+                </p>
               </div>
             </CardHeader>
             <CardContent>
@@ -296,11 +337,29 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
 
                       <div>
                         <Label>Valor</Label>
-                        <Input
-                          value={criterion.value}
-                          onChange={(e) => updateCriterion(index, 'value', e.target.value)}
-                          placeholder="Valor a comparar"
-                        />
+                        {shouldShowDropdown(criterion.field_name) ? (
+                          <Select
+                            value={criterion.value}
+                            onValueChange={(value) => updateCriterion(index, 'value', value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Seleccionar valor" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {getFieldOptions(criterion.field_name).map(option => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <Input
+                            value={criterion.value}
+                            onChange={(e) => updateCriterion(index, 'value', e.target.value)}
+                            placeholder="Valor a comparar"
+                          />
+                        )}
                       </div>
 
                       {index > 0 && (
