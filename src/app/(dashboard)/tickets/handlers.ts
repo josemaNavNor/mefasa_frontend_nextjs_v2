@@ -6,11 +6,11 @@ interface Ticket {
     summary: string;
     description: string;
     end_user: string;
-    technician_id: number;
+    technician_id: number | null;
     type_id: number;
     priority: string;
     status: string;
-    floor_id: number;
+    floor_id: number | null;
     due_date: string;
 }
 
@@ -20,11 +20,11 @@ interface TicketHandlersProps {
         summary: string;
         description: string;
         end_user: string;
-        technician_id: number;
+        technician_id: number | null;
         type_id: number;
         priority: string;
         status: string;
-        floor_id: number;
+        floor_id: number | null;
         due_date: string;
     }) => Promise<void>;
     deleteTicket: (id: string) => Promise<boolean>;
@@ -95,9 +95,9 @@ export const createTicketHandlers = ({
                 summary: formData.summary,
                 description: formData.description,
                 end_user: formData.end_user,
-                technician_id: Number(formData.technician_id),
+                technician_id: formData.technician_id ? Number(formData.technician_id) : null,
                 type_id: Number(formData.type_id),
-                floor_id: Number(formData.floor_id),
+                floor_id: formData.floor_id ? Number(formData.floor_id) : null,
                 priority: formData.priority,
                 status: formData.status,
                 due_date: formData.due_date

@@ -284,9 +284,10 @@ export default function TicketsPage() {
                                 <Label htmlFor="technician_id">Asignar técnico</Label>
                                 <Select value={technician_id} onValueChange={setTechnicianId}>
                                     <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Selecciona un técnico" />
+                                        <SelectValue placeholder="Selecciona un técnico (opcional)" />
                                     </SelectTrigger>
                                     <SelectContent>
+                                        <SelectItem value="">Sin asignar</SelectItem>
                                         {users.map((user) => (
                                             <SelectItem key={user.id} value={String(user.id)}>
                                                 {user.name} {user.last_name}
@@ -298,11 +299,12 @@ export default function TicketsPage() {
 
                             <div className="grid gap-3">
                                 <Label htmlFor="floor_id">Planta</Label>
-                                <Select value={floor_id} onValueChange={setFloorId} required>
+                                <Select value={floor_id} onValueChange={setFloorId}>
                                     <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Selecciona una planta" />
+                                        <SelectValue placeholder="Selecciona una planta (opcional)" />
                                     </SelectTrigger>
                                     <SelectContent>
+                                        <SelectItem value="">Sin asignar</SelectItem>
                                         {floors.map((floor) => (
                                             <SelectItem key={floor.id} value={String(floor.id)}>
                                                 {floor.floor_name}

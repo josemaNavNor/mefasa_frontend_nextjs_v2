@@ -124,7 +124,7 @@ export function useTickets() {
         }
     }
 
-    async function updateTicket(id: string, ticket: { summary?: string, description?: string, technician_id?: number, type_id?: number, priority?: string, status?: string, floor_id?: number, due_date?: string }) {
+    async function updateTicket(id: string, ticket: { summary?: string, description?: string, technician_id?: number | null, type_id?: number, priority?: string, status?: string, floor_id?: number | null, due_date?: string }) {
         setLoading(true);
         try {
             const response = await api.patch(`/tickets/${id}`, ticket);
@@ -154,7 +154,7 @@ export function useTickets() {
     }
 
     // debe de tomar end user dewsde local storage o contexto de auth
-    async function createTicket(ticket: { summary: string, description: string, end_user: string, technician_id: number, type_id: number, priority: string, status: string, floor_id: number, due_date: string }) {
+    async function createTicket(ticket: { summary: string, description: string, end_user: string, technician_id: number | null, type_id: number, priority: string, status: string, floor_id: number | null, due_date: string }) {
         setLoading(true);
         try {
             const userFromStorage = localStorage.getItem('user');
