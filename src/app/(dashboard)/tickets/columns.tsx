@@ -113,8 +113,8 @@ export const createColumns = ({ onDeleteTicket }: ColumnsProps = {}): ColumnDef<
             )
         },
         cell: ({ row }) => {
-            const floor = row.getValue("floor") as { name?: string, last_name?: string };
-            return <div className="text-center">{floor ? `${floor.name} ${floor.last_name}` : "Sin Asignar"}</div>;
+            const floor = row.getValue("floor") as { floor_name?: string };
+            return <div className="text-center">{floor ? `${floor.floor_name}` : "Sin Asignar"}</div>;
         },
     },
     {
