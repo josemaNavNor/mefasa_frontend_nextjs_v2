@@ -37,7 +37,32 @@ export const useUserFavFilters = () => {
       const userFilters = data.filter((favFilter: UserFavFilter) => 
         favFilter.user_id === user.id
       );
-      setUserFavFilters(userFilters);
+
+      // Para cada filtro favorito, obtener los detalles completos con criterios
+      const filtersWithCriteria = await Promise.all(
+        userFilters.map(async (favFilter: UserFavFilter) => {
+          if (favFilter.filter && favFilter.filter.id) {
+            try {
+              const filterResponse = await fetch(`${API_BASE_URL}/filters/${favFilter.filter.id}`, {
+                headers: getAuthHeader(),
+              });
+              
+              if (filterResponse.ok) {
+                const filterDetails = await filterResponse.json();
+                return {
+                  ...favFilter,
+                  filter: filterDetails
+                };
+              }
+            } catch (error) {
+              console.error(`Error al obtener detalles del filtro ${favFilter.filter.id}:`, error);
+            }
+          }
+          return favFilter;
+        })
+      );
+
+      setUserFavFilters(filtersWithCriteria);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
     } finally {

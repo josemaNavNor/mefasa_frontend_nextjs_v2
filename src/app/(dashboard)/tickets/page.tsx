@@ -6,7 +6,7 @@ import { DataTable } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useTickets } from "@/hooks/use_tickets";
 import { useType } from "@/hooks/use_typeTickets";
 import { useFloors } from "@/hooks/use_floors";
@@ -144,11 +144,32 @@ export default function TicketsPage() {
             let result = true;
             
             filter.filterCriteria!.forEach((criterion, index) => {
-                const fieldValue = ticket[criterion.field_name as keyof typeof ticket];
+                // Mapear nombres de campos del filtro a los nombres reales del ticket
+                let fieldName = criterion.field_name;
+                
+                // Mapeo de campos comunes
+                const fieldMapping: { [key: string]: string } = {
+                    'title': 'summary',
+                    'description': 'description',
+                    'status': 'status',
+                    'priority': 'priority',
+                    'type_id': 'type_id',
+                    'floor_id': 'floor_id',
+                    'technician_id': 'technician_id',
+                    'created_at': 'created_at',
+                    'updated_at': 'updated_at'
+                };
+                
+                if (fieldMapping[fieldName]) {
+                    fieldName = fieldMapping[fieldName];
+                }
+                
+                const fieldValue = ticket[fieldName as keyof typeof ticket];
                 const criterionValue = criterion.value;
                 
                 console.log(`Criterio ${index + 1}:`, {
-                    field: criterion.field_name,
+                    originalField: criterion.field_name,
+                    mappedField: fieldName,
                     operator: criterion.operator,
                     value: criterionValue,
                     fieldValue,
@@ -223,18 +244,19 @@ export default function TicketsPage() {
     }, [tickets]);
 
     const clearFilter = useCallback(() => {
+        console.log('Limpiando filtros');
         setActiveFilter(null);
         setFilteredTickets(tickets);
     }, [tickets]);
 
     // Actualizar tickets filtrados cuando cambien los tickets originales
-    useMemo(() => {
+    useEffect(() => {
         if (activeFilter) {
             applyFilter(activeFilter);
         } else {
             setFilteredTickets(tickets);
         }
-    }, [tickets, activeFilter, applyFilter]);
+    }, [tickets]); // Removemos activeFilter y applyFilter de las dependencias para evitar loops
 
     return (
         <div className="w-full px-4 py-4">
