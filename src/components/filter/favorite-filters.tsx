@@ -79,7 +79,7 @@ export function FavoriteFilters({ onApplyFilter, activeFilter, onClearFilter }: 
   }
 
   return (
-    <Card className="w-full max-w-sm">
+    <Card className="w-full lg:max-w-sm">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
@@ -90,6 +90,7 @@ export function FavoriteFilters({ onApplyFilter, activeFilter, onClearFilter }: 
             variant="ghost"
             size="sm"
             onClick={() => setCollapsed(!collapsed)}
+            className="lg:hidden"
           >
             {collapsed ? '▼' : '▲'}
           </Button>
@@ -112,9 +113,9 @@ export function FavoriteFilters({ onApplyFilter, activeFilter, onClearFilter }: 
         )}
       </CardHeader>
 
-      {!collapsed && (
-        <CardContent>
-          <div className="h-[300px] overflow-y-auto">
+      {(!collapsed) && (
+        <CardContent className="block lg:block">
+          <div className="h-[300px] lg:h-[400px] overflow-y-auto">
             <div className="space-y-2">
               {favoriteFilters.map((filter) => (
                 <div

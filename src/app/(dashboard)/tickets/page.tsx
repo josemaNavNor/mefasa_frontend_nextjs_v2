@@ -128,17 +128,32 @@ export default function TicketsPage() {
 
     // Función para aplicar filtros
     const applyFilter = useCallback((filter: Filter) => {
+        console.log('Aplicando filtro:', filter);
         setActiveFilter(filter);
         
         if (!filter.filterCriteria || filter.filterCriteria.length === 0) {
+            console.log('Filtro sin criterios, mostrando todos los tickets');
             setFilteredTickets(tickets);
             return;
         }
 
+        console.log('Filtros a aplicar:', filter.filterCriteria);
+        console.log('Tickets originales:', tickets.length);
+
         const filtered = tickets.filter(ticket => {
-            return filter.filterCriteria!.every((criterion, index) => {
+            let result = true;
+            
+            filter.filterCriteria!.forEach((criterion, index) => {
                 const fieldValue = ticket[criterion.field_name as keyof typeof ticket];
                 const criterionValue = criterion.value;
+                
+                console.log(`Criterio ${index + 1}:`, {
+                    field: criterion.field_name,
+                    operator: criterion.operator,
+                    value: criterionValue,
+                    fieldValue,
+                    logicalOperator: criterion.logical_operator
+                });
                 
                 let matches = false;
                 
@@ -183,15 +198,27 @@ export default function TicketsPage() {
                         matches = false;
                 }
 
-                // Para el primer criterio, no se aplica operador lógico
-                if (index === 0) return matches;
+                console.log(`Criterio ${index + 1} matches:`, matches);
+
+                // Para el primer criterio, establecer el resultado inicial
+                if (index === 0) {
+                    result = matches;
+                } else {
+                    // Para criterios subsiguientes, aplicar el operador lógico
+                    if (criterion.logical_operator === 'AND') {
+                        result = result && matches;
+                    } else if (criterion.logical_operator === 'OR') {
+                        result = result || matches;
+                    }
+                }
                 
-                // Para criterios subsiguientes, aplicar el operador lógico
-                const previousResult = index === 0 ? true : matches;
-                return criterion.logical_operator === 'AND' ? previousResult && matches : previousResult || matches;
+                console.log(`Resultado acumulado:`, result);
             });
+            
+            return result;
         });
         
+        console.log('Tickets filtrados:', filtered.length);
         setFilteredTickets(filtered);
     }, [tickets]);
 
@@ -374,9 +401,9 @@ export default function TicketsPage() {
             </div>
 
             {/* Layout principal con filtros favoritos a la izquierda */}
-            <div className="flex gap-6">
+            <div className="flex flex-col lg:flex-row gap-6">
                 {/* Panel de filtros favoritos */}
-                <div className="flex-shrink-0">
+                <div className="lg:flex-shrink-0 w-full lg:w-auto">
                     <FavoriteFilters
                         onApplyFilter={applyFilter}
                         activeFilter={activeFilter}
