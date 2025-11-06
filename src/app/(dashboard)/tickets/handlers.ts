@@ -95,9 +95,9 @@ export const createTicketHandlers = ({
                 summary: formData.summary,
                 description: formData.description,
                 end_user: formData.end_user,
-                technician_id: formData.technician_id ? Number(formData.technician_id) : null,
+                technician_id: formData.technician_id && formData.technician_id !== "0" ? Number(formData.technician_id) : null,
                 type_id: Number(formData.type_id),
-                floor_id: formData.floor_id ? Number(formData.floor_id) : null,
+                floor_id: formData.floor_id && formData.floor_id !== "0" ? Number(formData.floor_id) : null,
                 priority: formData.priority,
                 status: formData.status,
                 due_date: formData.due_date
@@ -107,9 +107,9 @@ export const createTicketHandlers = ({
             setters.setSummary("");
             setters.setDescription("");
             setters.setEndUser("");
-            setters.setTechnicianId("");
+            setters.setTechnicianId("0");
             setters.setTypeId("");
-            setters.setFloorId("");
+            setters.setFloorId("0");
             setters.setPriority("");
             setters.setStatus("");
             setters.setDueDate("");

@@ -48,9 +48,9 @@ export default function TicketsPage() {
     const [summary, setSummary] = useState("");
     const [description, setDescription] = useState("");
     const [end_user, setEndUser] = useState("");
-    const [technician_id, setTechnicianId] = useState("");
+    const [technician_id, setTechnicianId] = useState("0");
     const [type_id, setTypeId] = useState("");
-    const [floor_id, setFloorId] = useState("");
+    const [floor_id, setFloorId] = useState("0");
     const [priority, setPriority] = useState("");
     const [status, setStatus] = useState("");
     const [due_date, setDueDate] = useState("");
@@ -287,7 +287,7 @@ export default function TicketsPage() {
                                         <SelectValue placeholder="Selecciona un técnico (opcional)" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="">Sin asignar</SelectItem>
+                                        <SelectItem value="0">Sin asignar</SelectItem>
                                         {users.map((user) => (
                                             <SelectItem key={user.id} value={String(user.id)}>
                                                 {user.name} {user.last_name}
@@ -304,7 +304,7 @@ export default function TicketsPage() {
                                         <SelectValue placeholder="Selecciona una planta (opcional)" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="">Sin asignar</SelectItem>
+                                        <SelectItem value="0">Sin asignar</SelectItem>
                                         {floors.map((floor) => (
                                             <SelectItem key={floor.id} value={String(floor.id)}>
                                                 {floor.floor_name}
