@@ -61,19 +61,6 @@ export const ticketTypeSchema = z.object({
         .or(z.literal("").transform(() => undefined)),
 });
 
-export const permissionSchema = z.object({
-    perm_name: z.string()
-        .min(1, { message: "El nombre del permiso es requerido" })
-        .max(100, { message: "El nombre del permiso debe tener menos de 100 caracteres" }),
-    moduleId: z.string()
-        .min(1, { message: "El módulo es requerido" })
-        .max(100, { message: "El módulo debe tener menos de 100 caracteres" }),
-    description: z.string()
-        .max(255, { message: "La descripción debe tener menos de 255 caracteres" })
-        .optional()
-        .or(z.literal("").transform(() => undefined)),
-});
-
 export const loginSchema = z.object({
     email: z.string()
         .min(1, { message: "El email es requerido" })
