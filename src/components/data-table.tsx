@@ -138,10 +138,10 @@ export function DataTable<TData, TValue>({
                 <Table>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id}>
+                            <TableRow key={headerGroup.id} className="bg-muted/30">
                                 {headerGroup.headers.map((header) => {
                                     return (
-                                        <TableHead key={header.id}>
+                                        <TableHead key={header.id} className="border-r border-muted last:border-r-0">
                                             {header.isPlaceholder
                                                 ? null
                                                 : flexRender(
@@ -161,10 +161,10 @@ export function DataTable<TData, TValue>({
                                     key={row.id}
                                     data-state={row.getIsSelected() && "selected"}
                                     onClick={() => onRowClick?.(row.original)}
-                                    className="cursor-pointer hover:bg-muted/50 dark:hover:bg-muted/20"
+                                    className="cursor-pointer hover:bg-muted/50 dark:hover:bg-muted/20 border-b border-muted/30"
                                 >
                                     {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>
+                                        <TableCell key={cell.id} className="border-r border-muted/20 last:border-r-0">
                                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                         </TableCell>
                                     ))}
@@ -184,23 +184,31 @@ export function DataTable<TData, TValue>({
                         )}
                     </TableBody>
                 </Table>
-                <div className="flex items-center justify-end space-x-2 py-4 mx-4">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => table.previousPage()}
-                        disabled={!table.getCanPreviousPage()}
-                    >
-                        Página Anterior
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => table.nextPage()}
-                        disabled={!table.getCanNextPage()}
-                    >
-                        Página Siguiente
-                    </Button>
+                <div className="flex items-center justify-between px-4 py-3 border-t border-muted/30 bg-muted/10">
+                    <div className="text-sm text-muted-foreground">
+                        {table.getFilteredRowModel().rows.length} resultado(s)
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => table.previousPage()}
+                            disabled={!table.getCanPreviousPage()}
+                        >
+                            Anterior
+                        </Button>
+                        <div className="text-sm text-muted-foreground px-2">
+                            Página {table.getState().pagination.pageIndex + 1} de {table.getPageCount()}
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => table.nextPage()}
+                            disabled={!table.getCanNextPage()}
+                        >
+                            Siguiente
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>
