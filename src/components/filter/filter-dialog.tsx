@@ -195,6 +195,18 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
             updatedCriterion.value = '';
           }
           
+          // Si es un campo de fecha y se está actualizando el valor, convertir a formato correcto
+          if (field === 'value' && shouldShowDateInput(criterion.field_name) && value) {
+            // Para fechas, necesitamos manejar diferentes operadores
+            if (criterion.operator === FilterOperator.EQUALS) {
+              // Para "igual a", buscar todo el día: desde 00:00:00 hasta 23:59:59
+              updatedCriterion.value = value; // Guardamos solo la fecha, el backend manejará el rango
+            } else {
+              // Para otros operadores, mantener la fecha tal como está
+              updatedCriterion.value = value;
+            }
+          }
+          
           return updatedCriterion;
         }
         return criterion;
@@ -389,7 +401,7 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
                         ) : shouldShowDateInput(criterion.field_name) ? (
                           <Input
                             type="date"
-                            value={criterion.value}
+                            value={criterion.value ? criterion.value.split('T')[0] : ''}
                             onChange={(e) => updateCriterion(index, 'value', e.target.value)}
                             placeholder="Seleccionar fecha"
                           />

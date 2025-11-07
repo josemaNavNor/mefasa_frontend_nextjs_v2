@@ -149,6 +149,28 @@ export const useFilters = () => {
     }
   };
 
+  const applyFilter = async (filterId: number) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${API_BASE_URL}/tickets/filter/${filterId}`, {
+        headers: getAuthHeader(),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al aplicar el filtro');
+      }
+
+      const tickets = await response.json();
+      return tickets;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error desconocido');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchFilters();
   }, []);
@@ -162,5 +184,6 @@ export const useFilters = () => {
     updateFilter,
     deleteFilter,
     getFilterById,
+    applyFilter,
   };
 };
