@@ -445,7 +445,7 @@ export default function TicketsPage() {
             </div>
 
             {/* Layout principal con filtros favoritos a la izquierda */}
-            <div className="flex flex-col lg:flex-row gap-6">
+            <div className="flex flex-col lg:flex-row gap-4">
                 {/* Panel de filtros favoritos */}
                 {!isFiltersCollapsed && (
                     <div className="lg:flex-shrink-0 w-full lg:w-auto">

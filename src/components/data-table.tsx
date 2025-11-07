@@ -172,11 +172,17 @@ export function DataTable<TData, TValue>({
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={columns.length} className="h-24 text-center">
+                                <TableCell colSpan={columns.length} className="h-32 text-center">
                                     {showNoData ? (
-                                        <div className="text-muted-foreground">No hay datos disponibles</div>
+                                        <div className="flex flex-col items-center gap-3 text-muted-foreground">
+                                            <div className="text-lg">📭</div>
+                                            <div>No hay datos disponibles</div>
+                                        </div>
                                     ) : (
-                                        <Loading />
+                                        <div className="flex flex-col items-center gap-3">
+                                            <Loading size="md" />
+                                            <div className="text-sm text-muted-foreground">Cargando datos...</div>
+                                        </div>
                                     )
                                     }
                                 </TableCell>

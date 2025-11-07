@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Star, Filter as FilterIcon, X } from 'lucide-react';
 import { useUserFavFilters } from '@/hooks/useUserFavFilters';
 import { Filter } from '@/types/filter';
+import Loading from '@/components/loading';
 
 interface FavoriteFiltersProps {
   onApplyFilter: (filter: Filter) => void;
@@ -25,16 +26,17 @@ export function FavoriteFilters({ onApplyFilter, activeFilter, onClearFilter }: 
 
   if (loading) {
     return (
-      <Card className="w-full max-w-sm">
+      <Card className="w-full lg:max-w-sm lg:min-w-[280px]">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Star className="h-5 w-5 text-yellow-500" />
+          <CardTitle className="text-base flex items-center gap-2">
+            <Star className="h-4 w-4 text-yellow-500" />
             Filtros Favoritos
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center py-4">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+          <div className="flex flex-col items-center gap-2 py-6">
+            <Loading size="sm" />
+            <span className="text-sm text-muted-foreground">Cargando filtros...</span>
           </div>
         </CardContent>
       </Card>
@@ -43,15 +45,18 @@ export function FavoriteFilters({ onApplyFilter, activeFilter, onClearFilter }: 
 
   if (error) {
     return (
-      <Card className="w-full max-w-sm">
+      <Card className="w-full lg:max-w-sm lg:min-w-[280px]">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Star className="h-5 w-5 text-yellow-500" />
+          <CardTitle className="text-base flex items-center gap-2">
+            <Star className="h-4 w-4 text-yellow-500" />
             Filtros Favoritos
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-destructive">Error al cargar filtros</p>
+          <div className="flex flex-col items-center gap-2 py-4 text-center">
+            <div className="text-2xl">❌</div>
+            <p className="text-sm text-destructive">Error al cargar filtros</p>
+          </div>
         </CardContent>
       </Card>
     );
@@ -59,38 +64,41 @@ export function FavoriteFilters({ onApplyFilter, activeFilter, onClearFilter }: 
 
   if (favoriteFilters.length === 0) {
     return (
-      <Card className="w-full max-w-sm">
+      <Card className="w-full lg:max-w-sm lg:min-w-[280px]">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Star className="h-5 w-5 text-yellow-500" />
+          <CardTitle className="text-base flex items-center gap-2">
+            <Star className="h-4 w-4 text-yellow-500" />
             Filtros Favoritos
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">
-            No tienes filtros favoritos aún.
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Ve a la sección de Filtros para crear algunos.
-          </p>
+          <div className="flex flex-col items-center gap-2 py-4 text-center">
+            <div className="text-2xl">⭐</div>
+            <p className="text-sm text-muted-foreground">
+              No tienes filtros favoritos aún.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Ve a la sección de Filtros para crear algunos.
+            </p>
+          </div>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="w-full lg:max-w-sm">
+    <Card className="w-full lg:max-w-sm lg:min-w-[280px]">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Star className="h-5 w-5 text-yellow-500" />
+          <CardTitle className="text-base flex items-center gap-2">
+            <Star className="h-4 w-4 text-yellow-500" />
             Filtros Favoritos
           </CardTitle>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setCollapsed(!collapsed)}
-            className="lg:hidden"
+            className="lg:hidden h-6 w-6 p-0"
           >
             {collapsed ? '▼' : '▲'}
           </Button>
@@ -99,13 +107,13 @@ export function FavoriteFilters({ onApplyFilter, activeFilter, onClearFilter }: 
           <div className="flex items-center gap-2 mt-2">
             <Badge variant="default" className="text-xs">
               <FilterIcon className="h-3 w-3 mr-1" />
-              Activo: {activeFilter.filter_name}
+              {activeFilter.filter_name}
             </Badge>
             <Button
               variant="ghost"
               size="sm"
               onClick={onClearFilter}
-              className="h-6 w-6 p-0"
+              className="h-5 w-5 p-0"
             >
               <X className="h-3 w-3" />
             </Button>
@@ -114,13 +122,13 @@ export function FavoriteFilters({ onApplyFilter, activeFilter, onClearFilter }: 
       </CardHeader>
 
       {(!collapsed) && (
-        <CardContent className="block lg:block">
-          <div className="h-[300px] lg:h-[400px] overflow-y-auto">
+        <CardContent className="pt-0">
+          <div className="max-h-[400px] overflow-y-auto">
             <div className="space-y-2">
               {favoriteFilters.map((filter) => (
                 <div
                   key={filter.id}
-                  className={`border rounded-lg p-3 cursor-pointer transition-colors hover:bg-muted/50 ${
+                  className={`border rounded-lg p-2 cursor-pointer transition-colors hover:bg-muted/50 ${
                     activeFilter?.id === filter.id ? 'bg-primary/10 border-primary' : ''
                   }`}
                   onClick={() => onApplyFilter(filter)}
@@ -140,13 +148,13 @@ export function FavoriteFilters({ onApplyFilter, activeFilter, onClearFilter }: 
 
                   <div className="flex flex-wrap gap-1 mt-2">
                     {filter.is_public && (
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="secondary" className="text-xs px-1 py-0">
                         Público
                       </Badge>
                     )}
                     {filter.filterCriteria && (
-                      <Badge variant="outline" className="text-xs">
-                        {filter.filterCriteria.length} criterio(s)
+                      <Badge variant="outline" className="text-xs px-1 py-0">
+                        {filter.filterCriteria.length} criterio{filter.filterCriteria.length !== 1 ? 's' : ''}
                       </Badge>
                     )}
                   </div>
