@@ -9,7 +9,8 @@ import { useFilters } from '@/hooks/useFilters';
 import { useUserFavFilters } from '@/hooks/useUserFavFilters';
 import { FilterDialog, FilterDetailDialog } from '@/components/filter';
 import { Filter } from '@/types/filter';
-import { toast } from 'sonner';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import { Confirm } from 'notiflix/build/notiflix-confirm-aio';
 
 export default function FiltersPage() {
   const { filters, loading, error, deleteFilter } = useFilters();
@@ -25,14 +26,27 @@ export default function FiltersPage() {
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
 
   const handleDelete = async (filter: Filter) => {
-    if (confirm(`¿Está seguro de que desea eliminar el filtro "${filter.filter_name}"?`)) {
-      const success = await deleteFilter(filter.id);
-      if (success) {
-        toast.success('Filtro eliminado correctamente');
-      } else {
-        toast.error('Error al eliminar el filtro');
+    Confirm.show(
+      'Confirmar eliminación',
+      `¿Está seguro de que desea eliminar el filtro "${filter.filter_name}"?`,
+      'Sí, eliminar',
+      'Cancelar',
+      async () => {
+        const success = await deleteFilter(filter.id);
+        if (success) {
+          Notify.success('Filtro eliminado correctamente');
+        } else {
+          Notify.failure('Error al eliminar el filtro');
+        }
+      },
+      () => {
+        // Usuario canceló, no hacer nada
+      },
+      {
+        okButtonBackground: '#ef4444',
+        titleColor: '#ef4444',
       }
-    }
+    );
   };
 
   const handleEdit = (filter: Filter) => {
@@ -49,11 +63,11 @@ export default function FiltersPage() {
     // toggleFavorite ahora devuelve 'added' | 'removed' | null
     const result = await toggleFavorite(filter.id);
     if (result === 'added') {
-      toast.success('Filtro agregado a favoritos');
+      Notify.success('Filtro agregado a favoritos');
     } else if (result === 'removed') {
-      toast.success('Filtro removido de favoritos');
+      Notify.success('Filtro removido de favoritos');
     } else {
-      toast.error('Error al actualizar favoritos');
+      Notify.failure('Error al actualizar favoritos');
     }
   };
 

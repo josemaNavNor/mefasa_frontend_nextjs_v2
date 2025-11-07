@@ -23,7 +23,7 @@ import {
   LogicalOperator, 
   TicketFilterField 
 } from '@/types/filter';
-import { toast } from 'sonner';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
 interface FilterDialogProps {
   isOpen: boolean;
@@ -109,7 +109,7 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
     e.preventDefault();
     
     if (!formData.filter_name.trim()) {
-      toast.error('El nombre del filtro es requerido');
+      Notify.failure('El nombre del filtro es requerido');
       return;
     }
 
@@ -123,7 +123,7 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
     });
 
     if (incompleteCriteria.length > 0) {
-      toast.error('Todos los criterios deben estar completos (campo, operador y valor)');
+      Notify.failure('Todos los criterios deben estar completos (campo, operador y valor)');
       return;
     }
 
@@ -158,7 +158,7 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
     }
 
     if (success) {
-      toast.success(
+      Notify.success(
         mode === 'create' 
           ? 'Filtro creado correctamente con todos sus criterios' 
           : 'Filtro actualizado correctamente'
