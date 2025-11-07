@@ -1,6 +1,6 @@
 "use client";
 import { useAuthContext } from '@/components/auth-provider';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { TicketsDashboard } from '@/components/dashboard/TicketsDashboard';
 import { useEffect, useState } from 'react';
 
 export default function DashboardHome() {
@@ -29,37 +29,9 @@ export default function DashboardHome() {
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-        <p className="text-gray-600">
-          Bienvenido <span className="font-semibold">{user?.name}</span> - {user?.role}
-        </p>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle>Información de la Sesión</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <p><strong>Usuario:</strong> {user?.name}</p>
-            <p><strong>Email:</strong> {user?.email}</p>
-            <p><strong>Rol:</strong> {user?.role}</p>
-          </CardContent>
-        </Card>
-
-        {/* Aquí puedes agregar más cards con estadísticas */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Estadísticas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Panel de estadísticas del sistema
-            </p>
-          </CardContent>
-        </Card>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="max-w-7xl mx-auto">
+        <TicketsDashboard />
       </div>
     </div>
   );
