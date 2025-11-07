@@ -114,9 +114,13 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
     }
 
     // Validar que todos los criterios estén completos
-    const incompleteCriteria = formData.criteria.filter(criterion => 
-      !criterion.field_name || !criterion.operator || !criterion.value
-    );
+    const incompleteCriteria = formData.criteria.filter(criterion => {
+      // Los operadores IS_NULL e IS_NOT_NULL no necesitan valor
+      const operatorsWithoutValue = [FilterOperator.IS_NULL, FilterOperator.IS_NOT_NULL];
+      const needsValue = !operatorsWithoutValue.includes(criterion.operator as FilterOperator);
+      
+      return !criterion.field_name || !criterion.operator || (needsValue && !criterion.value);
+    });
 
     if (incompleteCriteria.length > 0) {
       toast.error('Todos los criterios deben estar completos (campo, operador y valor)');
@@ -182,9 +186,19 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
   const updateCriterion = (index: number, field: keyof FilterCriterionFormData, value: string) => {
     setFormData(prev => ({
       ...prev,
-      criteria: prev.criteria.map((criterion, i) => 
-        i === index ? { ...criterion, [field]: value } : criterion
-      ),
+      criteria: prev.criteria.map((criterion, i) => {
+        if (i === index) {
+          const updatedCriterion = { ...criterion, [field]: value };
+          
+          // Si se cambia el operador a uno que no necesita valor, limpiar el valor
+          if (field === 'operator' && !shouldShowValue(value)) {
+            updatedCriterion.value = '';
+          }
+          
+          return updatedCriterion;
+        }
+        return criterion;
+      }),
     }));
   };
 
@@ -195,7 +209,6 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
       case TicketFilterField.TYPE_ID:
         return types.map(type => ({ value: type.id.toString(), label: type.type_name }));
       case TicketFilterField.ASSIGNED_TO:
-      case TicketFilterField.CREATED_BY:
         return users.map(user => ({ value: user.id.toString(), label: `${user.name} ${user.last_name}` }));
       case TicketFilterField.STATUS:
         return [
@@ -219,10 +232,22 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
       TicketFilterField.FLOOR_ID,
       TicketFilterField.TYPE_ID,
       TicketFilterField.ASSIGNED_TO,
-      TicketFilterField.CREATED_BY,
+      // Removemos CREATED_BY para que use input de texto
       TicketFilterField.STATUS,
       TicketFilterField.PRIORITY
     ].includes(fieldName as TicketFilterField);
+  };
+
+  const shouldShowDateInput = (fieldName: string) => {
+    return [
+      TicketFilterField.CREATED_AT,
+      TicketFilterField.UPDATED_AT
+    ].includes(fieldName as TicketFilterField);
+  };
+
+  const shouldShowValue = (operator: string) => {
+    const operatorsWithoutValue = [FilterOperator.IS_NULL, FilterOperator.IS_NOT_NULL];
+    return !operatorsWithoutValue.includes(operator as FilterOperator);
   };
 
   return (
@@ -338,7 +363,14 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
 
                       <div>
                         <Label>Valor</Label>
-                        {shouldShowDropdown(criterion.field_name) ? (
+                        {!shouldShowValue(criterion.operator) ? (
+                          <Input
+                            type="text"
+                            value="(No requerido)"
+                            disabled
+                            className="bg-gray-100 text-gray-500"
+                          />
+                        ) : shouldShowDropdown(criterion.field_name) ? (
                           <Select
                             value={criterion.value}
                             onValueChange={(value) => updateCriterion(index, 'value', value)}
@@ -354,11 +386,23 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
                               ))}
                             </SelectContent>
                           </Select>
-                        ) : (
+                        ) : shouldShowDateInput(criterion.field_name) ? (
                           <Input
+                            type="date"
                             value={criterion.value}
                             onChange={(e) => updateCriterion(index, 'value', e.target.value)}
-                            placeholder="Valor a comparar"
+                            placeholder="Seleccionar fecha"
+                          />
+                        ) : (
+                          <Input
+                            type="text"
+                            value={criterion.value}
+                            onChange={(e) => updateCriterion(index, 'value', e.target.value)}
+                            placeholder={
+                              criterion.field_name === TicketFilterField.CREATED_BY 
+                                ? "Email del usuario" 
+                                : "Valor a comparar"
+                            }
                           />
                         )}
                       </div>
