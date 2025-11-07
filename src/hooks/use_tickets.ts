@@ -240,9 +240,6 @@ export function useTickets() {
                 'Fecha de Asignación': ticket.assigned_at ?
                     new Date(ticket.assigned_at).toLocaleString('es-ES') :
                     '',
-                'Fecha de Resolución': ticket.resolved_at ?
-                    new Date(ticket.resolved_at).toLocaleString('es-ES') :
-                    '',
                 'Fecha de Cierre': ticket.closed_at ?
                     new Date(ticket.closed_at).toLocaleString('es-ES') :
                     ''
