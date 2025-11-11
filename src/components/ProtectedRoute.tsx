@@ -23,7 +23,7 @@ export const ProtectedRoute = ({
   useEffect(() => {
     if (loading) return; // Esperar a que cargue la información de auth
 
-    // Si se requiere autenticación y no está autenticado
+    // Si se requiere autenticacion y no esta autenticado
     if (requireAuth && !isAuthenticated) {
       router.push(fallbackPath);
       return;
@@ -31,7 +31,7 @@ export const ProtectedRoute = ({
 
     // Si se especificaron roles y el usuario no tiene los permisos necesarios
     if (allowedRoles && isAuthenticated && !hasRole(allowedRoles)) {
-      router.push('/unauthorized'); // O cualquier página de acceso denegado
+      router.push('/unauthorized'); 
       return;
     }
   }, [isAuthenticated, hasRole, allowedRoles, requireAuth, loading, router, fallbackPath]);
@@ -45,12 +45,12 @@ export const ProtectedRoute = ({
     );
   }
 
-  // Si requiere auth y no está autenticado, no mostrar nada (se redirigirá)
+  // Si requiere auth y no esta autenticado, no mostrar nada
   if (requireAuth && !isAuthenticated) {
     return null;
   }
 
-  // Si se especificaron roles y no los tiene, no mostrar nada (se redirigirá)
+  // Si se especificaron roles y no los tiene, no mostrar nada 
   if (allowedRoles && isAuthenticated && !hasRole(allowedRoles)) {
     return null;
   }
@@ -58,7 +58,7 @@ export const ProtectedRoute = ({
   return <>{children}</>;
 };
 
-// Componentes específicos para roles (como en tu ejemplo de Express)
+// Componentes especificos para roles
 export const AdminOnly = ({ children }: { children: ReactNode }) => (
   <ProtectedRoute allowedRoles="Administrador">
     {children}

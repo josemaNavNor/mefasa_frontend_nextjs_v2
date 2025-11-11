@@ -14,7 +14,7 @@ export const AuthLoadingWrapper = ({ children }: AuthLoadingWrapperProps) => {
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
-      // Si ya no está cargando y no hay usuario autenticado, redirigir al login
+      // Si ya no estq cargando y no hay usuario autenticado, redirigir al login
       router.replace('/login');
     }
   }, [loading, isAuthenticated, router]);

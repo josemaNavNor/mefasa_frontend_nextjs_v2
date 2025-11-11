@@ -33,8 +33,8 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [microsoftLoading, setMicrosoftLoading] = useState(false);
   const [error, setError] = useState('');
-  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
-  
+  const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
+
   const { login } = useAuthContext();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,9 +45,9 @@ export default function Login() {
 
     // Validar con Zod
     const validation = loginSchema.safeParse({ email, password, otp });
-    
+
     if (!validation.success) {
-      const errors: {[key: string]: string} = {};
+      const errors: { [key: string]: string } = {};
       validation.error.issues.forEach((error) => {
         if (error.path[0]) {
           errors[error.path[0] as string] = error.message;
@@ -60,11 +60,11 @@ export default function Login() {
 
     // Si la validación pasa, proceder con el login
     const result = await login(email, password, otp);
-    
+
     if (!result.success) {
       setError(result.error || 'Error al iniciar sesión');
     }
-    
+
     setLoading(false);
   };
 
@@ -72,24 +72,24 @@ export default function Login() {
     try {
       setMicrosoftLoading(true);
       setError('');
-      
-      // Obtener URL de autorización del backend
+
+      // Obtener URL de autorizacion del backend
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/microsoft/login`);
-      
+
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Error response from backend:', response.status, errorText);
+        console.error('Erro en respuesta del backend:', response.status, errorText);
         throw new Error(`Error del servidor: ${response.status} - ${errorText}`);
       }
-      
+
       const data = await response.json();
-      console.log('Response from backend:', data);
-      
+      console.log('Respuesta del backend:', data);
+
       if (data.authUrl) {
         // Redirigir directamente a Microsoft
         window.location.href = data.authUrl;
       } else {
-        console.error('Response data:', data);
+        console.error('Respuesta del backend:', data);
         throw new Error('No se recibió URL de autorización del servidor');
       }
     } catch (error) {
@@ -104,7 +104,7 @@ export default function Login() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const error = urlParams.get('error');
-    
+
     if (error) {
       setError(decodeURIComponent(error));
       // Limpiar URL
@@ -116,7 +116,7 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <Card className="w-full max-w-sm">
         <div className="flex justify-center mt-6">
-            <ImgLogo />
+          <ImgLogo />
         </div>
         <CardHeader>
           <CardTitle>Iniciar sesion</CardTitle>
@@ -149,8 +149,8 @@ export default function Login() {
                   <Label htmlFor="password">Contraseña</Label>
                 </div>
                 <div className="relative">
-                  <Input 
-                    id="password" 
+                  <Input
+                    id="password"
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -175,7 +175,7 @@ export default function Login() {
               <div className="grid gap-2">
                 <Label htmlFor="otp">Codigo de verificacion</Label>
                 <div className="flex items-center justify-center gap-2">
-                  <InputOTP 
+                  <InputOTP
                     maxLength={6}
                     value={otp}
                     onChange={(value) => setOtp(value)}
@@ -197,7 +197,7 @@ export default function Login() {
                   <p className="text-sm text-red-500">{validationErrors.otp}</p>
                 )}
               </div>
-              
+
               {error && (
                 <Alert variant="destructive">
                   <AlertDescription>{error}</AlertDescription>
@@ -207,25 +207,28 @@ export default function Login() {
           </form>
         </CardContent>
         <CardFooter className="flex-col gap-2">
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             className="w-full"
             onClick={handleSubmit}
             disabled={loading || microsoftLoading}
           >
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Iniciar sesion
+            Iniciar sesión
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="w-full"
             onClick={handleMicrosoftLogin}
             disabled={loading || microsoftLoading}
           >
             {microsoftLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Iniciar sesion con Microsoft
+            Iniciar sesión con Microsoft
           </Button>
         </CardFooter>
+        <CardDescription>
+          ¡También puedes registrarte con tu cuenta de Microsoft!
+        </CardDescription>
       </Card>
     </div>
   )

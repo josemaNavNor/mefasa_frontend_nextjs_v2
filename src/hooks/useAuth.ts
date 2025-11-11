@@ -40,7 +40,7 @@ export function useAuth() {
     });
   }, []);
 
-  // Inicializar autenticación al cargar
+  // Inicializar autenticacion al cargar
   useEffect(() => {
     const initializeAuth = () => {
       try {
@@ -72,7 +72,7 @@ export function useAuth() {
     return () => clearTimeout(timer);
   }, [clearAuthState]);
 
-  // Función de login
+  // Funcion de login
   const login = useCallback(async (email: string, password: string, token?: string) => {
     try {
       const currentUserId = state.user?.id;
@@ -100,13 +100,13 @@ export function useAuth() {
 
         return { success: true };
       } else {
-        Notiflix.Notify.failure('Credenciales inválidas. Por favor, inténtalo de nuevo.');
-        return { success: false, error: 'Credenciales inválidas' };
+        Notiflix.Notify.failure('Credenciales invalidas. Por favor, inténtalo de nuevo.');
+        return { success: false, error: 'Credenciales invalidas' };
       }
     } catch (error) {
       //console.error('Login error:', error);
-      Notiflix.Notify.failure('Credenciales inválidas. Por favor, inténtalo de nuevo.');
-      return { success: false, error: 'Credenciales inválidas' };
+      Notiflix.Notify.failure('Credenciales invalidas. Por favor, inténtalo de nuevo.');
+      return { success: false, error: 'Credenciales invalidas' };
     }
   }, [state.user?.id, clearAuthState, setAuthenticatedUser, router]);
 

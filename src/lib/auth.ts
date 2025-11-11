@@ -27,7 +27,7 @@ class AuthService {
     });
 
     if (!response.ok) {
-      throw new Error('Invalid credentials');
+      throw new Error('Crdenciales invalidas');
     }
 
     return response.json();

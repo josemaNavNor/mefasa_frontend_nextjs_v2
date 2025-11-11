@@ -58,7 +58,7 @@ function Setup2FAContent() {
   };
 
   const handleFinish = () => {
-    // Redirigir según el parámetro de retorno o al perfil por defecto
+    // Redirigir segun el parámetro de retorno o al perfil por defecto
     const returnTo = searchParams.get('returnTo') || '/profile';
     router.push(returnTo);
   };
@@ -80,7 +80,7 @@ function Setup2FAContent() {
           </p>
         </div>
 
-        {/* Progress indicator */}
+        {/* Indicador del proceso */}
         <div className="flex items-center justify-center space-x-4">
           <div className={`flex items-center space-x-2 ${step === 'generate' || step === 'verify' || step === 'success' ? 'text-blue-600' : 'text-muted-foreground'}`}>
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step === 'generate' || step === 'verify' || step === 'success' ? 'bg-blue-600 text-white' : 'bg-muted'}`}>
@@ -104,7 +104,7 @@ function Setup2FAContent() {
           </div>
         </div>
 
-        {/* Error message */}
+        {/* Mensaje de error */}
         {error && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
@@ -112,7 +112,7 @@ function Setup2FAContent() {
           </Alert>
         )}
 
-        {/* Step 1: Generate QR */}
+        {/* Generar codigo QR */}
         {step === 'generate' && (
           <Card>
             <CardHeader>
@@ -145,7 +145,7 @@ function Setup2FAContent() {
           </Card>
         )}
 
-        {/* Step 2: Verify */}
+        {/* Verificar */}
         {step === 'verify' && qrCodeData && (
           <Card>
             <CardHeader>
@@ -158,7 +158,7 @@ function Setup2FAContent() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* QR Code */}
+              {/* Codigo QR */}
               <div className="text-center space-y-4">
                 <div className="inline-block p-4 bg-white rounded-lg border">
                   <Image
@@ -191,7 +191,7 @@ function Setup2FAContent() {
 
               <Separator />
 
-              {/* Verification */}
+              {/* Verificacion */}
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="verification-code">Código de verificación</Label>
@@ -213,7 +213,7 @@ function Setup2FAContent() {
                 </Button>
               </div>
 
-              {/* Recommended apps */}
+              {/* Aplicaciones recomendadas */}
               <Alert>
                 <Shield className="h-4 w-4" />
                 <AlertDescription>
@@ -224,7 +224,7 @@ function Setup2FAContent() {
           </Card>
         )}
 
-        {/* Step 3: Success */}
+        {/* Exito */}
         {step === 'success' && (
           <Card>
             <CardHeader>
@@ -244,7 +244,7 @@ function Setup2FAContent() {
                 </AlertDescription>
               </Alert>
 
-              {/* Backup codes */}
+              {/* Codigos de respaldo */}
               {backupCodes.length > 0 && (
                 <div className="space-y-4">
                   <div className="space-y-2">
@@ -288,7 +288,7 @@ function Setup2FAContent() {
           </Card>
         )}
 
-        {/* Back button for non-success steps */}
+        {/* Boton para volver */}
         {step !== 'success' && (
           <div className="text-center">
             <Button 

@@ -15,12 +15,12 @@ export class MicrosoftAuth {
   }
 
   /**
-   * Inicia el flujo de autenticación con Microsoft
+   * Inicia el flujo de autenticacion con Microsoft
    * Redirige al usuario a Microsoft para autenticarse
    */
   async loginWithMicrosoft(): Promise<void> {
     try {
-      // Paso 1: Obtener URL de autorización del backend
+      // Obtener URL de autorizacion del backend
       const response = await fetch(`${this.baseUrl}/auth/microsoft/login`, {
         method: 'GET',
         headers: {
@@ -34,11 +34,11 @@ export class MicrosoftAuth {
 
       const data = await response.json();
       
-      // Paso 2: Redirigir al usuario a Microsoft
+      // Redirigir al usuario a Microsoft
       if (data.authUrl) {
         window.location.href = data.authUrl;
       } else {
-        throw new Error('No se recibió URL de autorización');
+        throw new Error('No se recibio URL de autorizacion');
       }
     } catch (error) {
       console.error('Error en login con Microsoft:', error);
@@ -47,8 +47,8 @@ export class MicrosoftAuth {
   }
 
   /**
-   * Intercambia el código de autorización por un token
-   * Se llama después de que Microsoft redirija de vuelta
+   * Intercambia el codigo de autorizacion por un token
+   * Se llama despues de que Microsoft redirija de vuelta
    */
   async exchangeCodeForToken(code: string, state?: string): Promise<any> {
     try {
@@ -61,7 +61,7 @@ export class MicrosoftAuth {
       });
 
       if (!response.ok) {
-        throw new Error('Error al intercambiar código por token');
+        throw new Error('Error al intercambiar codigo por token');
       }
 
       const userData = await response.json();
@@ -74,13 +74,13 @@ export class MicrosoftAuth {
 
       return userData;
     } catch (error) {
-      console.error('Error al intercambiar código:', error);
+      console.error('Error al intercambiar codigo:', error);
       throw error;
     }
   }
 
   /**
-   * Verifica si hay un código en la URL (después de la redirección de Microsoft)
+   * Verifica si hay un codigo en la URL (despues de la redireccion de Microsoft)
    */
   handleCallbackUrl(): { code: string | null; state: string | null; error: string | null } {
     if (typeof window === 'undefined') {

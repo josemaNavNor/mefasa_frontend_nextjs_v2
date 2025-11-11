@@ -3,7 +3,6 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Setup2FAPrompt } from '@/components/Setup2FAPrompt';
-import { useAuthContext } from '@/components/auth-provider';
 
 function LoginCallbackContent() {
   const router = useRouter();
@@ -29,12 +28,12 @@ function LoginCallbackContent() {
         const user = JSON.parse(decodeURIComponent(userParam));
         let recommendations: any = {};
         
-        // Parse recommendations if available
+        // Parsear recomendaciones si existen
         if (recommendationsParam) {
           try {
             recommendations = JSON.parse(decodeURIComponent(recommendationsParam));
           } catch (error) {
-            console.warn('Error parsing recommendations:', error);
+            console.warn('Error al parsear recomendaciones:', error);
           }
         }
         
@@ -53,16 +52,16 @@ function LoginCallbackContent() {
         }
       } catch (error) {
         console.error('Error procesando datos de usuario:', error);
-        router.push('/login?error=' + encodeURIComponent('Error processing user data'));
+        router.push('/login?error=' + encodeURIComponent('Error procesando datos de usuario'));
       }
     } else {
-      router.push('/login?error=' + encodeURIComponent('Missing authentication data'));
+      router.push('/login?error=' + encodeURIComponent('Faltan datos de autenticación'));
     }
   }, [searchParams, router]);
 
   const handleSetup2FA = () => {
     setShow2FAPrompt(false);
-    // Redirigir a la página de configuración de 2FA
+    // Redirigir a la pagina de configuración de 2FA
     router.push('/setup-2fa?returnTo=/');
   };
 
