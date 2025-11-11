@@ -123,9 +123,9 @@ export default function Login() {
           <CardDescription>
             Ingresa tus credenciales para iniciar sesion
           </CardDescription>
-          {/* <CardAction>
+          <CardAction>
             <Button variant="link">Registro</Button>
-          </CardAction> */}
+          </CardAction>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit}>
@@ -226,9 +226,6 @@ export default function Login() {
             Iniciar sesión con Microsoft
           </Button>
         </CardFooter>
-        <CardDescription>
-          ¡También puedes registrarte con tu cuenta de Microsoft!
-        </CardDescription>
       </Card>
     </div>
   )
