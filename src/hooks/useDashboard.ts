@@ -12,6 +12,11 @@ export interface DashboardData {
     openTickets: number;
     closedToday: number;
     avgResolutionDays: string;
+    pendingLastWeek: number;
+    pendingLastWeekDateRange: {
+      start: string;
+      end: string;
+    };
   };
 }
 

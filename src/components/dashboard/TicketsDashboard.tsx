@@ -6,6 +6,7 @@ import { StatusDonut } from './StatusDonut';
 import { PriorityBars } from './PriorityBars';
 import { TopTechnicians } from './TopTechnicians';
 import { MetricsCards } from './MetricsCards';
+import { PendingLastWeekTickets } from './PendingLastWeekTickets';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -24,8 +25,8 @@ export function TicketsDashboard() {
         </div>
         
         {/* Skeleton para métricas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          {Array.from({ length: 5 }).map((_, i) => (
             <Skeleton key={i} className="h-24" />
           ))}
         </div>
@@ -40,6 +41,9 @@ export function TicketsDashboard() {
           <Skeleton className="h-80" />
           <Skeleton className="h-80" />
         </div>
+
+        {/* Skeleton para tickets pendientes */}
+        <Skeleton className="h-64" />
       </div>
     );
   }
@@ -91,6 +95,9 @@ export function TicketsDashboard() {
 
       {/* Métricas principales */}
       <MetricsCards metrics={data.metrics} />
+
+      {/* Tickets pendientes de la semana pasada - Componente destacado */}
+      {data.metrics.pendingLastWeek > 0 && <PendingLastWeekTickets />}
 
       {/* Gráfica principal - Timeline */}
       <TicketTimeline data={data.seriesByDate} />
