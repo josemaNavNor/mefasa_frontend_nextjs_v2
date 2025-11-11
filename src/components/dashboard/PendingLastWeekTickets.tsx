@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { usePendingLastWeek } from '@/hooks/usePendingLastWeek';
-import { AlertTriangle, Calendar, User, RefreshCw, Eye, Filter } from 'lucide-react';
+import { AlertTriangle, Calendar, User, RefreshCw, Eye } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
   Dialog, 
@@ -14,8 +14,6 @@ import {
   DialogTitle, 
   DialogTrigger 
 } from '@/components/ui/dialog';
-import { api } from '@/lib/httpClient';
-import Notiflix from 'notiflix';
 
 interface PendingTicket {
   id: number;
@@ -41,20 +39,6 @@ interface PendingTicket {
 export function PendingLastWeekTickets() {
   const { data, loading, error, refetch } = usePendingLastWeek();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [creatingFilter, setCreatingFilter] = useState(false);
-
-  const handleCreateFilter = async () => {
-    try {
-      setCreatingFilter(true);
-      await api.post('/filters/create-pending-last-week', {});
-      Notiflix.Notify.success('Filtro predefinido creado exitosamente');
-    } catch (err) {
-      console.error('Error creating filter:', err);
-      Notiflix.Notify.failure('Error al crear el filtro predefinido');
-    } finally {
-      setCreatingFilter(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -117,17 +101,6 @@ export function PendingLastWeekTickets() {
                 Del {new Date(data.dateRange.start).toLocaleDateString('es-ES')} al {new Date(data.dateRange.end).toLocaleDateString('es-ES')}
               </p>
             )}
-            <div className="mt-4">
-              <Button 
-                onClick={handleCreateFilter} 
-                variant="outline" 
-                size="sm"
-                disabled={creatingFilter}
-              >
-                <Filter className="h-4 w-4 mr-2" />
-                {creatingFilter ? 'Creando...' : 'Crear Filtro Predefinido'}
-              </Button>
-            </div>
           </div>
         </CardContent>
       </Card>
@@ -149,15 +122,6 @@ export function PendingLastWeekTickets() {
             </Badge>
           </CardTitle>
           <div className="flex items-center gap-2">
-            <Button 
-              onClick={handleCreateFilter} 
-              variant="outline" 
-              size="sm"
-              disabled={creatingFilter}
-            >
-              <Filter className="h-4 w-4 mr-1" />
-              {creatingFilter ? 'Creando...' : 'Filtro'}
-            </Button>
             <Button onClick={refetch} variant="outline" size="sm">
               <RefreshCw className="h-4 w-4" />
             </Button>
