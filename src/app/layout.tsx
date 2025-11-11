@@ -1,23 +1,51 @@
-import type { Metadata } from "next";
-import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
-import { AuthProvider } from '@/components/auth-provider';
-import { SettingsProvider } from '@/contexts/SettingsContext';
-import { Toaster } from 'sonner';
+import type { Metadata, Viewport } from "next";
 
-export const metadata: Metadata = {
-  title: "HDM - Help Desk Mefasa",
-  description: "Sistema de Help Desk para Mefasa",
+import "./globals.css";
+import { AuthProvider } from "@/components/auth-provider";
+import { SettingsProvider } from "@/contexts/SettingsContext";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "sonner";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "white" },
+    { media: "(prefers-color-scheme: dark)", color: "black" },
+  ],
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export const metadata: Metadata = {
+  title: {
+    default: "HDM - Help Desk Mefasa",
+    template: "%s | HDM",
+  },
+  description: "Sistema de Help Desk para Mefasa - Gestión eficiente de tickets y soporte técnico",
+  keywords: ["help desk", "soporte técnico", "tickets", "mefasa", "gestión"],
+  authors: [{ name: "Mefasa Team" }],
+  creator: "Mefasa",
+  publisher: "Mefasa",
+  robots: {
+    index: false, // Internal application
+    follow: false,
+  },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
+  manifest: "/manifest.json",
+};
+
+interface RootLayoutProps {
+  readonly children: React.ReactNode;
+}
+
+export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className="antialiased">
+      <body className="min-h-screen bg-background font-sans antialiased">
         <AuthProvider>
           <SettingsProvider>
             <ThemeProvider 
@@ -26,8 +54,23 @@ export default function RootLayout({
               enableSystem 
               disableTransitionOnChange
             >
-              {children}
-              <Toaster richColors position="top-right" />
+              <div id="app-root" className="relative flex min-h-screen flex-col">
+                {children}
+              </div>
+              <Toaster 
+                richColors 
+                position="top-right" 
+                closeButton
+                duration={4000}
+                toastOptions={{
+                  classNames: {
+                    error: 'border-destructive',
+                    success: 'border-green-500',
+                    warning: 'border-yellow-500',
+                    info: 'border-blue-500',
+                  },
+                }}
+              />
             </ThemeProvider>
           </SettingsProvider>
         </AuthProvider>

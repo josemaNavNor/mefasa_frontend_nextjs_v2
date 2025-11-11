@@ -1,18 +1,25 @@
+import { Spinner } from "@/components/ui/spinner";
+import { cn } from "@/lib/utils";
+
 interface LoadingProps {
-    size?: 'sm' | 'md' | 'lg';
-    className?: string;
+  readonly size?: 'sm' | 'md' | 'lg' | 'xl';
+  readonly className?: string;
+  readonly message?: string;
 }
 
-export default function Loading({ size = 'md', className = '' }: LoadingProps) {
-    const sizeClasses = {
-        sm: 'w-4 h-4 border-2',
-        md: 'w-8 h-8 border-2', 
-        lg: 'w-16 h-16 border-4'
-    };
-
-    return (
-        <div className={`flex items-center justify-center ${className}`}>
-            <div className={`${sizeClasses[size]} border-primary border-dashed rounded-full animate-spin`}></div>
-        </div>
-    )
+export default function Loading({ 
+  size = 'md', 
+  className = '',
+  message
+}: LoadingProps) {
+  return (
+    <div className={cn("flex flex-col items-center justify-center gap-2", className)}>
+      <Spinner size={size} />
+      {message && (
+        <p className="text-sm text-muted-foreground animate-pulse">
+          {message}
+        </p>
+      )}
+    </div>
+  );
 }
