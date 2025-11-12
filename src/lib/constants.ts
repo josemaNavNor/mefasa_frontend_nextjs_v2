@@ -5,7 +5,7 @@ export const APP_CONFIG = {
 } as const;
 
 export const API_CONFIG = {
-  baseUrl: process.env.BACKEND_URL || "http://localhost:4000",
+  baseUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000",
   version: "v1",
   timeout: 30000, // 30 seconds
 } as const;
