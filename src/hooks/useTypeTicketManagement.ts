@@ -4,6 +4,7 @@ import { useEventListener } from "@/hooks/useEventListener";
 import { ticketTypeSchema } from "@/lib/zod";
 import { TicketType } from "@/types/ticketType";
 import { TYPE_EVENTS } from "@/lib/events";
+import { eventEmitter } from "./useEventListener";
 import Notiflix from 'notiflix';
 
 interface TypeTicket {
@@ -20,8 +21,8 @@ export const useTypeTicketManagement = () => {
     const [description, setDescription] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     
-    // Estado para controlar el Sheet de creación
-    const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
+    // Estado del Sheet para crear tipo - manejado internamente
+    const [isSheetOpen, setIsSheetOpen] = useState(false);
     
     // Estados para editar tipo de ticket
     const [editingType, setEditingType] = useState<TypeTicket | null>(null);
@@ -103,8 +104,8 @@ export const useTypeTicketManagement = () => {
             setDescription("");
             setErrors({});
             
-            // Cerrar Sheet
-            setIsCreateSheetOpen(false);
+            // Emitir evento para cerrar Sheet
+            eventEmitter.emit(TYPE_EVENTS.CLOSE_FORM);
         } catch (error) {
             // El error ya se maneja en createTicketType
         }
@@ -165,8 +166,6 @@ export const useTypeTicketManagement = () => {
             type_name, setTicketTypeName,
             description, setDescription,
             errors,
-            isCreateSheetOpen,
-            setIsCreateSheetOpen,
             handleSubmit
         },
         editTypeForm: {
@@ -177,6 +176,9 @@ export const useTypeTicketManagement = () => {
             isEditSheetOpen, setIsEditSheetOpen,
             handleEditSubmit
         },
+        // Estado interno del Sheet para la página
+        isSheetOpen,
+        setIsSheetOpen,
         handleEdit,
         handleDelete,
         refetch

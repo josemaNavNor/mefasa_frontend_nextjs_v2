@@ -4,6 +4,7 @@ import { useEventListener } from "@/hooks/useEventListener";
 import { createRoleHandlers } from "@/app/(dashboard)/roles/handlers";
 import { Rol } from "@/types/rol";
 import { ROLE_EVENTS } from "@/lib/events";
+import { eventEmitter } from "./useEventListener";
 
 interface Role {
     id: number;
@@ -19,8 +20,8 @@ export const useRoleManagement = () => {
     const [description, setDescription] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     
-    // Estado para controlar el Sheet de creación
-    const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
+    // Estado del Sheet para crear rol - manejado internamente
+    const [isSheetOpen, setIsSheetOpen] = useState(false);
     
     // Estados para editar rol
     const [editingRole, setEditingRole] = useState<Role | null>(null);
@@ -83,7 +84,10 @@ export const useRoleManagement = () => {
             setErrors,
             setRolName,
             setDescription,
-            () => setIsCreateSheetOpen(false) // Cerrar Sheet manualmente
+            () => {
+                // Emitir evento para cerrar Sheet
+                eventEmitter.emit(ROLE_EVENTS.CLOSE_FORM);
+            }
         );
     }, [handlers, rol_name, description]);
 
@@ -134,8 +138,6 @@ export const useRoleManagement = () => {
             description,
             setDescription,
             errors,
-            isCreateSheetOpen,
-            setIsCreateSheetOpen,
             handleSubmit
         },
         editRoleForm: {
@@ -149,6 +151,9 @@ export const useRoleManagement = () => {
             setIsEditSheetOpen,
             handleEditSubmit
         },
+        // Estado interno del Sheet para la página
+        isSheetOpen,
+        setIsSheetOpen,
         handleEdit,
         handleDelete,
         refetch

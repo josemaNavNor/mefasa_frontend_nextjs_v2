@@ -20,7 +20,7 @@ export const useUserFavFilters = () => {
     setError(null);
     try {
       const data = await api.get('/user-fav-filters');
-      console.log('Raw user fav filters data:', data);
+      //('Raw user fav filters data:', data);
       
       // Verificar que data sea un array antes de usar filter
       if (!Array.isArray(data)) {
@@ -34,7 +34,7 @@ export const useUserFavFilters = () => {
         favFilter.user_id === user.id
       );
 
-      console.log('User filters after filtering:', userFilters);
+      //console.log('User filters after filtering:', userFilters);
       setUserFavFilters(userFilters);
     } catch (err) {
       console.error('Error in fetchUserFavFilters:', err);
@@ -115,7 +115,7 @@ export const useUserFavFilters = () => {
   useEffect(() => {
     // Cada vez que cambie el usuario, recargar los favoritos desde el servidor
     if (user) {
-      console.log('Cargando filtros favoritos del usuario');
+      //console.log('Cargando filtros favoritos del usuario');
       fetchUserFavFilters();
     } else {
       // usuario desconectado -> limpiar estado

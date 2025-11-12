@@ -31,7 +31,7 @@ export function useTicketHistory(ticketId?: number) {
         // Evitar múltiples llamadas muy seguidas (menos de 1 segundo)
         const now = Date.now();
         if (now - lastFetchTime < 1000) {
-            console.log('Fetch history bloqueado por throttle');
+            //console.log('Fetch history bloqueado por throttle');
             return;
         }
         
@@ -98,7 +98,7 @@ export function useTicketHistory(ticketId?: number) {
     // Escuchar eventos de actualización del historial con debounce
     useEventListener('ticket-history-updated', (updatedTicketId: number) => {
         if (ticketId && updatedTicketId === ticketId) {
-            console.log('Recargando historial para ticket:', ticketId);
+            //console.log('Recargando historial para ticket:', ticketId);
             // Implementar debounce para evitar múltiples llamadas
             const timeoutId = setTimeout(() => {
                 fetchHistory();

@@ -143,7 +143,7 @@ export function TicketBasicInfo({ ticket, users, types, floors, onTicketUpdate }
                         roleNameLower.includes('tecnico') ||
                         roleNameLower.includes('administrador') ||
                         roleNameLower.includes('admin')
-                    console.log(`Usuario ${user.name} (${roleName}) puede ser tecnico:`, canBe)
+                    //console.log(`Usuario ${user.name} (${roleName}) puede ser tecnico:`, canBe)
                     return canBe
                 }
 

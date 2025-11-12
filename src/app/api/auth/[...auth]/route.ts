@@ -1,10 +1,10 @@
 import { auth } from "@/lib/better-auth"
 
 export async function GET(request: Request) {
-  console.log('GET - Auth route called with URL:', request.url)
+  //console.log('GET - Auth route called with URL:', request.url)
   try {
     const response = await auth.handler(request)
-    console.log('Auth handler response status:', response.status)
+    //console.log('Auth handler response status:', response.status)
     return response
   } catch (error) {
     console.error('Auth handler error:', error)
@@ -16,10 +16,10 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  console.log('POST - Auth route called with URL:', request.url)
+  //console.log('POST - Auth route called with URL:', request.url)
   try {
     const response = await auth.handler(request)
-    console.log('Auth handler response status:', response.status)
+    //console.log('Auth handler response status:', response.status)
     return response
   } catch (error) {
     console.error('Auth handler error:', error)
