@@ -98,14 +98,28 @@ export default function Login() {
       const data = await response.json();
       console.log('Respuesta del backend:', data);
 
-      // El backend puede devolver la respuesta en diferentes formatos
-      const authUrl = data.authUrl || data.data?.authUrl;
+      // El backend devuelve la respuesta envuelta en un objeto con formato:
+      // { success: true, data: { authUrl: "...", state: "..." }, timestamp: "...", path: "..." }
+      let authUrl = null;
+      
+      if (data.success && data.data && data.data.authUrl) {
+        authUrl = data.data.authUrl;
+      } else if (data.authUrl) {
+        authUrl = data.authUrl;
+      }
+      
+      console.log('URL de autorización extraída:', authUrl);
       
       if (authUrl) {
         // Redirigir directamente a Microsoft
         window.location.href = authUrl;
       } else {
         console.error('Respuesta del backend:', data);
+        console.error('No se encontró authUrl en:', {
+          'data.data': data.data,
+          'data.authUrl': data.authUrl,
+          'data.data?.authUrl': data.data?.authUrl
+        });
         throw new Error('No se recibió URL de autorización del servidor');
       }
     } catch (error) {
