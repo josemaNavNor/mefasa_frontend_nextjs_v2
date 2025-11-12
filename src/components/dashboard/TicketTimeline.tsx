@@ -61,7 +61,9 @@ export function TicketTimeline({ data }: TicketTimelineProps) {
     tooltip: {
       x: {
         formatter: (value: any, { dataPointIndex }: any) => {
-          const date = new Date(data[dataPointIndex]?.date);
+          const dateValue = data[dataPointIndex]?.date;
+          if (!dateValue) return 'Fecha no disponible';
+          const date = new Date(dateValue);
           return date.toLocaleDateString('es-ES', {
             weekday: 'long',
             year: 'numeric',

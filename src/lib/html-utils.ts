@@ -43,7 +43,7 @@ function processEmailImages(html: string): string {
     const alt = altMatch ? altMatch[1] : 'Imagen del email';
     
     // Si es una imagen base64, mantenerla pero con límite más estricto por defecto
-    if (src.startsWith('data:image/')) {
+    if (src && src.startsWith('data:image/')) {
       // En modo conservador, límite más bajo (50KB aprox)
       if (src.length > 50000) {
         const sizeKB = Math.round(src.length / 1024);
@@ -85,7 +85,7 @@ function processEmailImagesPermissive(html: string): string {
     const alt = altMatch ? altMatch[1] : 'Imagen del email';
     
     // En modo permisivo, mostrar todas las imágenes base64
-    if (src.startsWith('data:image/')) {
+    if (src && src.startsWith('data:image/')) {
       // Para imágenes base64, simplemente mostrarlas con información de tamaño si son grandes
       if (src.length > 100000) {
         const sizeKB = Math.round(src.length / 1024);
@@ -187,14 +187,14 @@ export function analyzeEmailImages(html: string): {
     const srcMatch = imgTag.match(/src=["']([^"']*)["']/i);
     if (srcMatch) {
       const src = srcMatch[1];
-      if (src.startsWith('data:image/')) {
+      if (src && src.startsWith('data:image/')) {
         base64Images++;
         const sizeKB = Math.round(src.length / 1024);
         totalSizeKB += sizeKB;
         if (sizeKB > 50) {
           largeImages++;
         }
-      } else if (src.startsWith('http')) {
+      } else if (src && src.startsWith('http')) {
         externalImages++;
       }
     }

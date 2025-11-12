@@ -161,8 +161,9 @@ export default function TicketsPage() {
                     'updated_at': 'updated_at'
                 };
                 
-                if (fieldMapping[fieldName]) {
-                    fieldName = fieldMapping[fieldName];
+                const mappedField = fieldMapping[fieldName];
+                if (mappedField) {
+                    fieldName = mappedField;
                 }
                 
                 const fieldValue = ticket[fieldName as keyof typeof ticket];
@@ -420,7 +421,6 @@ export default function TicketsPage() {
                                     onChange={(date: string) => {
                                         setDueDate(date);
                                     }}
-                                    minDate={new Date().toISOString().split('T')[0]}
                                 />
 
                             </div>

@@ -15,49 +15,51 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import ImgLogo from "@/components/img-logo"
 import { useAuthContext } from "@/components/auth-provider" 
 import { ChevronUp, Home, Settings, User2, Building2, Ticket, Notebook, Footprints, LogOut, Filter } from "lucide-react"
+import { USER_ROLES } from "@/lib/constants"
+import type { UserRole } from "@/types/use_auth"
 
 const menuItems = [
     {
         title: "Home",
         url: "/",
         icon: Home,
-        roles: ['Administrador', 'Tecnico'], 
+        roles: [USER_ROLES.ADMIN, USER_ROLES.TECH] as UserRole[], 
     },
     {
         title: "Tickets",
         url: "/tickets",
         icon: Ticket,
-        roles: ['Administrador', 'Tecnico'], 
+        roles: [USER_ROLES.ADMIN, USER_ROLES.TECH] as UserRole[], 
     },
     {
         title: "Filtros",
         url: "/filters",
         icon: Filter,
-        roles: ['Administrador', 'Tecnico'], 
+        roles: [USER_ROLES.ADMIN, USER_ROLES.TECH] as UserRole[], 
     },
     {
         title: "Usuarios",
         url: "/users",
         icon: User2,
-        roles: ['Administrador'],
+        roles: [USER_ROLES.ADMIN] as UserRole[],
     },
     {
         title: "Roles",
         url: "/roles",
         icon: Notebook,
-        roles: ['Administrador'], 
+        roles: [USER_ROLES.ADMIN] as UserRole[], 
     },
     {
         title: "Plantas",
         url: "/floors",
         icon: Building2,
-        roles: ['Administrador'], 
+        roles: [USER_ROLES.ADMIN] as UserRole[], 
     },
     {
         title: "Tipos de Tickets",
         url: "/type_tickets",
         icon: Ticket,
-        roles: ['Administrador'], 
+        roles: [USER_ROLES.ADMIN] as UserRole[], 
     }
 ]
 

@@ -107,6 +107,7 @@ export function useTicketHistory(ticketId?: number) {
             // Cleanup del timeout anterior si existe
             return () => clearTimeout(timeoutId);
         }
+        return undefined;
     });
 
     return {
