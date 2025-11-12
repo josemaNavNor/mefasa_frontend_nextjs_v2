@@ -11,6 +11,7 @@ import Notiflix from 'notiflix';
 import { createHistoryDescription, getCurrentUserId } from "@/lib/ticket-utils"
 import { Ticket } from "@/types/ticket"
 import { eventEmitter } from "./useEventListener"
+import { TICKET_EVENTS } from "@/lib/events"
 
 export const useTicketModal = (ticket: Ticket | null) => {
     const [responseText, setResponseText] = useState("")
@@ -80,8 +81,10 @@ export const useTicketModal = (ticket: Ticket | null) => {
                         old_values: { [field]: oldValue },
                         new_values: { [field]: newValue }
                     }
-                    // Emitir evento con debounce para evitar spam
-                    eventEmitter.emitWithDebounce('Ticket actualizado', 500, historyData.ticket_id);
+                    
+                    // Emitir eventos específicos para actualizar la página de tickets
+                    eventEmitter.emit(TICKET_EVENTS.UPDATED, { id: ticket.id, data: result });
+                    eventEmitter.emit(TICKET_EVENTS.REFRESH_TICKETS_PAGE);
                 }
 
                 Notiflix.Notify.success(`Campo actualizado correctamente`)

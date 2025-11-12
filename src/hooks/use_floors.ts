@@ -33,9 +33,6 @@ export function useFloors() {
         try {
             const response = await api.post('/floors', floor);
             setFloors((prevFloors) => [...prevFloors, response]);
-            // Emitir eventos específicos para plantas
-            eventEmitter.emit(FLOOR_EVENTS.CREATED, response);
-            eventEmitter.emit(FLOOR_EVENTS.CLOSE_FORM);
             // Mantener eventos globales para compatibilidad
             eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'floors');
             eventEmitter.emit('floors-updated');

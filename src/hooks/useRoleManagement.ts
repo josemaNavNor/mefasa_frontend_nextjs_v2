@@ -19,6 +19,9 @@ export const useRoleManagement = () => {
     const [description, setDescription] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     
+    // Estado para controlar el Sheet de creación
+    const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
+    
     // Estados para editar rol
     const [editingRole, setEditingRole] = useState<Role | null>(null);
     const [editRolName, setEditRolName] = useState("");
@@ -40,16 +43,8 @@ export const useRoleManagement = () => {
         }
     }, [refetch]);
 
-    // Función para limpiar formulario de creación
-    const handleCloseCreateForm = useCallback(() => {
-        setRolName("");
-        setDescription("");
-        setErrors({});
-    }, []);
-
     useEventListener('data-changed', handleDataChange);
     useEventListener('roles-updated', refetch);
-    useEventListener(ROLE_EVENTS.CLOSE_FORM, handleCloseCreateForm);
 
     // Wrapper functions para los handlers con los estados
     const handleEdit = useCallback((rol: Rol) => {
@@ -88,7 +83,8 @@ export const useRoleManagement = () => {
             description,
             setErrors,
             setRolName,
-            setDescription
+            setDescription,
+            () => setIsCreateSheetOpen(false) // Función para cerrar el Sheet
         );
     }, [handlers, rol_name, description]);
 
@@ -133,8 +129,27 @@ export const useRoleManagement = () => {
 
     return {
         roles,
-        createRoleForm,
-        editRoleForm,
+        createRoleForm: {
+            rol_name,
+            setRolName,
+            description,
+            setDescription,
+            errors,
+            handleSubmit
+        },
+        editRoleForm: {
+            editingRole,
+            editRolName,
+            setEditRolName,
+            editDescription,
+            setEditDescription,
+            editErrors,
+            isEditSheetOpen,
+            setIsEditSheetOpen,
+            handleEditSubmit
+        },
+        isCreateSheetOpen,
+        setIsCreateSheetOpen,
         handleEdit,
         handleDelete,
         refetch

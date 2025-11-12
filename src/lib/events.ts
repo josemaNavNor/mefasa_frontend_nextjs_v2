@@ -41,6 +41,15 @@ export const TYPE_EVENTS = {
   CLOSE_FORM: 'type:close-form'
 } as const;
 
+// Eventos de usuarios
+export const USER_EVENTS = {
+  UPDATED: 'user:updated',
+  CREATED: 'user:created',
+  DELETED: 'user:deleted',
+  REFRESH_USERS_PAGE: 'user:refresh-page',
+  CLOSE_FORM: 'user:close-form'
+} as const;
+
 // Eventos globales (mantener para compatibilidad)
 export const GLOBAL_EVENTS = {
   DATA_CHANGED: 'data-changed',

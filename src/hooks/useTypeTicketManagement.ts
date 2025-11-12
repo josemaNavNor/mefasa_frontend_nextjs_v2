@@ -20,6 +20,9 @@ export const useTypeTicketManagement = () => {
     const [description, setDescription] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     
+    // Estado para controlar el Sheet de creación
+    const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
+    
     // Estados para editar tipo de ticket
     const [editingType, setEditingType] = useState<TypeTicket | null>(null);
     const [editTypeName, setEditTypeName] = useState("");
@@ -34,16 +37,8 @@ export const useTypeTicketManagement = () => {
         }
     }, [refetch]);
 
-    // Función para limpiar formulario de creación
-    const handleCloseCreateForm = useCallback(() => {
-        setTicketTypeName("");
-        setDescription("");
-        setErrors({});
-    }, []);
-
     useEventListener('data-changed', handleDataChange);
     useEventListener('types-updated', refetch);
-    useEventListener(TYPE_EVENTS.CLOSE_FORM, handleCloseCreateForm);
 
     // Función para manejar la edición
     const handleEdit = useCallback((ticketType: TicketType) => {
@@ -98,12 +93,22 @@ export const useTypeTicketManagement = () => {
             return;
         }
         
-        await createTicketType({
-            type_name,
-            description,
-        });
-        
-        // No limpiar formulario aquí - lo hará el event listener
+        try {
+            await createTicketType({
+                type_name,
+                description,
+            });
+            
+            // Limpiar formulario
+            setTicketTypeName("");
+            setDescription("");
+            setErrors({});
+            
+            // Cerrar Sheet
+            setIsCreateSheetOpen(false);
+        } catch (error) {
+            // El error ya se maneja en createTicketType
+        }
     }, [createTicketType, type_name, description]);
 
     // Handler para editar tipo de ticket
@@ -157,8 +162,22 @@ export const useTypeTicketManagement = () => {
 
     return {
         types,
-        createTypeForm,
-        editTypeForm,
+        createTypeForm: {
+            type_name, setTicketTypeName,
+            description, setDescription,
+            errors,
+            handleSubmit
+        },
+        editTypeForm: {
+            editingType,
+            editTypeName, setEditTypeName,
+            editDescription, setEditDescription,
+            editErrors,
+            isEditSheetOpen, setIsEditSheetOpen,
+            handleEditSubmit
+        },
+        isCreateSheetOpen,
+        setIsCreateSheetOpen,
         handleEdit,
         handleDelete,
         refetch

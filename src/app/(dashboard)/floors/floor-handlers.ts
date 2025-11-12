@@ -56,7 +56,8 @@ export const createFloorHandlers = ({
         description: string,
         setErrors: (errors: { [key: string]: string }) => void,
         setFloorName: (name: string) => void,
-        setDescription: (desc: string) => void
+        setDescription: (desc: string) => void,
+        closeSheet?: () => void
     ) => {
         e.preventDefault();
         setErrors({});
@@ -72,12 +73,24 @@ export const createFloorHandlers = ({
             return;
         }
         
-        await createFloor({
-            floor_name,
-            description,
-        });
-        
-        // No limpiar formulario aquí - lo hará el event listener en useFloorManagement
+        try {
+            await createFloor({
+                floor_name,
+                description,
+            });
+            
+            // Limpiar formulario
+            setFloorName("");
+            setDescription("");
+            setErrors({});
+            
+            // Cerrar Sheet si se proporcionó la función
+            if (closeSheet) {
+                closeSheet();
+            }
+        } catch (error) {
+            // El error ya se maneja en createFloor
+        }
     };
 
     const handleEditSubmit = async (

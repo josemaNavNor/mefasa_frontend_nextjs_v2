@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import Notiflix from 'notiflix';
 import { eventEmitter } from './useEventListener';
-import { api } from '@/lib/httpClient'
+import { api } from '@/lib/httpClient';
+import { TICKET_EVENTS } from '@/lib/events';
 
 
 interface TicketComment {
@@ -65,8 +66,8 @@ export function useTicketComments(ticketId?: number) {
         await fetchCommentsByTicket(ticketId);
       }
 
-      eventEmitter.emitWithDebounce('data-changed', 200, 'ticket-comments');
-      eventEmitter.emitWithDebounce('ticket-comments-updated', 200);
+      eventEmitter.emit(TICKET_EVENTS.UPDATED, { ticketId });
+      eventEmitter.emit(TICKET_EVENTS.REFRESH_TICKETS_PAGE);
       eventEmitter.emitWithDebounce('ticket-history-updated', 300, ticketId);
       Notiflix.Notify.success('Respuesta enviada con éxito');
       return response;

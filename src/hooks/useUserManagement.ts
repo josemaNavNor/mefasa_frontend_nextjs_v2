@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { useUsers } from "@/hooks/useUsersAdmin";
 import { useEventListener } from "@/hooks/useEventListener";
+import { USER_EVENTS } from "@/lib/events";
 import {
     createHandleEdit,
     createHandleDelete,
@@ -74,16 +75,16 @@ export const useUserManagement = () => {
     const handleEdit = useCallback(createHandleEdit(editFormActions), [editFormActions]);
     const handleDelete = useCallback(createHandleDelete(userHandlers), [userHandlers]);
 
-    // Esto hace que al recibir el evento data-changed o users-updated se refresquen los usuarios
-    const handleDataChange = useCallback((dataType: string) => {
-        if (dataType === 'users' || dataType === 'all') {
-            refetch();
-        }
+    // Esto hace que al recibir los eventos específicos de usuarios se refresquen
+    const handleDataChange = useCallback(() => {
+        refetch();
     }, [refetch]);
 
-    // Esto crea los listeners para los eventos de cambios en los usuarios
-    useEventListener('data-changed', handleDataChange);
-    useEventListener('users-updated', refetch);
+    // Escuchar eventos específicos de usuarios
+    useEventListener(USER_EVENTS.REFRESH_USERS_PAGE, handleDataChange);
+    useEventListener(USER_EVENTS.UPDATED, handleDataChange);
+    useEventListener(USER_EVENTS.DELETED, handleDataChange);
+    useEventListener(USER_EVENTS.CREATED, handleDataChange);
 
     // Crear los handlers para los formularios
     const handleSubmit = useCallback(

@@ -61,7 +61,8 @@ export const createRoleHandlers = ({
         description: string,
         setErrors: (errors: { [key: string]: string }) => void,
         setRolName: (name: string) => void,
-        setDescription: (desc: string) => void
+        setDescription: (desc: string) => void,
+        closeSheet?: () => void
     ) => {
         e.preventDefault();
         setErrors({});
@@ -77,12 +78,24 @@ export const createRoleHandlers = ({
             return;
         }
         
-        await createRole({
-            rol_name,
-            description,
-        });
-        
-        // No limpiar formulario aquí - lo hará el event listener en useRoleManagement
+        try {
+            await createRole({
+                rol_name,
+                description,
+            });
+            
+            // Limpiar formulario
+            setRolName("");
+            setDescription("");
+            setErrors({});
+            
+            // Cerrar Sheet si se proporcionó la función
+            if (closeSheet) {
+                closeSheet();
+            }
+        } catch (error) {
+            // El error ya se maneja en createRole
+        }
     };
 
     const handleEditSubmit = async (

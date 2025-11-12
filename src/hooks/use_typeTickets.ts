@@ -38,9 +38,6 @@ export function useType() {
             
             setTypes((prevTypes) => [...prevTypes, response]);
             
-            // Emitir eventos específicos para tipos de tickets
-            eventEmitter.emit(TYPE_EVENTS.CREATED, response);
-            eventEmitter.emit(TYPE_EVENTS.CLOSE_FORM);
             // Mantener eventos globales para compatibilidad
             eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'types');
             eventEmitter.emit('types-updated');

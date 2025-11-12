@@ -24,20 +24,11 @@ export default function TypeTicketsPage() {
         types, 
         createTypeForm, 
         editTypeForm, 
+        isCreateSheetOpen,
+        setIsCreateSheetOpen,
         handleEdit, 
         handleDelete 
     } = useTypeTicketManagement();
-
-    // Estado para controlar el Sheet de creación
-    const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
-
-    // Cerrar formulario cuando se cree exitosamente
-    const handleCloseCreateSheet = useCallback(() => {
-        setIsCreateSheetOpen(false);
-    }, []);
-
-    // Escuchar evento de cerrar formulario
-    useEventListener(TYPE_EVENTS.CLOSE_FORM, handleCloseCreateSheet);
 
     // Crear las columnas con las funciones handleEdit y handleDelete usando useMemo
     const columns = useMemo(() => createColumns({ 

@@ -32,9 +32,6 @@ export function useRoles() {
         try {
             const data = await api.post('/roles', role);
             setRoles((prevRoles) => [...prevRoles, data]);
-            // Emitir eventos específicos para roles
-            eventEmitter.emit(ROLE_EVENTS.CREATED, data);
-            eventEmitter.emit(ROLE_EVENTS.CLOSE_FORM);
             // Mantener eventos globales para compatibilidad
             eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'roles');
             eventEmitter.emit(GLOBAL_EVENTS.ROLES_UPDATED);

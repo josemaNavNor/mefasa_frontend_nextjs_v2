@@ -24,20 +24,11 @@ export default function FloorsPage() {
         floors, 
         createFloorForm, 
         editFloorForm, 
+        isCreateSheetOpen,
+        setIsCreateSheetOpen,
         handleEdit, 
         handleDelete 
     } = useFloorManagement();
-
-    // Estado para controlar el Sheet de creación
-    const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
-
-    // Cerrar formulario cuando se cree exitosamente
-    const handleCloseCreateSheet = useCallback(() => {
-        setIsCreateSheetOpen(false);
-    }, []);
-
-    // Escuchar evento de cerrar formulario
-    useEventListener(FLOOR_EVENTS.CLOSE_FORM, handleCloseCreateSheet);
 
     // Crear las columnas con las funciones handleEdit y handleDelete usando useMemo
     const columns = useMemo(() => createColumns({ 

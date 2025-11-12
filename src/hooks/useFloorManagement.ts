@@ -13,6 +13,9 @@ export const useFloorManagement = () => {
     const [description, setDescription] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     
+    // Estado para controlar el Sheet de creación
+    const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
+    
     // Estados para editar planta
     const [editingFloor, setEditingFloor] = useState<FormsFloor | null>(null);
     const [editFloorName, setEditFloorName] = useState("");
@@ -34,16 +37,8 @@ export const useFloorManagement = () => {
         }
     }, [refetch]);
 
-    // Función para limpiar formulario de creación
-    const handleCloseCreateForm = useCallback(() => {
-        setFloorName("");
-        setDescription("");
-        setErrors({});
-    }, []);
-
     useEventListener('data-changed', handleDataChange);
     useEventListener('floors-updated', refetch);
-    useEventListener(FLOOR_EVENTS.CLOSE_FORM, handleCloseCreateForm);
 
     // Wrapper functions para los handlers con los estados
     const handleEdit = useCallback((floor: Floor) => {
@@ -82,7 +77,8 @@ export const useFloorManagement = () => {
             description,
             setErrors,
             setFloorName,
-            setDescription
+            setDescription,
+            () => setIsCreateSheetOpen(false) // Función para cerrar el Sheet
         );
     }, [handlers, floor_name, description]);
 
@@ -127,8 +123,27 @@ export const useFloorManagement = () => {
 
     return {
         floors,
-        createFloorForm,
-        editFloorForm,
+        createFloorForm: {
+            floor_name,
+            setFloorName,
+            description,
+            setDescription,
+            errors,
+            handleSubmit
+        },
+        editFloorForm: {
+            editingFloor,
+            editFloorName,
+            setEditFloorName,
+            editDescription,
+            setEditDescription,
+            editErrors,
+            isEditSheetOpen,
+            setIsEditSheetOpen,
+            handleEditSubmit
+        },
+        isCreateSheetOpen,
+        setIsCreateSheetOpen,
         handleEdit,
         handleDelete,
         refetch
