@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { api } from '@/lib/httpClient';
 
 interface TwoFAResponse {
   secret: string;
@@ -17,16 +18,6 @@ export function use2FA() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [qrCodeData, setQrCodeData] = useState<TwoFAResponse | null>(null);
-
-  //const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
-
-  const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    };
-  };
 
   const getCurrentUserId = () => {
     const userStr = localStorage.getItem('user');
@@ -47,17 +38,7 @@ export function use2FA() {
         throw new Error('Usuario no encontrado');
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/2fa/generate/${userId}`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error generando el código 2FA');
-      }
-
-      const data = await response.json();
+      const data = await api.post(`/auth/2fa/generate/${userId}`, {});
       setQrCodeData(data);
       return data;
     } catch (err) {
@@ -79,18 +60,7 @@ export function use2FA() {
         throw new Error('Usuario no encontrado');
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/2fa/enable/${userId}`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ token: verificationCode }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Código de verificación inválido');
-      }
-
-      const data = await response.json();
+      const data = await api.post(`/auth/2fa/enable/${userId}`, { token: verificationCode });
       
       // Actualizar el estado del usuario en localStorage
       const userStr = localStorage.getItem('user');
@@ -120,16 +90,7 @@ export function use2FA() {
         throw new Error('Usuario no encontrado');
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/2fa/disable/${userId}`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ token: verificationCode }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Código de verificación inválido');
-      }
+      await api.post(`/auth/2fa/disable/${userId}`, { token: verificationCode });
 
       // Actualizar el estado del usuario en localStorage
       const userStr = localStorage.getItem('user');

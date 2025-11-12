@@ -1,10 +1,11 @@
 // Librería para manejar autenticación de Microsoft via backend
+import { api } from '@/lib/httpClient';
+
 export class MicrosoftAuth {
   private static instance: MicrosoftAuth;
-  private baseUrl: string;
 
   constructor() {
-    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    // this.baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
   }
 
   static getInstance(): MicrosoftAuth {
@@ -21,18 +22,7 @@ export class MicrosoftAuth {
   async loginWithMicrosoft(): Promise<void> {
     try {
       // Obtener URL de autorizacion del backend
-      const response = await fetch(`${this.baseUrl}/auth/microsoft/login`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al obtener URL de autorización');
-      }
-
-      const data = await response.json();
+      const data = await api.get('/auth/microsoft/login');
       
       // Redirigir al usuario a Microsoft
       if (data.authUrl) {
@@ -52,19 +42,7 @@ export class MicrosoftAuth {
    */
   async exchangeCodeForToken(code: string, state?: string): Promise<any> {
     try {
-      const response = await fetch(`${this.baseUrl}/auth/microsoft/callback`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ code, state }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al intercambiar codigo por token');
-      }
-
-      const userData = await response.json();
+      const userData = await api.post('/auth/microsoft/callback', { code, state });
       
       // Guardar datos del usuario en localStorage
       if (userData.user && userData.token) {
@@ -96,7 +74,7 @@ export class MicrosoftAuth {
   }
 
   /**
-   * Limpia los parámetros de la URL después del callback
+   * Limpia los parametros de la URL después del callback
    */
   cleanUrl(): void {
     if (typeof window !== 'undefined') {

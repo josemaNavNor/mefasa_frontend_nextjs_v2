@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuthContext } from '@/components/auth-provider';
 import { loginSchema } from '@/lib/zod';
-import { API_CONFIG } from '@/lib/constants';
+import { api } from '@/lib/httpClient';
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -86,27 +86,17 @@ export default function Login() {
       setMicrosoftLoading(true);
       setError('');
 
-      // Obtener URL de autorizacion del backend
-      //const response = await fetch(`${API_CONFIG.baseUrl}/api/${API_CONFIG.version}/auth/microsoft/login`);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/microsoft/login`);
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Erro en respuesta del backend:', response.status, errorText);
-        throw new Error(`Error del servidor: ${response.status} - ${errorText}`);
-      }
-
-      const data = await response.json();
-      console.log('Respuesta del backend:', data);
+      // Obtener URL de autorizacion del backend usando api
+      const data = await api.get('/auth/microsoft/login');
+      //console.log('Respuesta del backend:', data);
 
       let authUrl = null;
       
-      if (data.success && data.data && data.data.authUrl) {
-        authUrl = data.data.authUrl;
-      } else if (data.authUrl) {
+      if (data && data.authUrl) {
         authUrl = data.authUrl;
       }
       
-      console.log('URL de autorización extraída:', authUrl);
+      //console.log('URL de autorización extraída:', authUrl);
       
       if (authUrl) {
         // Redirigir directamente a Microsoft
