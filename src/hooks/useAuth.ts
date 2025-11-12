@@ -1,150 +1,180 @@
 "use client";
-import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { authService } from '@/lib/auth';
-import Notiflix from 'notiflix';
-import { User, AuthState } from '@/types/use_auth';
 
-export function useAuth() {
+import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
+
+import { authService } from "@/lib/auth";
+import { notifications } from "@/lib/notifications";
+import { AUTH_CONFIG, USER_ROLES, ROUTES } from "@/lib/constants";
+import type { 
+  AuthUser, 
+  AuthState, 
+  AuthContextValue, 
+  UserRole,
+  LoginCredentials 
+} from "@/types";
+
+export function useAuth(): AuthContextValue {
   const [state, setState] = useState<AuthState>({
     user: null,
     loading: true,
-    isAuthenticated: false
+    isAuthenticated: false,
   });
   
   const router = useRouter();
 
-  // Limpiar el estado de autenticación
+  // Clear authentication state
   const clearAuthState = useCallback(() => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('user');
+    localStorage.removeItem(AUTH_CONFIG.tokenKey);
+    localStorage.removeItem(AUTH_CONFIG.userKey);
+    sessionStorage.removeItem(AUTH_CONFIG.tokenKey);
+    sessionStorage.removeItem(AUTH_CONFIG.userKey);
     
     setState({
       user: null,
       loading: false,
-      isAuthenticated: false
+      isAuthenticated: false,
     });
   }, []);
 
-  // Establecer usuario autenticado
-  const setAuthenticatedUser = useCallback((user: User, token: string) => {
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
+  // Set authenticated user
+  const setAuthenticatedUser = useCallback((user: AuthUser, token: string) => {
+    localStorage.setItem(AUTH_CONFIG.tokenKey, token);
+    localStorage.setItem(AUTH_CONFIG.userKey, JSON.stringify(user));
     
     setState({
       user,
       loading: false,
-      isAuthenticated: true
+      isAuthenticated: true,
     });
   }, []);
 
-  // Inicializar autenticacion al cargar
+  // Initialize authentication on mount
   useEffect(() => {
     const initializeAuth = () => {
       try {
-        const token = localStorage.getItem('token');
-        const userData = localStorage.getItem('user');
+        const token = localStorage.getItem(AUTH_CONFIG.tokenKey);
+        const userData = localStorage.getItem(AUTH_CONFIG.userKey);
 
         if (token && userData) {
-          const user = JSON.parse(userData);
+          const user = JSON.parse(userData) as AuthUser;
           setState({
             user,
             loading: false,
-            isAuthenticated: true
+            isAuthenticated: true,
           });
         } else {
           setState({
             user: null,
             loading: false,
-            isAuthenticated: false
+            isAuthenticated: false,
           });
         }
       } catch (error) {
-        console.error('Error loading auth data:', error);
+        console.error("Error loading auth data:", error);
         clearAuthState();
       }
     };
 
-    // Pequeño delay para asegurar que localStorage esté disponible
+    // Small delay to ensure localStorage is available
     const timer = setTimeout(initializeAuth, 100);
     return () => clearTimeout(timer);
   }, [clearAuthState]);
 
-  // Funcion de login
-  const login = useCallback(async (email: string, password: string, token?: string) => {
+  // Login function
+  const login = useCallback(async (
+    email: string, 
+    password: string, 
+    token?: string
+  ): Promise<{ success: boolean; error?: string }> => {
     try {
       const currentUserId = state.user?.id;
       
-      const response = await authService.login({ email, password, token });
+      const response = await authService.login({ 
+        email, 
+        password, 
+        ...(token && { token }) 
+      });
 
       if (response) {
-        // Si es un usuario diferente, limpiar estado anterior
+        // If different user, clear previous state
         if (currentUserId && currentUserId !== response.user.id) {
           clearAuthState();
-          // delay para limpieza
+          // Delay for cleanup
           await new Promise(resolve => setTimeout(resolve, 200));
         }
 
-        // Establecer nuevo usuario
-        setAuthenticatedUser(response.user, response.access_token);
+        // Convert string role to UserRole type
+        const user: AuthUser = {
+          ...response.user,
+          role: response.user.role as UserRole,
+        };
+
+        // Set new user
+        setAuthenticatedUser(user, response.access_token);
         
-        Notiflix.Notify.success(`¡Bienvenido de nuevo, ${response.user.name}!`);
+        notifications.success(`¡Bienvenido de nuevo, ${user.name}!`);
         
-        // Navegar al dashboard
+        // Navigate to dashboard
         setTimeout(() => {
-          router.push('/');
+          router.push(ROUTES.HOME);
           router.refresh();
         }, 300);
 
         return { success: true };
       } else {
-        Notiflix.Notify.failure('Credenciales invalidas. Por favor, inténtalo de nuevo.');
-        return { success: false, error: 'Credenciales invalidas' };
+        const errorMessage = "Credenciales inválidas. Por favor, inténtalo de nuevo.";
+        notifications.error(errorMessage);
+        return { success: false, error: errorMessage };
       }
     } catch (error) {
-      //console.error('Login error:', error);
-      Notiflix.Notify.failure('Credenciales invalidas. Por favor, inténtalo de nuevo.');
-      return { success: false, error: 'Credenciales invalidas' };
+      console.error("Login error:", error);
+      const errorMessage = "Error de conexión. Por favor, inténtalo de nuevo.";
+      notifications.error(errorMessage);
+      return { success: false, error: errorMessage };
     }
   }, [state.user?.id, clearAuthState, setAuthenticatedUser, router]);
 
-  // Cerrar sesion
+  // Logout function
   const logout = useCallback(() => {
     authService.logout();
     clearAuthState();
     
     setTimeout(() => {
-      router.push('/login');
+      router.push(ROUTES.LOGIN);
     }, 100);
   }, [clearAuthState, router]);
 
-  // helpers para verificar roles
-  const hasRole = useCallback((roles: string | string[]): boolean => {
+  // Role checking helper
+  const hasRole = useCallback((roles: UserRole | UserRole[]): boolean => {
     if (!state.user) return false;
     
-    if (typeof roles === 'string') {
+    if (typeof roles === "string") {
       return state.user.role === roles;
     }
     
     return roles.includes(state.user.role);
   }, [state.user]);
 
+  // Derived state for role checks
+  const isAdmin = state.user?.role === USER_ROLES.ADMIN;
+  const isTech = state.user?.role === USER_ROLES.TECH;
+  const isUserFinal = state.user?.role === USER_ROLES.USER;
+
   return {
-    // Estado
+    // State
     user: state.user,
     loading: state.loading,
     isAuthenticated: state.isAuthenticated,
     
-    // Acciones
+    // Actions
     login,
     logout,
     
-    // Helpers de roles
+    // Role helpers
     hasRole,
-    isAdmin: state.user?.role === 'Administrador',
-    isTech: state.user?.role === 'Tecnico',
-    isUserFinal: state.user?.role === 'Usuario Final',
+    isAdmin,
+    isTech,
+    isUserFinal,
   };
 }
