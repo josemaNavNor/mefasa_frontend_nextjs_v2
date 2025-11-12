@@ -18,6 +18,7 @@ import { FavoriteFilters } from "@/components/filter";
 import { Download, ChevronLeft, ChevronRight, Filter as FilterIcon } from "lucide-react";
 import { SimpleDatePicker } from "@/components/ui/simple-date-picker"
 import { Filter } from "@/types/filter";
+import { TICKET_EVENTS } from "@/lib/events";
 
 import {
     Sheet,
@@ -120,12 +121,16 @@ export default function TicketsPage() {
         onDeleteTicket: handleDelete
     }), [handleEditTicket, handleDelete]);
 
-    const handleDataChange = useCallback((dataType: string) => {
-        handlers.handleDataChange(dataType, refetch);
-    }, [handlers, refetch]);
+    const handleDataChange = useCallback(() => {
+        // Solo refrescar cuando hay cambios específicos de tickets
+        refetch();
+    }, [refetch]);
 
-    useEventListener('data-changed', handleDataChange);
-    useEventListener('roles-updated', refetch);
+    // Escuchar solo eventos específicos de tickets
+    useEventListener(TICKET_EVENTS.REFRESH_TICKETS_PAGE, handleDataChange);
+    useEventListener(TICKET_EVENTS.UPDATED, handleDataChange);
+    useEventListener(TICKET_EVENTS.CREATED, handleDataChange);
+    useEventListener(TICKET_EVENTS.DELETED, handleDataChange);
 
     // Función para aplicar filtros
     const applyFilter = useCallback((filter: Filter) => {

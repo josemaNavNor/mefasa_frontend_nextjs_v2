@@ -3,6 +3,7 @@ import { useRoles } from "@/hooks/useRoles";
 import { useEventListener } from "@/hooks/useEventListener";
 import { createRoleHandlers } from "@/app/(dashboard)/roles/handlers";
 import { Rol } from "@/types/rol";
+import { ROLE_EVENTS } from "@/lib/events";
 
 interface Role {
     id: number;
@@ -39,8 +40,16 @@ export const useRoleManagement = () => {
         }
     }, [refetch]);
 
+    // Función para limpiar formulario de creación
+    const handleCloseCreateForm = useCallback(() => {
+        setRolName("");
+        setDescription("");
+        setErrors({});
+    }, []);
+
     useEventListener('data-changed', handleDataChange);
     useEventListener('roles-updated', refetch);
+    useEventListener(ROLE_EVENTS.CLOSE_FORM, handleCloseCreateForm);
 
     // Wrapper functions para los handlers con los estados
     const handleEdit = useCallback((rol: Rol) => {

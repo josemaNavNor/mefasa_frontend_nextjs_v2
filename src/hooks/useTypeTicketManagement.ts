@@ -3,6 +3,7 @@ import { useType } from "@/hooks/use_typeTickets";
 import { useEventListener } from "@/hooks/useEventListener";
 import { ticketTypeSchema } from "@/lib/zod";
 import { TicketType } from "@/types/ticketType";
+import { TYPE_EVENTS } from "@/lib/events";
 import Notiflix from 'notiflix';
 
 interface TypeTicket {
@@ -33,8 +34,16 @@ export const useTypeTicketManagement = () => {
         }
     }, [refetch]);
 
+    // Función para limpiar formulario de creación
+    const handleCloseCreateForm = useCallback(() => {
+        setTicketTypeName("");
+        setDescription("");
+        setErrors({});
+    }, []);
+
     useEventListener('data-changed', handleDataChange);
     useEventListener('types-updated', refetch);
+    useEventListener(TYPE_EVENTS.CLOSE_FORM, handleCloseCreateForm);
 
     // Función para manejar la edición
     const handleEdit = useCallback((ticketType: TicketType) => {
@@ -94,10 +103,7 @@ export const useTypeTicketManagement = () => {
             description,
         });
         
-        // Limpiar formulario solo si fue exitoso
-        setTicketTypeName("");
-        setDescription("");
-        setErrors({});
+        // No limpiar formulario aquí - lo hará el event listener
     }, [createTicketType, type_name, description]);
 
     // Handler para editar tipo de ticket

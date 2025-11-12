@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import Notiflix from 'notiflix';
 import { eventEmitter } from './useEventListener'
 import { api } from '@/lib/httpClient'
+import { FLOOR_EVENTS, GLOBAL_EVENTS } from '@/lib/events'
 
 export function useFloors() {
     const [floors, setFloors] = useState<any[]>([]);
@@ -32,7 +33,11 @@ export function useFloors() {
         try {
             const response = await api.post('/floors', floor);
             setFloors((prevFloors) => [...prevFloors, response]);
-            eventEmitter.emit('data-changed', 'floors');
+            // Emitir eventos específicos para plantas
+            eventEmitter.emit(FLOOR_EVENTS.CREATED, response);
+            eventEmitter.emit(FLOOR_EVENTS.CLOSE_FORM);
+            // Mantener eventos globales para compatibilidad
+            eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'floors');
             eventEmitter.emit('floors-updated');
             Notiflix.Notify.success(`Planta ${floor.floor_name} creada correctamente`);
         } catch (error) {
@@ -52,7 +57,10 @@ export function useFloors() {
             setFloors((prevFloors) =>
                 prevFloors.map((f) => (f.id === id ? { ...f, ...response } : f))
             );
-            eventEmitter.emit('data-changed', 'floors');
+            // Emitir eventos específicos para plantas
+            eventEmitter.emit(FLOOR_EVENTS.UPDATED, { id, data: response });
+            // Mantener eventos globales para compatibilidad
+            eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'floors');
             eventEmitter.emit('floors-updated');
             Notiflix.Notify.success(`Planta ${floor.floor_name ?? ''} actualizada correctamente`);
             return response;
@@ -72,7 +80,10 @@ export function useFloors() {
         try {
             await api.delete(`/floors/${id}`);
             setFloors((prevFloors) => prevFloors.filter((floor) => floor.id !== id));
-            eventEmitter.emit('data-changed', 'floors');
+            // Emitir eventos específicos para plantas
+            eventEmitter.emit(FLOOR_EVENTS.DELETED, { id });
+            // Mantener eventos globales para compatibilidad
+            eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'floors');
             eventEmitter.emit('floors-updated');
             Notiflix.Notify.success('Planta eliminada correctamente');
             return true;

@@ -77,10 +77,7 @@ export const createFloorHandlers = ({
             description,
         });
         
-        // Limpiar formulario solo si fue exitoso
-        setFloorName("");
-        setDescription("");
-        setErrors({});
+        // No limpiar formulario aquí - lo hará el event listener en useFloorManagement
     };
 
     const handleEditSubmit = async (

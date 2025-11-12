@@ -82,10 +82,7 @@ export const createRoleHandlers = ({
             description,
         });
         
-        // Limpiar formulario solo si fue exitoso
-        setRolName("");
-        setDescription("");
-        setErrors({});
+        // No limpiar formulario aquí - lo hará el event listener en useRoleManagement
     };
 
     const handleEditSubmit = async (

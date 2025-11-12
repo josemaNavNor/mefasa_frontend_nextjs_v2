@@ -4,8 +4,10 @@ import { DataTable } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useMemo } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { useRoleManagement } from "@/hooks/useRoleManagement";
+import { useEventListener } from "@/hooks/useEventListener";
+import { ROLE_EVENTS } from "@/lib/events";
 import {
     Sheet,
     SheetClose,
@@ -26,6 +28,17 @@ export default function RolesPage() {
         handleDelete 
     } = useRoleManagement();
 
+    // Estado para controlar el Sheet de creación
+    const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
+
+    // Cerrar formulario cuando se cree exitosamente
+    const handleCloseCreateSheet = useCallback(() => {
+        setIsCreateSheetOpen(false);
+    }, []);
+
+    // Escuchar evento de cerrar formulario
+    useEventListener(ROLE_EVENTS.CLOSE_FORM, handleCloseCreateSheet);
+
     // Crear las columnas con las funciones handleEdit y handleDelete usando useMemo
     const columns = useMemo(() => createColumns({ 
         onEdit: handleEdit, 
@@ -37,7 +50,7 @@ export default function RolesPage() {
             <div className="mb-4">
                 <h1 className="text-4xl font-bold">Gestion de Roles</h1>
             </div>
-            <Sheet>
+            <Sheet open={isCreateSheetOpen} onOpenChange={setIsCreateSheetOpen}>
                 <SheetTrigger asChild className="mb-4">
                     <Button variant="outline">Agregar Rol</Button>
                 </SheetTrigger>

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Filter, CreateFilterDto, UpdateFilterDto } from '@/types/filter';
 import { api } from '@/lib/httpClient';
+import { FILTER_EVENTS } from '@/lib/events';
+import { eventEmitter } from './useEventListener';
 
 export const useFilters = () => {
   const [filters, setFilters] = useState<Filter[]>([]);
@@ -35,6 +37,9 @@ export const useFilters = () => {
     try {
       const newFilter = await api.post('/filters', filterData);
       setFilters(prev => [...prev, newFilter]);
+      // Emitir eventos específicos para la página de filtros
+      eventEmitter.emit(FILTER_EVENTS.CREATED, newFilter);
+      eventEmitter.emit(FILTER_EVENTS.REFRESH_FILTERS_PAGE);
       return newFilter;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error desconocido al crear el filtro';
@@ -54,6 +59,9 @@ export const useFilters = () => {
       setFilters(prev => prev.map(filter => 
         filter.id === id ? updatedFilter : filter
       ));
+      // Emitir eventos específicos para la página de filtros
+      eventEmitter.emit(FILTER_EVENTS.UPDATED, { id, data: updatedFilter });
+      eventEmitter.emit(FILTER_EVENTS.REFRESH_FILTERS_PAGE);
       return updatedFilter;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
@@ -69,6 +77,9 @@ export const useFilters = () => {
     try {
       await api.delete(`/filters/${id}`);
       setFilters(prev => prev.filter(filter => filter.id !== id));
+      // Emitir eventos específicos para la página de filtros
+      eventEmitter.emit(FILTER_EVENTS.DELETED, { id });
+      eventEmitter.emit(FILTER_EVENTS.REFRESH_FILTERS_PAGE);
       return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');

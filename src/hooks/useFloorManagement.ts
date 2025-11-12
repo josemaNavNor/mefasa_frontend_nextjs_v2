@@ -3,6 +3,7 @@ import { useFloors } from "@/hooks/use_floors";
 import { useEventListener } from "@/hooks/useEventListener";
 import { createFloorHandlers } from "@/app/(dashboard)/floors/floor-handlers";
 import { Floor, FormsFloor } from "@/types/floor";
+import { FLOOR_EVENTS } from "@/lib/events";
 
 export const useFloorManagement = () => {
     const { floors, createFloor, updateFloor, deleteFloor, refetch } = useFloors();
@@ -33,8 +34,16 @@ export const useFloorManagement = () => {
         }
     }, [refetch]);
 
+    // Función para limpiar formulario de creación
+    const handleCloseCreateForm = useCallback(() => {
+        setFloorName("");
+        setDescription("");
+        setErrors({});
+    }, []);
+
     useEventListener('data-changed', handleDataChange);
     useEventListener('floors-updated', refetch);
+    useEventListener(FLOOR_EVENTS.CLOSE_FORM, handleCloseCreateForm);
 
     // Wrapper functions para los handlers con los estados
     const handleEdit = useCallback((floor: Floor) => {
