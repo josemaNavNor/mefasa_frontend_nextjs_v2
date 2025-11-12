@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuthContext } from '@/components/auth-provider';
 import { loginSchema } from '@/lib/zod';
+import { API_CONFIG } from '@/lib/constants';
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -86,7 +87,7 @@ export default function Login() {
       setError('');
 
       // Obtener URL de autorizacion del backend
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/microsoft/login`);
+      const response = await fetch(`${API_CONFIG.baseUrl}/api/${API_CONFIG.version}/auth/microsoft/login`);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -97,9 +98,12 @@ export default function Login() {
       const data = await response.json();
       console.log('Respuesta del backend:', data);
 
-      if (data.authUrl) {
+      // El backend puede devolver la respuesta en diferentes formatos
+      const authUrl = data.authUrl || data.data?.authUrl;
+      
+      if (authUrl) {
         // Redirigir directamente a Microsoft
-        window.location.href = data.authUrl;
+        window.location.href = authUrl;
       } else {
         console.error('Respuesta del backend:', data);
         throw new Error('No se recibió URL de autorización del servidor');
