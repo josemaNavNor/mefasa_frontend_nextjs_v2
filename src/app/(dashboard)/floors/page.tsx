@@ -4,10 +4,8 @@ import { DataTable } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useMemo, useState, useCallback } from "react";
+import { useMemo } from "react";
 import { useFloorManagement } from "@/hooks/useFloorManagement";
-import { useEventListener } from "@/hooks/useEventListener";
-import { FLOOR_EVENTS } from "@/lib/events";
 import {
     Sheet,
     SheetClose,
@@ -24,8 +22,6 @@ export default function FloorsPage() {
         floors, 
         createFloorForm, 
         editFloorForm, 
-        isCreateSheetOpen,
-        setIsCreateSheetOpen,
         handleEdit, 
         handleDelete 
     } = useFloorManagement();
@@ -41,7 +37,7 @@ export default function FloorsPage() {
             <div className="mb-4">
                 <h1 className="text-4xl font-bold">Gestión de Plantas</h1>
             </div>
-            <Sheet open={isCreateSheetOpen} onOpenChange={setIsCreateSheetOpen}>
+            <Sheet open={createFloorForm.isCreateSheetOpen} onOpenChange={createFloorForm.setIsCreateSheetOpen}>
                 <SheetTrigger asChild className="mb-4">
                     <Button variant="outline">Agregar Planta</Button>
                 </SheetTrigger>

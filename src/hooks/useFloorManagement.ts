@@ -30,15 +30,14 @@ export const useFloorManagement = () => {
         deleteFloor
     }), [createFloor, updateFloor, deleteFloor]);
 
-    // Escuchar eventos de cambios en plantas
-    const handleDataChange = useCallback((dataType: string) => {
-        if (dataType === 'floors' || dataType === 'all') {
-            refetch();
-        }
+    // Escuchar eventos específicos de plantas
+    const handleDataChange = useCallback(() => {
+        refetch();
     }, [refetch]);
 
-    useEventListener('data-changed', handleDataChange);
-    useEventListener('floors-updated', refetch);
+    useEventListener(FLOOR_EVENTS.CREATED, handleDataChange);
+    useEventListener(FLOOR_EVENTS.UPDATED, handleDataChange);
+    useEventListener(FLOOR_EVENTS.DELETED, handleDataChange);
 
     // Wrapper functions para los handlers con los estados
     const handleEdit = useCallback((floor: Floor) => {
@@ -129,6 +128,8 @@ export const useFloorManagement = () => {
             description,
             setDescription,
             errors,
+            isCreateSheetOpen,
+            setIsCreateSheetOpen,
             handleSubmit
         },
         editFloorForm: {
@@ -142,8 +143,6 @@ export const useFloorManagement = () => {
             setIsEditSheetOpen,
             handleEditSubmit
         },
-        isCreateSheetOpen,
-        setIsCreateSheetOpen,
         handleEdit,
         handleDelete,
         refetch

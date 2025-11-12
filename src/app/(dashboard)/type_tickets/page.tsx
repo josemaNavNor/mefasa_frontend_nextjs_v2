@@ -4,10 +4,8 @@ import { DataTable } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useMemo, useState, useCallback } from "react";
+import { useMemo } from "react";
 import { useTypeTicketManagement } from "@/hooks/useTypeTicketManagement";
-import { useEventListener } from "@/hooks/useEventListener";
-import { TYPE_EVENTS } from "@/lib/events";
 import {
     Sheet,
     SheetClose,
@@ -24,8 +22,6 @@ export default function TypeTicketsPage() {
         types, 
         createTypeForm, 
         editTypeForm, 
-        isCreateSheetOpen,
-        setIsCreateSheetOpen,
         handleEdit, 
         handleDelete 
     } = useTypeTicketManagement();
@@ -41,7 +37,7 @@ export default function TypeTicketsPage() {
             <div className="mb-4">
                 <h1 className="text-4xl font-bold">Gestión Tipos de Tickets</h1>
             </div>
-            <Sheet open={isCreateSheetOpen} onOpenChange={setIsCreateSheetOpen}>
+            <Sheet open={createTypeForm.isCreateSheetOpen} onOpenChange={createTypeForm.setIsCreateSheetOpen}>
                 <SheetTrigger asChild className="mb-4">
                     <Button variant="outline">Agregar Tipo de Ticket</Button>
                 </SheetTrigger>

@@ -30,15 +30,14 @@ export const useTypeTicketManagement = () => {
     const [editErrors, setEditErrors] = useState<{ [key: string]: string }>({});
     const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
 
-    // Escuchar eventos de cambios en tipos de tickets
-    const handleDataChange = useCallback((dataType: string) => {
-        if (dataType === 'types' || dataType === 'all') {
-            refetch();
-        }
+    // Escuchar eventos específicos de tipos de tickets
+    const handleDataChange = useCallback(() => {
+        refetch();
     }, [refetch]);
 
-    useEventListener('data-changed', handleDataChange);
-    useEventListener('types-updated', refetch);
+    useEventListener(TYPE_EVENTS.CREATED, handleDataChange);
+    useEventListener(TYPE_EVENTS.UPDATED, handleDataChange);
+    useEventListener(TYPE_EVENTS.DELETED, handleDataChange);
 
     // Función para manejar la edición
     const handleEdit = useCallback((ticketType: TicketType) => {
@@ -166,6 +165,8 @@ export const useTypeTicketManagement = () => {
             type_name, setTicketTypeName,
             description, setDescription,
             errors,
+            isCreateSheetOpen,
+            setIsCreateSheetOpen,
             handleSubmit
         },
         editTypeForm: {
@@ -176,8 +177,6 @@ export const useTypeTicketManagement = () => {
             isEditSheetOpen, setIsEditSheetOpen,
             handleEditSubmit
         },
-        isCreateSheetOpen,
-        setIsCreateSheetOpen,
         handleEdit,
         handleDelete,
         refetch

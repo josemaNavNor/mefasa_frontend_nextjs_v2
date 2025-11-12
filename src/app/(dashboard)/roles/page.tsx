@@ -4,10 +4,8 @@ import { DataTable } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useMemo, useState, useCallback } from "react";
+import { useMemo } from "react";
 import { useRoleManagement } from "@/hooks/useRoleManagement";
-import { useEventListener } from "@/hooks/useEventListener";
-import { ROLE_EVENTS } from "@/lib/events";
 import {
     Sheet,
     SheetClose,
@@ -24,8 +22,6 @@ export default function RolesPage() {
         roles, 
         createRoleForm, 
         editRoleForm, 
-        isCreateSheetOpen,
-        setIsCreateSheetOpen,
         handleEdit, 
         handleDelete 
     } = useRoleManagement();
@@ -41,7 +37,7 @@ export default function RolesPage() {
             <div className="mb-4">
                 <h1 className="text-4xl font-bold">Gestion de Roles</h1>
             </div>
-            <Sheet open={isCreateSheetOpen} onOpenChange={setIsCreateSheetOpen}>
+            <Sheet open={createRoleForm.isCreateSheetOpen} onOpenChange={createRoleForm.setIsCreateSheetOpen}>
                 <SheetTrigger asChild className="mb-4">
                     <Button variant="outline">Agregar Rol</Button>
                 </SheetTrigger>

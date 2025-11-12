@@ -36,15 +36,14 @@ export const useRoleManagement = () => {
         deleteRole
     }), [createRole, updateRole, deleteRole]);
 
-    // Escuchar eventos de cambios en roles
-    const handleDataChange = useCallback((dataType: string) => {
-        if (dataType === 'roles' || dataType === 'all') {
-            refetch();
-        }
+    // Escuchar eventos específicos de roles
+    const handleDataChange = useCallback(() => {
+        refetch();
     }, [refetch]);
 
-    useEventListener('data-changed', handleDataChange);
-    useEventListener('roles-updated', refetch);
+    useEventListener(ROLE_EVENTS.CREATED, handleDataChange);
+    useEventListener(ROLE_EVENTS.UPDATED, handleDataChange);
+    useEventListener(ROLE_EVENTS.DELETED, handleDataChange);
 
     // Wrapper functions para los handlers con los estados
     const handleEdit = useCallback((rol: Rol) => {
@@ -84,7 +83,7 @@ export const useRoleManagement = () => {
             setErrors,
             setRolName,
             setDescription,
-            () => setIsCreateSheetOpen(false) // Función para cerrar el Sheet
+            () => setIsCreateSheetOpen(false) // Cerrar Sheet manualmente
         );
     }, [handlers, rol_name, description]);
 
@@ -135,6 +134,8 @@ export const useRoleManagement = () => {
             description,
             setDescription,
             errors,
+            isCreateSheetOpen,
+            setIsCreateSheetOpen,
             handleSubmit
         },
         editRoleForm: {
@@ -148,8 +149,6 @@ export const useRoleManagement = () => {
             setIsEditSheetOpen,
             handleEditSubmit
         },
-        isCreateSheetOpen,
-        setIsCreateSheetOpen,
         handleEdit,
         handleDelete,
         refetch
