@@ -87,8 +87,8 @@ export default function Login() {
       setError('');
 
       // Obtener URL de autorizacion del backend
-      const response = await fetch(`${API_CONFIG.baseUrl}/api/${API_CONFIG.version}/auth/microsoft/login`);
-
+      //const response = await fetch(`${API_CONFIG.baseUrl}/api/${API_CONFIG.version}/auth/microsoft/login`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/microsoft/login`);
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Erro en respuesta del backend:', response.status, errorText);
