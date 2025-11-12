@@ -18,7 +18,7 @@ export function use2FA() {
   const [error, setError] = useState<string | null>(null);
   const [qrCodeData, setQrCodeData] = useState<TwoFAResponse | null>(null);
 
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+  //const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
 
   const getAuthHeaders = () => {
     const token = localStorage.getItem('token');
@@ -47,7 +47,7 @@ export function use2FA() {
         throw new Error('Usuario no encontrado');
       }
 
-      const response = await fetch(`${baseUrl}/auth/2fa/generate/${userId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/2fa/generate/${userId}`, {
         method: 'POST',
         headers: getAuthHeaders(),
       });
@@ -79,7 +79,7 @@ export function use2FA() {
         throw new Error('Usuario no encontrado');
       }
 
-      const response = await fetch(`${baseUrl}/auth/2fa/enable/${userId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/2fa/enable/${userId}`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({ token: verificationCode }),
@@ -120,7 +120,7 @@ export function use2FA() {
         throw new Error('Usuario no encontrado');
       }
 
-      const response = await fetch(`${baseUrl}/auth/2fa/disable/${userId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/2fa/disable/${userId}`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({ token: verificationCode }),
