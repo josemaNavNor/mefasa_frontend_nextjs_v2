@@ -213,13 +213,14 @@ export function TicketBasicInfo({ ticket, users, types, floors, onTicketUpdate }
                 )
 
             case 'due_date':
+                const todayDate = new Date().toISOString().split('T')[0] as string;
                 return (
                     <SimpleDatePicker
                         value={tempValue || ''}
                         onChange={(date: string) => {
                             setTempValues({ ...tempValues, [field]: date })
                         }}
-                        minDate={new Date().toISOString().split('T')[0]}
+                        minDate={todayDate}
                     />
                 )
             default:

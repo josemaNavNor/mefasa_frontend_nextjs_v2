@@ -1,9 +1,12 @@
 "use client";
 import { ReactNode, useEffect, useState } from 'react';
+
 import { useAuthContext } from './auth-provider';
+import type { UserRole } from '@/types';
+import { USER_ROLES } from '@/lib/constants';
 
 interface RoleBasedRenderProps {
-  allowedRoles: string | string[];
+  allowedRoles: UserRole | UserRole[];
   children: ReactNode;
   fallback?: ReactNode; // Qué mostrar si no tiene el rol
 }
@@ -41,19 +44,19 @@ export const RoleBasedRender = ({ allowedRoles, children, fallback = null }: Rol
 
 // Componentes específicos para roles
 export const ShowForAdmin = ({ children, fallback }: { children: ReactNode; fallback?: ReactNode }) => (
-  <RoleBasedRender allowedRoles="Administrador" fallback={fallback}>
+  <RoleBasedRender allowedRoles={USER_ROLES.ADMIN} fallback={fallback}>
     {children}
   </RoleBasedRender>
 );
 
 export const ShowForTech = ({ children, fallback }: { children: ReactNode; fallback?: ReactNode }) => (
-  <RoleBasedRender allowedRoles="Tecnico" fallback={fallback}>
+  <RoleBasedRender allowedRoles={USER_ROLES.TECH} fallback={fallback}>
     {children}
   </RoleBasedRender>
 );
 
 export const ShowForAdminOrTech = ({ children, fallback }: { children: ReactNode; fallback?: ReactNode }) => (
-  <RoleBasedRender allowedRoles={['Administrador', 'Tecnico']} fallback={fallback}>
+  <RoleBasedRender allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.TECH]} fallback={fallback}>
     {children}
   </RoleBasedRender>
 );
@@ -79,9 +82,9 @@ export const useConditionalRender = () => {
     showForAdmin: (element: ReactNode) => (loading ? null : (isAdmin ? element : null)),
     showForTech: (element: ReactNode) => (loading ? null : (isTech ? element : null)),
     showForAdminOrTech: (element: ReactNode) => (loading ? null : ((isAdmin || isTech) ? element : null)),
-    showForRole: (role: string | string[], element: ReactNode) => (loading ? null : (hasRole(role) ? element : null)),
+    showForRole: (role: UserRole | UserRole[], element: ReactNode) => (loading ? null : (hasRole(role) ? element : null)),
     
     // Función para agregar elementos al menú dinámicamente (como en tu ejemplo)
-    shouldShowMenuItem: (requiredRoles: string | string[]) => hasRole(requiredRoles),
+    shouldShowMenuItem: (requiredRoles: UserRole | UserRole[]) => hasRole(requiredRoles),
   };
 };

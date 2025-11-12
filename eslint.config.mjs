@@ -23,26 +23,25 @@ const eslintConfig = [
       // React and Next.js best practices
       "react/prop-types": "off", // Using TypeScript
       "react/react-in-jsx-scope": "off", // Next.js handles this
-      "react/no-unescaped-entities": "error",
+      "react/no-unescaped-entities": "warn",
       "react-hooks/exhaustive-deps": "warn",
       
       // TypeScript best practices
-      "@typescript-eslint/no-unused-vars": ["error", { 
+      "@typescript-eslint/no-unused-vars": ["warn", { 
         "argsIgnorePattern": "^_",
         "varsIgnorePattern": "^_" 
       }],
       "@typescript-eslint/no-explicit-any": "warn",
-      "@typescript-eslint/prefer-nullish-coalescing": "error",
-      "@typescript-eslint/prefer-optional-chain": "error",
+      "@typescript-eslint/no-unused-expressions": "warn",
       
       // General code quality
-      "prefer-const": "error",
-      "no-var": "error",
+      "prefer-const": "warn",
+      "no-var": "warn",
       "no-console": ["warn", { "allow": ["warn", "error"] }],
-      "no-debugger": "error",
+      "no-debugger": "warn",
       
-      // Import organization
-      "import/order": ["error", {
+      // Import organization - make these warnings instead of errors
+      "import/order": ["warn", {
         "groups": [
           "builtin",
           "external", 

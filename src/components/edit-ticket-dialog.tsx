@@ -41,6 +41,17 @@ export function EditTicketDialog({ ticket, open, onOpenChange }: EditTicketDialo
   // Llenar formulario cuando cambie el ticket
   useEffect(() => {
     if (ticket) {
+      // Helper para convertir fecha de forma segura
+      const formatDate = (date: any): string => {
+        try {
+          if (!date) return "";
+          const dateStr = new Date(date).toISOString().split('T')[0];
+          return dateStr || "";
+        } catch {
+          return "";
+        }
+      };
+
       setFormData({
         summary: ticket.summary || "",
         description: ticket.description || "",
@@ -49,7 +60,7 @@ export function EditTicketDialog({ ticket, open, onOpenChange }: EditTicketDialo
         priority: ticket.priority || "",
         status: ticket.status || "",
         floor_id: ticket.floor_id?.toString() || "0",
-        due_date: ticket.due_date ? new Date(ticket.due_date).toISOString().split('T')[0] : ""
+        due_date: formatDate(ticket.due_date)
       });
       setErrors({});
     }

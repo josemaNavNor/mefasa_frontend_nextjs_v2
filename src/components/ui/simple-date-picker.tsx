@@ -7,9 +7,10 @@ interface SimpleDatePickerProps {
   minDate?: string;
 }
 
-export function SimpleDatePicker({ value, onChange, disabled, minDate }: SimpleDatePickerProps) {
+export function SimpleDatePicker(props: SimpleDatePickerProps) {
+  const { value, onChange, disabled, minDate } = props;
   const today = new Date().toISOString().split('T')[0];
-  const minDateToUse = minDate || today;
+  const finalMinDate = minDate === undefined ? today : minDate;
 
   return (
     <input
@@ -17,7 +18,7 @@ export function SimpleDatePicker({ value, onChange, disabled, minDate }: SimpleD
       value={value || ''}
       onChange={(e) => onChange(e.target.value)}
       disabled={disabled}
-      min={minDateToUse}
+      min={finalMinDate}
       className="w-full h-8 px-2 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
     />
   );

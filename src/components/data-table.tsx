@@ -80,6 +80,7 @@ export function DataTable<TData, TValue>({
             return () => clearTimeout(timer);
         } else {
             setShowNoData(false)
+            return undefined;
         }
     }, [table.getRowModel().rows?.length])
 

@@ -26,7 +26,15 @@ export interface UserFavFilter {
   user_id: number;
   filter_id: number;
   created_at: string;
-  user?: any; // User interface from your user types
+  user?: {
+    id: number;
+    name: string;
+    last_name: string;
+    email: string;
+    role?: {
+      rol_name: string;
+    };
+  };
   filter?: Filter;
 }
 
