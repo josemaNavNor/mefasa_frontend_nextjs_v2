@@ -3,6 +3,7 @@ import { useFloors } from "@/hooks/use_floors";
 import { useEventListener } from "@/hooks/useEventListener";
 import { createFloorHandlers } from "@/app/(dashboard)/floors/floor-handlers";
 import { Floor, FormsFloor } from "@/types/floor";
+import { FLOOR_EVENTS } from "@/lib/events";
 
 export const useFloorManagement = () => {
     const { floors, createFloor, updateFloor, deleteFloor, refetch } = useFloors();
@@ -11,6 +12,9 @@ export const useFloorManagement = () => {
     const [floor_name, setFloorName] = useState("");
     const [description, setDescription] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    
+    // Estado para controlar el Sheet de creación
+    const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
     
     // Estados para editar planta
     const [editingFloor, setEditingFloor] = useState<FormsFloor | null>(null);
@@ -26,15 +30,14 @@ export const useFloorManagement = () => {
         deleteFloor
     }), [createFloor, updateFloor, deleteFloor]);
 
-    // Escuchar eventos de cambios en plantas
-    const handleDataChange = useCallback((dataType: string) => {
-        if (dataType === 'floors' || dataType === 'all') {
-            refetch();
-        }
+    // Escuchar eventos específicos de plantas
+    const handleDataChange = useCallback(() => {
+        refetch();
     }, [refetch]);
 
-    useEventListener('data-changed', handleDataChange);
-    useEventListener('floors-updated', refetch);
+    useEventListener(FLOOR_EVENTS.CREATED, handleDataChange);
+    useEventListener(FLOOR_EVENTS.UPDATED, handleDataChange);
+    useEventListener(FLOOR_EVENTS.DELETED, handleDataChange);
 
     // Wrapper functions para los handlers con los estados
     const handleEdit = useCallback((floor: Floor) => {
@@ -73,7 +76,8 @@ export const useFloorManagement = () => {
             description,
             setErrors,
             setFloorName,
-            setDescription
+            setDescription,
+            () => setIsCreateSheetOpen(false) // Función para cerrar el Sheet
         );
     }, [handlers, floor_name, description]);
 
@@ -118,8 +122,27 @@ export const useFloorManagement = () => {
 
     return {
         floors,
-        createFloorForm,
-        editFloorForm,
+        createFloorForm: {
+            floor_name,
+            setFloorName,
+            description,
+            setDescription,
+            errors,
+            isCreateSheetOpen,
+            setIsCreateSheetOpen,
+            handleSubmit
+        },
+        editFloorForm: {
+            editingFloor,
+            editFloorName,
+            setEditFloorName,
+            editDescription,
+            setEditDescription,
+            editErrors,
+            isEditSheetOpen,
+            setIsEditSheetOpen,
+            handleEditSubmit
+        },
         handleEdit,
         handleDelete,
         refetch

@@ -37,7 +37,7 @@ export default function TypeTicketsPage() {
             <div className="mb-4">
                 <h1 className="text-4xl font-bold">Gestión Tipos de Tickets</h1>
             </div>
-            <Sheet>
+            <Sheet open={createTypeForm.isCreateSheetOpen} onOpenChange={createTypeForm.setIsCreateSheetOpen}>
                 <SheetTrigger asChild className="mb-4">
                     <Button variant="outline">Agregar Tipo de Ticket</Button>
                 </SheetTrigger>

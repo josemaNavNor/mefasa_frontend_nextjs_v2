@@ -235,6 +235,7 @@ export default function UsersPage() {
                                 />
                                 {editUserForm.editErrors.last_name && <p className="text-red-500 text-xs mt-1">{editUserForm.editErrors.last_name}</p>}
                             </div>
+                            pr
                             <div className="grid gap-3">
                                 <Label htmlFor="edit_email">Correo electrónico</Label>
                                 <Input

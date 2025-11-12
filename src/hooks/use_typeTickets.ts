@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import Notiflix from 'notiflix';
 import { eventEmitter } from './useEventListener'
+import { TYPE_EVENTS, GLOBAL_EVENTS } from '@/lib/events'
 import {api} from '@/lib/httpClient'
 
 export function useType() {
@@ -37,7 +38,8 @@ export function useType() {
             
             setTypes((prevTypes) => [...prevTypes, response]);
             
-            eventEmitter.emit('data-changed', 'types');
+            // Mantener eventos globales para compatibilidad
+            eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'types');
             eventEmitter.emit('types-updated');
             
             Notiflix.Notify.success('Tipo creado correctamente');
@@ -58,7 +60,10 @@ export function useType() {
             setTypes((prevTypes) =>
                 prevTypes.map((t) => (t.id === id ? { ...t, ...response } : t))
             );
-            eventEmitter.emit('data-changed', 'types');
+            // Emitir eventos específicos para tipos de tickets
+            eventEmitter.emit(TYPE_EVENTS.UPDATED, { id, data: response });
+            // Mantener eventos globales para compatibilidad
+            eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'types');
             eventEmitter.emit('types-updated');
             Notiflix.Notify.success('Tipo de ticket actualizado correctamente');
             return response;
@@ -78,7 +83,10 @@ export function useType() {
         try {
             await api.delete(`/types/${id}`);
             setTypes((prevTypes) => prevTypes.filter((type) => type.id !== id));
-            eventEmitter.emit('data-changed', 'types');
+            // Emitir eventos específicos para tipos de tickets
+            eventEmitter.emit(TYPE_EVENTS.DELETED, { id });
+            // Mantener eventos globales para compatibilidad
+            eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'types');
             eventEmitter.emit('types-updated');
             Notiflix.Notify.success('Tipo de ticket eliminado correctamente');
             return true;

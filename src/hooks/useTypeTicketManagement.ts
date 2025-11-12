@@ -3,6 +3,7 @@ import { useType } from "@/hooks/use_typeTickets";
 import { useEventListener } from "@/hooks/useEventListener";
 import { ticketTypeSchema } from "@/lib/zod";
 import { TicketType } from "@/types/ticketType";
+import { TYPE_EVENTS } from "@/lib/events";
 import Notiflix from 'notiflix';
 
 interface TypeTicket {
@@ -19,6 +20,9 @@ export const useTypeTicketManagement = () => {
     const [description, setDescription] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     
+    // Estado para controlar el Sheet de creación
+    const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
+    
     // Estados para editar tipo de ticket
     const [editingType, setEditingType] = useState<TypeTicket | null>(null);
     const [editTypeName, setEditTypeName] = useState("");
@@ -26,15 +30,14 @@ export const useTypeTicketManagement = () => {
     const [editErrors, setEditErrors] = useState<{ [key: string]: string }>({});
     const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
 
-    // Escuchar eventos de cambios en tipos de tickets
-    const handleDataChange = useCallback((dataType: string) => {
-        if (dataType === 'types' || dataType === 'all') {
-            refetch();
-        }
+    // Escuchar eventos específicos de tipos de tickets
+    const handleDataChange = useCallback(() => {
+        refetch();
     }, [refetch]);
 
-    useEventListener('data-changed', handleDataChange);
-    useEventListener('types-updated', refetch);
+    useEventListener(TYPE_EVENTS.CREATED, handleDataChange);
+    useEventListener(TYPE_EVENTS.UPDATED, handleDataChange);
+    useEventListener(TYPE_EVENTS.DELETED, handleDataChange);
 
     // Función para manejar la edición
     const handleEdit = useCallback((ticketType: TicketType) => {
@@ -89,15 +92,22 @@ export const useTypeTicketManagement = () => {
             return;
         }
         
-        await createTicketType({
-            type_name,
-            description,
-        });
-        
-        // Limpiar formulario solo si fue exitoso
-        setTicketTypeName("");
-        setDescription("");
-        setErrors({});
+        try {
+            await createTicketType({
+                type_name,
+                description,
+            });
+            
+            // Limpiar formulario
+            setTicketTypeName("");
+            setDescription("");
+            setErrors({});
+            
+            // Cerrar Sheet
+            setIsCreateSheetOpen(false);
+        } catch (error) {
+            // El error ya se maneja en createTicketType
+        }
     }, [createTicketType, type_name, description]);
 
     // Handler para editar tipo de ticket
@@ -151,8 +161,22 @@ export const useTypeTicketManagement = () => {
 
     return {
         types,
-        createTypeForm,
-        editTypeForm,
+        createTypeForm: {
+            type_name, setTicketTypeName,
+            description, setDescription,
+            errors,
+            isCreateSheetOpen,
+            setIsCreateSheetOpen,
+            handleSubmit
+        },
+        editTypeForm: {
+            editingType,
+            editTypeName, setEditTypeName,
+            editDescription, setEditDescription,
+            editErrors,
+            isEditSheetOpen, setIsEditSheetOpen,
+            handleEditSubmit
+        },
         handleEdit,
         handleDelete,
         refetch

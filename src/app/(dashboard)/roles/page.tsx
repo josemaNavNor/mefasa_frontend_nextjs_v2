@@ -37,7 +37,7 @@ export default function RolesPage() {
             <div className="mb-4">
                 <h1 className="text-4xl font-bold">Gestion de Roles</h1>
             </div>
-            <Sheet>
+            <Sheet open={createRoleForm.isCreateSheetOpen} onOpenChange={createRoleForm.setIsCreateSheetOpen}>
                 <SheetTrigger asChild className="mb-4">
                     <Button variant="outline">Agregar Rol</Button>
                 </SheetTrigger>

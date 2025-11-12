@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { api } from '@/lib/httpClient'
 import Notiflix from 'notiflix';
 import { eventEmitter } from './useEventListener'
+import { ROLE_EVENTS, GLOBAL_EVENTS } from '@/lib/events'
 
 export function useRoles() {
     const [roles, setRoles] = useState<any[]>([]);
@@ -31,8 +32,9 @@ export function useRoles() {
         try {
             const data = await api.post('/roles', role);
             setRoles((prevRoles) => [...prevRoles, data]);
-            eventEmitter.emit('data-changed', 'roles');
-            eventEmitter.emit('roles-updated');
+            // Mantener eventos globales para compatibilidad
+            eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'roles');
+            eventEmitter.emit(GLOBAL_EVENTS.ROLES_UPDATED);
             Notiflix.Notify.success(`Rol ${role.rol_name} creado correctamente`);
         } catch (error) {
             //console.error("Error al crear el rol:", error);
@@ -51,8 +53,11 @@ export function useRoles() {
             setRoles((prevRoles) =>
                 prevRoles.map((r) => (r.id === id ? { ...r, ...response } : r))
             );
-            eventEmitter.emit('data-changed', 'roles');
-            eventEmitter.emit('roles-updated');
+            // Emitir eventos específicos para roles
+            eventEmitter.emit(ROLE_EVENTS.UPDATED, { id, data: response });
+            // Mantener eventos globales para compatibilidad
+            eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'roles');
+            eventEmitter.emit(GLOBAL_EVENTS.ROLES_UPDATED);
             Notiflix.Notify.success(`Rol ${role.rol_name ?? ''} actualizado correctamente`);
             return response;
         } catch (error) {
@@ -71,8 +76,11 @@ export function useRoles() {
         try {
             await api.delete(`/roles/${id}`);
             setRoles((prevRoles) => prevRoles.filter((role) => role.id !== id));
-            eventEmitter.emit('data-changed', 'roles');
-            eventEmitter.emit('roles-updated');
+            // Emitir eventos específicos para roles
+            eventEmitter.emit(ROLE_EVENTS.DELETED, { id });
+            // Mantener eventos globales para compatibilidad
+            eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'roles');
+            eventEmitter.emit(GLOBAL_EVENTS.ROLES_UPDATED);
             Notiflix.Notify.success('Rol eliminado correctamente');
             return true;
         } catch (error) {

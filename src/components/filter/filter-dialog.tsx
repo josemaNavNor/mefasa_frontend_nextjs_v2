@@ -15,6 +15,8 @@ import { useFilters } from '@/hooks/useFilters';
 import { useFloors } from '@/hooks/use_floors';
 import { useType } from '@/hooks/use_typeTickets';
 import { useUsers } from '@/hooks/useUsersAdmin';
+import { eventEmitter } from '@/hooks/useEventListener';
+import { FILTER_EVENTS } from '@/lib/events';
 import { 
   Filter, 
   FilterFormData, 
@@ -172,6 +174,8 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
       ...prev,
       criteria: [...prev.criteria, { ...defaultCriterion }],
     }));
+    // Emitir evento específico cuando se agrega un criterio
+    eventEmitter.emit(FILTER_EVENTS.CRITERIA_ADDED);
   };
 
   const removeCriterion = (index: number) => {

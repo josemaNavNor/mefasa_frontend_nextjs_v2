@@ -37,7 +37,7 @@ export default function FloorsPage() {
             <div className="mb-4">
                 <h1 className="text-4xl font-bold">Gestión de Plantas</h1>
             </div>
-            <Sheet>
+            <Sheet open={createFloorForm.isCreateSheetOpen} onOpenChange={createFloorForm.setIsCreateSheetOpen}>
                 <SheetTrigger asChild className="mb-4">
                     <Button variant="outline">Agregar Planta</Button>
                 </SheetTrigger>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import Notiflix from 'notiflix';
 import { eventEmitter } from './useEventListener'
+import { TICKET_EVENTS, GLOBAL_EVENTS } from '@/lib/events'
 import * as XLSX from 'xlsx'
 import { api } from '@/lib/httpClient'
 import { useSettings } from '@/contexts/SettingsContext'
@@ -138,8 +139,12 @@ export function useTickets() {
                     return dateB - dateA; // Orden descendente
                 });
             });
-            eventEmitter.emit('data-changed', 'tickets');
-            eventEmitter.emit('tickets-updated');
+            // Emitir eventos específicos para la página de tickets
+            eventEmitter.emit(TICKET_EVENTS.UPDATED, { id, data: response });
+            eventEmitter.emit(TICKET_EVENTS.REFRESH_TICKETS_PAGE);
+            // Mantener eventos globales para compatibilidad
+            eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'tickets');
+            eventEmitter.emit(GLOBAL_EVENTS.TICKETS_UPDATED);
             eventEmitter.emit('ticket-history-updated', parseInt(id));
             return response;
         } catch (error) {
@@ -175,8 +180,12 @@ export function useTickets() {
             // En lugar de agregar el ticket básico, refrescar toda la lista para obtener los datos completos
             await fetchTickets();
             
-            eventEmitter.emit('data-changed', 'tickets');
-            eventEmitter.emit('tickets-updated');
+            // Emitir eventos específicos para la página de tickets
+            eventEmitter.emit(TICKET_EVENTS.CREATED, response);
+            eventEmitter.emit(TICKET_EVENTS.REFRESH_TICKETS_PAGE);
+            // Mantener eventos globales para compatibilidad
+            eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'tickets');
+            eventEmitter.emit(GLOBAL_EVENTS.TICKETS_UPDATED);
             Notiflix.Notify.success(`Ticket creado correctamente`);
         } catch (error) {
             //console.error("Error al crear el ticket:", error);
@@ -193,8 +202,12 @@ export function useTickets() {
         try {
             await api.delete(`/tickets/${id}`);
             setTickets((prevTickets) => prevTickets.filter((ticket) => ticket.id !== id));
-            eventEmitter.emit('data-changed', 'tickets');
-            eventEmitter.emit('tickets-updated');
+            // Emitir eventos específicos para la página de tickets
+            eventEmitter.emit(TICKET_EVENTS.DELETED, { id });
+            eventEmitter.emit(TICKET_EVENTS.REFRESH_TICKETS_PAGE);
+            // Mantener eventos globales para compatibilidad
+            eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'tickets');
+            eventEmitter.emit(GLOBAL_EVENTS.TICKETS_UPDATED);
             Notiflix.Notify.success('Ticket eliminado correctamente');
             return true;
         } catch (error) {

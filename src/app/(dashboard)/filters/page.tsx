@@ -7,13 +7,15 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Edit, Trash2, Star, StarOff } from 'lucide-react';
 import { useFilters } from '@/hooks/useFilters';
 import { useUserFavFilters } from '@/hooks/useUserFavFilters';
+import { useEventListener } from '@/hooks/useEventListener';
 import { FilterDialog, FilterDetailDialog } from '@/components/filter';
 import { Filter } from '@/types/filter';
+import { FILTER_EVENTS } from '@/lib/events';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import { Confirm } from 'notiflix/build/notiflix-confirm-aio';
 
 export default function FiltersPage() {
-  const { filters, loading, error, deleteFilter } = useFilters();
+  const { filters, loading, error, deleteFilter, fetchFilters } = useFilters();
   const { 
     isFilterFavorite, 
     toggleFavorite, 
@@ -24,6 +26,12 @@ export default function FiltersPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+
+  // Escuchar solo eventos específicos de filtros
+  useEventListener(FILTER_EVENTS.REFRESH_FILTERS_PAGE, fetchFilters);
+  useEventListener(FILTER_EVENTS.UPDATED, fetchFilters);
+  useEventListener(FILTER_EVENTS.CREATED, fetchFilters);
+  useEventListener(FILTER_EVENTS.DELETED, fetchFilters);
 
   const handleDelete = async (filter: Filter) => {
     Confirm.show(

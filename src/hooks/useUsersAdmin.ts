@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react"
 import Notiflix from 'notiflix';
-import { eventEmitter } from './useEventListener'
-import { api } from '@/lib/httpClient'
+import { eventEmitter } from './useEventListener';
+import { api } from '@/lib/httpClient';
+import { USER_EVENTS } from '@/lib/events';
 
 export function useUsers() {
     const [users, setUsers] = useState<any[]>([]);
@@ -47,8 +48,8 @@ export function useUsers() {
         try {
             const response = await api.post('/users', user);
             setUsers((prevUsers) => [...prevUsers, response]);
-            eventEmitter.emit('data-changed', 'users');
-            eventEmitter.emit('users-updated');
+            eventEmitter.emit(USER_EVENTS.CREATED);
+            eventEmitter.emit(USER_EVENTS.REFRESH_USERS_PAGE);
             Notiflix.Notify.success(`Usuario ${user.name} ${user.last_name} creado correctamente`);
         } catch (error) {
             Notiflix.Notify.failure(
@@ -77,8 +78,8 @@ export function useUsers() {
             setUsers((prevUsers) =>
                 prevUsers.map((u) => (u.id === id ? { ...u, ...response } : u))
             );
-            eventEmitter.emit('data-changed', 'users');
-            eventEmitter.emit('users-updated');
+            eventEmitter.emit(USER_EVENTS.UPDATED);
+            eventEmitter.emit(USER_EVENTS.REFRESH_USERS_PAGE);
             Notiflix.Notify.success(`Usuario ${user.name ?? ''} ${user.last_name ?? ''} actualizado correctamente`);
             return response;
         } catch (error) {
@@ -96,8 +97,8 @@ export function useUsers() {
         try {
             await api.delete(`/users/${id}`);
             setUsers((prevUsers) => prevUsers.filter((user) => user.id !== id));
-            eventEmitter.emit('data-changed', 'users');
-            eventEmitter.emit('users-updated');
+            eventEmitter.emit(USER_EVENTS.DELETED);
+            eventEmitter.emit(USER_EVENTS.REFRESH_USERS_PAGE);
             Notiflix.Notify.success('Usuario eliminado correctamente');
             return true;
         } catch (error) {

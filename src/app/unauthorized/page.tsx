@@ -2,14 +2,11 @@
 import { useAuthContext } from '@/components/auth-provider';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
+import ImgLogo from '@/components/img-logo';
 
 export default function UnauthorizedPage() {
   const { user, logout } = useAuthContext();
   const router = useRouter();
-
-  const handleGoBack = () => {
-    router.back();
-  };
 
   const handleGoHome = () => {
     router.push('/');
@@ -23,6 +20,9 @@ export default function UnauthorizedPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-8 text-center">
+        <div className="flex justify-center mb-6">
+          <ImgLogo />
+        </div>
         <div className="mb-6">
           <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
