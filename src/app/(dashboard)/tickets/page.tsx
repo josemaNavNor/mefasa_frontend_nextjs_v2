@@ -134,17 +134,17 @@ export default function TicketsPage() {
 
     // Función para aplicar filtros
     const applyFilter = useCallback((filter: Filter) => {
-        console.log('Aplicando filtro:', filter);
+        //console.log('Aplicando filtro:', filter);
         setActiveFilter(filter);
         
         if (!filter.filterCriteria || filter.filterCriteria.length === 0) {
-            console.log('Filtro sin criterios, mostrando todos los tickets');
+            //console.log('Filtro sin criterios, mostrando todos los tickets');
             setFilteredTickets(tickets);
             return;
         }
 
-        console.log('Filtros a aplicar:', filter.filterCriteria);
-        console.log('Tickets originales:', tickets.length);
+        //console.log('Filtros a aplicar:', filter.filterCriteria);
+        //console.log('Tickets originales:', tickets.length);
 
         const filtered = tickets.filter(ticket => {
             let result = true;
@@ -174,14 +174,14 @@ export default function TicketsPage() {
                 const fieldValue = ticket[fieldName as keyof typeof ticket];
                 const criterionValue = criterion.value;
                 
-                console.log(`Criterio ${index + 1}:`, {
-                    originalField: criterion.field_name,
-                    mappedField: fieldName,
-                    operator: criterion.operator,
-                    value: criterionValue,
-                    fieldValue,
-                    logicalOperator: criterion.logical_operator
-                });
+                // console.log(`Criterio ${index + 1}:`, {
+                //     originalField: criterion.field_name,
+                //     mappedField: fieldName,
+                //     operator: criterion.operator,
+                //     value: criterionValue,
+                //     fieldValue,
+                //     logicalOperator: criterion.logical_operator
+                // });
                 
                 let matches = false;
                 
@@ -226,7 +226,7 @@ export default function TicketsPage() {
                         matches = false;
                 }
 
-                console.log(`Criterio ${index + 1} matches:`, matches);
+                //console.log(`Criterio ${index + 1} matches:`, matches);
 
                 // Para el primer criterio, establecer el resultado inicial
                 if (index === 0) {
@@ -240,18 +240,18 @@ export default function TicketsPage() {
                     }
                 }
                 
-                console.log(`Resultado acumulado:`, result);
+                //console.log(`Resultado acumulado:`, result);
             });
             
             return result;
         });
         
-        console.log('Tickets filtrados:', filtered.length);
+        //console.log('Tickets filtrados:', filtered.length);
         setFilteredTickets(filtered);
     }, [tickets]);
 
     const clearFilter = useCallback(() => {
-        console.log('Limpiando filtros');
+        //console.log('Limpiando filtros');
         setActiveFilter(null);
         setFilteredTickets(tickets);
     }, [tickets]);

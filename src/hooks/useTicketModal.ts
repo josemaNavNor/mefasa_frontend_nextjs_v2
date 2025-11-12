@@ -48,11 +48,11 @@ export const useTicketModal = (ticket: Ticket | null) => {
                 
                 // Solo marcar como visto si no lo hemos hecho antes
                 if (!markedAsViewedTickets.has(ticketIdKey)) {
-                    console.log(`Marcando ticket ${ticketIdKey} como visto por primera vez`);
+                    //console.log(`Marcando ticket ${ticketIdKey} como visto por primera vez`);
                     markTicketAsViewed(ticketId)
                     setMarkedAsViewedTickets(prev => new Set(prev).add(ticketIdKey))
                 } else {
-                    console.log(`Ticket ${ticketIdKey} ya fue marcado como visto anteriormente`);
+                    //console.log(`Ticket ${ticketIdKey} ya fue marcado como visto anteriormente`);
                 }
             }
         }

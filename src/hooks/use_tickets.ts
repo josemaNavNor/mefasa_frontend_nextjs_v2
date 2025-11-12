@@ -18,7 +18,7 @@ export function useTickets() {
         // Implementar throttling para evitar múltiples llamadas muy seguidas
         const now = Date.now();
         if (now - lastFetchTime < 2000) { // Mínimo 2 segundos entre llamadas
-            console.log('fetchTickets bloqueado por throttling');
+            //console.log('fetchTickets bloqueado por throttling');
             return;
         }
         setLastFetchTime(now);
@@ -103,7 +103,7 @@ export function useTickets() {
             
             // Si el ticket ya no es nuevo (ya fue visto), no hacer la llamada
             if (currentTicket && currentTicket.isNew === false) {
-                console.log(`Ticket ${id} ya fue marcado como visto anteriormente`);
+                //console.log(`Ticket ${id} ya fue marcado como visto anteriormente`);
                 return true;
             }
             
@@ -311,14 +311,14 @@ export function useTickets() {
         // Solo iniciar polling si está habilitado en configuraciones
         if (autoRefreshEnabled) {
             setIsPolling(true);
-            console.log(`Empezando polling cada ${autoRefreshInterval / 1000} segundos`);
+            //console.log(`Empezando polling cada ${autoRefreshInterval / 1000} segundos`);
             pollingInterval = setInterval(() => {
-                console.log('Ejecutando auto-refresh de tickets');
+               //console.log('Ejecutando auto-refresh de tickets');
                 fetchTickets(true); // true para mostrar notificaciones de nuevos tickets
             }, autoRefreshInterval);
         } else {
             setIsPolling(false);
-            console.log('Auto-refresh is disabled');
+            //console.log('Auto-refresh is disabled');
         }
         
         // Cleanup: detener el polling cuando el componente se desmonte o cambien las configuraciones

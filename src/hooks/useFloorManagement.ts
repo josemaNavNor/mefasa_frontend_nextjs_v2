@@ -4,6 +4,7 @@ import { useEventListener } from "@/hooks/useEventListener";
 import { createFloorHandlers } from "@/app/(dashboard)/floors/floor-handlers";
 import { Floor, FormsFloor } from "@/types/floor";
 import { FLOOR_EVENTS } from "@/lib/events";
+import { eventEmitter } from "./useEventListener";
 
 export const useFloorManagement = () => {
     const { floors, createFloor, updateFloor, deleteFloor, refetch } = useFloors();
@@ -13,8 +14,8 @@ export const useFloorManagement = () => {
     const [description, setDescription] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     
-    // Estado para controlar el Sheet de creación
-    const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
+    // Estado del Sheet para crear planta - manejado internamente
+    const [isSheetOpen, setIsSheetOpen] = useState(false);
     
     // Estados para editar planta
     const [editingFloor, setEditingFloor] = useState<FormsFloor | null>(null);
@@ -77,7 +78,10 @@ export const useFloorManagement = () => {
             setErrors,
             setFloorName,
             setDescription,
-            () => setIsCreateSheetOpen(false) // Función para cerrar el Sheet
+            () => {
+                // Emitir evento para cerrar Sheet
+                eventEmitter.emit(FLOOR_EVENTS.CLOSE_FORM);
+            }
         );
     }, [handlers, floor_name, description]);
 
@@ -128,8 +132,6 @@ export const useFloorManagement = () => {
             description,
             setDescription,
             errors,
-            isCreateSheetOpen,
-            setIsCreateSheetOpen,
             handleSubmit
         },
         editFloorForm: {
@@ -143,6 +145,9 @@ export const useFloorManagement = () => {
             setIsEditSheetOpen,
             handleEditSubmit
         },
+        // Estado interno del Sheet para la página
+        isSheetOpen,
+        setIsSheetOpen,
         handleEdit,
         handleDelete,
         refetch

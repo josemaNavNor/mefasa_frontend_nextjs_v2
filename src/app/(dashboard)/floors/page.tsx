@@ -4,8 +4,10 @@ import { DataTable } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useMemo } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { useFloorManagement } from "@/hooks/useFloorManagement";
+import { useEventListener } from "@/hooks/useEventListener";
+import { FLOOR_EVENTS } from "@/lib/events";
 import {
     Sheet,
     SheetClose,
@@ -22,9 +24,18 @@ export default function FloorsPage() {
         floors, 
         createFloorForm, 
         editFloorForm, 
+        isSheetOpen,
+        setIsSheetOpen,
         handleEdit, 
         handleDelete 
     } = useFloorManagement();
+
+    // Escuchar evento para cerrar el Sheet automáticamente
+    const handleCloseSheet = useCallback(() => {
+        setIsSheetOpen(false);
+    }, [setIsSheetOpen]);
+
+    useEventListener(FLOOR_EVENTS.CLOSE_FORM, handleCloseSheet);
 
     // Crear las columnas con las funciones handleEdit y handleDelete usando useMemo
     const columns = useMemo(() => createColumns({ 
@@ -37,7 +48,7 @@ export default function FloorsPage() {
             <div className="mb-4">
                 <h1 className="text-4xl font-bold">Gestión de Plantas</h1>
             </div>
-            <Sheet open={createFloorForm.isCreateSheetOpen} onOpenChange={createFloorForm.setIsCreateSheetOpen}>
+            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                 <SheetTrigger asChild className="mb-4">
                     <Button variant="outline">Agregar Planta</Button>
                 </SheetTrigger>

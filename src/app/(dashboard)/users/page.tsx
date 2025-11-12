@@ -4,12 +4,13 @@ import { DataTable } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useMemo } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { useRoles } from "@/hooks/useRoles";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useUserManagement } from "@/hooks/useUserManagement";
+import { useEventListener } from "@/hooks/useEventListener";
+import { USER_EVENTS } from "@/lib/events";
 import { Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
 
 
 import {
@@ -40,9 +41,18 @@ export default function UsersPage() {
         users,
         createUserForm,
         editUserForm,
+        isSheetOpen,
+        setIsSheetOpen,
         handleEdit,
         handleDelete
     } = useUserManagement();
+
+    // Escuchar evento para cerrar el Sheet automáticamente
+    const handleCloseSheet = useCallback(() => {
+        setIsSheetOpen(false);
+    }, [setIsSheetOpen]);
+
+    useEventListener(USER_EVENTS.CLOSE_FORM, handleCloseSheet);
 
     // Crear las columnas con las funciones handleEdit y handleDelete usando useMemo
     const columns = useMemo(() => createColumns({
@@ -57,7 +67,7 @@ export default function UsersPage() {
                 </div>
 
                 {/* Sheet para agregar usuario */}
-                <Sheet open={createUserForm.isCreateSheetOpen} onOpenChange={createUserForm.setIsCreateSheetOpen}>
+                <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                     <SheetTrigger asChild className="mb-4">
                         <Button variant="outline">Agregar Usuario</Button>
                     </SheetTrigger>

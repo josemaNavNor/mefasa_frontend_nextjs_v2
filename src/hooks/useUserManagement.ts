@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from "react";
 import { useUsers } from "@/hooks/useUsersAdmin";
 import { useEventListener } from "@/hooks/useEventListener";
 import { USER_EVENTS } from "@/lib/events";
+import { eventEmitter } from "./useEventListener";
 import {
     createHandleEdit,
     createHandleDelete,
@@ -25,7 +26,9 @@ export const useUserManagement = () => {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [roleId, setRoleId] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
-    const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
+    
+    // Estado del Sheet para crear usuario - manejado internamente
+    const [isSheetOpen, setIsSheetOpen] = useState(false);
     
     // Estados para editar usuario
     const [editingUser, setEditingUser] = useState<any>(null);
@@ -49,7 +52,11 @@ export const useUserManagement = () => {
     // Esto crea un objeto con las acciones del formulario de creación
     const formActions: FormActions = useMemo(() => ({
         setName, setLastName, setEmail, setPhoneNumber,
-        setPassword, setConfirmPassword, setRoleId, setErrors, setIsCreateSheetOpen
+        setPassword, setConfirmPassword, setRoleId, setErrors, 
+        setIsCreateSheetOpen: () => {
+            // Emitir evento para cerrar Sheet
+            eventEmitter.emit(USER_EVENTS.CLOSE_FORM);
+        }
     }), []);
 
     // Esto crea un objeto con los estados del formulario de edición
@@ -108,7 +115,6 @@ export const useUserManagement = () => {
         confirmPassword, setConfirmPassword,
         roleId, setRoleId,
         errors,
-        isCreateSheetOpen, setIsCreateSheetOpen,
         handleSubmit
     };
 
@@ -131,6 +137,9 @@ export const useUserManagement = () => {
         users,
         createUserForm,
         editUserForm,
+        // Estado interno del Sheet para la página
+        isSheetOpen,
+        setIsSheetOpen,
         handleEdit,
         handleDelete,
         refetch
