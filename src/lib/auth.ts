@@ -1,4 +1,5 @@
-import { API_CONFIG, AUTH_CONFIG } from "./constants";
+import { AUTH_CONFIG } from "./constants";
+import { api } from '@/lib/httpClient';
 
 interface LoginCredentials {
   email: string;
@@ -17,35 +18,15 @@ interface AuthResponse {
 }
 
 class AuthService {
-  private readonly baseUrl = `${API_CONFIG.baseUrl}/api/${API_CONFIG.version}`;
+  // Ya no necesitamos baseUrl porque httpClient lo maneja
+  // private readonly baseUrl = `${API_CONFIG.baseUrl}/api/${API_CONFIG.version}`;
 
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.timeout);
-
     try {
-      const response = await fetch(`${this.baseUrl}/auth/login-2fa`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(credentials),
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        throw new Error("Credenciales inválidas");
-      }
-
-      return await response.json();
+      const response = await api.post('/auth/login-2fa', credentials);
+      return response;
     } catch (error) {
-      clearTimeout(timeoutId);
       if (error instanceof Error) {
-        if (error.name === "AbortError") {
-          throw new Error("Timeout de conexión");
-        }
         throw error;
       }
       throw new Error("Error de conexión");

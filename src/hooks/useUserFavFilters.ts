@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 import { UserFavFilter, CreateUserFavFilterDto, Filter } from '@/types/filter';
 import { useAuthContext } from '@/components/auth-provider';
+import { api } from '@/lib/httpClient';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+// Las constantes y funciones helper ya no son necesarias porque httpClient las maneja
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+// const getAuthHeader = () => { ... }
 
 export const useUserFavFilters = () => {
   const { user } = useAuthContext();
@@ -10,46 +13,14 @@ export const useUserFavFilters = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getAuthHeader = () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      console.warn('No token found in localStorage');
-    }
-    return {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    };
-  };
-
   const fetchUserFavFilters = async () => {
     if (!user) return;
     
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}/user-fav-filters`, {
-        headers: getAuthHeader(),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-      }
-
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        const text = await response.text();
-        console.error('Expected JSON but received:', text.substring(0, 200));
-        throw new Error('El servidor no devolvió JSON válido. Posible error de autenticación o configuración.');
-      }
-
-      const rawData = await response.json();
-      console.log('Raw user fav filters data:', rawData);
-      
-      // Manejar la estructura estándar de respuesta {success, data, ...}
-      let data = rawData;
-      if (rawData && typeof rawData === 'object' && 'success' in rawData && 'data' in rawData) {
-        data = rawData.data;
-      }
+      const data = await api.get('/user-fav-filters');
+      console.log('Raw user fav filters data:', data);
       
       // Verificar que data sea un array antes de usar filter
       if (!Array.isArray(data)) {
@@ -85,24 +56,7 @@ export const useUserFavFilters = () => {
         filter_id: filterId,
       };
 
-      const response = await fetch(`${API_BASE_URL}/user-fav-filters`, {
-        method: 'POST',
-        headers: getAuthHeader(),
-        body: JSON.stringify(favFilterData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al agregar a favoritos');
-      }
-
-      const rawData = await response.json();
-      
-      // Manejar la estructura estándar de respuesta
-      let newFavFilter = rawData;
-      if (rawData && typeof rawData === 'object' && 'success' in rawData && 'data' in rawData) {
-        newFavFilter = rawData.data;
-      }
-      
+      const newFavFilter = await api.post('/user-fav-filters', favFilterData);
       setUserFavFilters(prev => [...prev, newFavFilter]);
       return newFavFilter;
     } catch (err) {
@@ -117,15 +71,7 @@ export const useUserFavFilters = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}/user-fav-filters/${favFilterId}`, {
-        method: 'DELETE',
-        headers: getAuthHeader(),
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al eliminar de favoritos');
-      }
-
+      await api.delete(`/user-fav-filters/${favFilterId}`);
       setUserFavFilters(prev => prev.filter(favFilter => favFilter.id !== favFilterId));
       return true;
     } catch (err) {
