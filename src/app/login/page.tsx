@@ -98,8 +98,6 @@ export default function Login() {
       const data = await response.json();
       console.log('Respuesta del backend:', data);
 
-      // El backend devuelve la respuesta envuelta en un objeto con formato:
-      // { success: true, data: { authUrl: "...", state: "..." }, timestamp: "...", path: "..." }
       let authUrl = null;
       
       if (data.success && data.data && data.data.authUrl) {
