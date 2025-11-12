@@ -42,8 +42,21 @@ export const useUserFavFilters = () => {
         throw new Error('El servidor no devolvió JSON válido. Posible error de autenticación o configuración.');
       }
 
-      const data = await response.json();
-      console.log('Raw user fav filters data:', data);
+      const rawData = await response.json();
+      console.log('Raw user fav filters data:', rawData);
+      
+      // Manejar la estructura estándar de respuesta {success, data, ...}
+      let data = rawData;
+      if (rawData && typeof rawData === 'object' && 'success' in rawData && 'data' in rawData) {
+        data = rawData.data;
+      }
+      
+      // Verificar que data sea un array antes de usar filter
+      if (!Array.isArray(data)) {
+        console.error('Expected array but received:', typeof data, data);
+        setUserFavFilters([]);
+        return;
+      }
       
       // Filtrar solo los filtros del usuario actual
       const userFilters = data.filter((favFilter: UserFavFilter) => 
@@ -55,6 +68,7 @@ export const useUserFavFilters = () => {
     } catch (err) {
       console.error('Error in fetchUserFavFilters:', err);
       setError(err instanceof Error ? err.message : 'Error desconocido');
+      setUserFavFilters([]);
     } finally {
       setLoading(false);
     }
@@ -81,7 +95,14 @@ export const useUserFavFilters = () => {
         throw new Error('Error al agregar a favoritos');
       }
 
-      const newFavFilter = await response.json();
+      const rawData = await response.json();
+      
+      // Manejar la estructura estándar de respuesta
+      let newFavFilter = rawData;
+      if (rawData && typeof rawData === 'object' && 'success' in rawData && 'data' in rawData) {
+        newFavFilter = rawData.data;
+      }
+      
       setUserFavFilters(prev => [...prev, newFavFilter]);
       return newFavFilter;
     } catch (err) {

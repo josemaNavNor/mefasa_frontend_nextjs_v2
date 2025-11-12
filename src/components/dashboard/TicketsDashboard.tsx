@@ -97,7 +97,7 @@ export function TicketsDashboard() {
       <MetricsCards metrics={data.metrics} />
 
       {/* Tickets pendientes de la semana pasada - Componente destacado */}
-      {data.metrics.pendingLastWeek > 0 && <PendingLastWeekTickets />}
+      {data.metrics?.pendingLastWeek && data.metrics.pendingLastWeek > 0 && <PendingLastWeekTickets />}
 
       {/* Gráfica principal - Timeline */}
       <TicketTimeline data={data.seriesByDate} />

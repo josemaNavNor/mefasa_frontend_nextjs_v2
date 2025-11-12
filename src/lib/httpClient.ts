@@ -42,7 +42,15 @@ class HttpClient {
       throw new Error(errorMessage);
     }
 
-    return response.json();
+    const jsonData = await response.json();
+    
+    // Si la respuesta tiene la estructura estándar del backend {success, data, ...}, devolver solo los datos
+    if (jsonData && typeof jsonData === 'object' && 'success' in jsonData && 'data' in jsonData) {
+      return jsonData.data;
+    }
+    
+    // Si no, devolver la respuesta completa (compatibilidad con respuestas que no usan la estructura estándar)
+    return jsonData;
   }
 
   async get(endpoint: string) {

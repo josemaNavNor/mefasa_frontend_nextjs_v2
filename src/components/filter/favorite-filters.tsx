@@ -20,9 +20,12 @@ export function FavoriteFilters({ onApplyFilter, activeFilter, onClearFilter }: 
   const { userFavFilters, loading, error } = useUserFavFilters();
   const [collapsed, setCollapsed] = useState(false);
 
-  const favoriteFilters = userFavFilters
-    .map(favFilter => favFilter.filter)
-    .filter((filter): filter is Filter => filter !== undefined);
+  // Validación defensiva para asegurar que userFavFilters sea un array
+  const safeUserFavFilters = Array.isArray(userFavFilters) ? userFavFilters : [];
+
+  const favoriteFilters = safeUserFavFilters
+    .map(favFilter => favFilter?.filter)
+    .filter((filter): filter is Filter => filter !== undefined && filter !== null);
 
   if (loading) {
     return (

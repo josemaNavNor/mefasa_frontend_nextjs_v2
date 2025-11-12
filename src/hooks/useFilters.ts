@@ -38,11 +38,25 @@ export const useFilters = () => {
         throw new Error('El servidor no devolvió JSON válido. Posible error de autenticación o configuración.');
       }
 
-      const data = await response.json();
-      setFilters(data);
+      const rawData = await response.json();
+      
+      // Manejar la estructura estándar de respuesta {success, data, ...}
+      let data = rawData;
+      if (rawData && typeof rawData === 'object' && 'success' in rawData && 'data' in rawData) {
+        data = rawData.data;
+      }
+      
+      // Verificar que data sea un array
+      if (Array.isArray(data)) {
+        setFilters(data);
+      } else {
+        console.error('Expected array but received:', typeof data, data);
+        setFilters([]);
+      }
     } catch (err) {
       console.error('Error fetching filters:', err);
       setError(err instanceof Error ? err.message : 'Error desconocido');
+      setFilters([]);
     } finally {
       setLoading(false);
     }
@@ -64,7 +78,14 @@ export const useFilters = () => {
         throw new Error(errorMessage);
       }
 
-      const newFilter = await response.json();
+      const rawData = await response.json();
+      
+      // Manejar la estructura estándar de respuesta
+      let newFilter = rawData;
+      if (rawData && typeof rawData === 'object' && 'success' in rawData && 'data' in rawData) {
+        newFilter = rawData.data;
+      }
+      
       setFilters(prev => [...prev, newFilter]);
       return newFilter;
     } catch (err) {
@@ -91,7 +112,14 @@ export const useFilters = () => {
         throw new Error('Error al actualizar el filtro');
       }
 
-      const updatedFilter = await response.json();
+      const rawData = await response.json();
+      
+      // Manejar la estructura estándar de respuesta
+      let updatedFilter = rawData;
+      if (rawData && typeof rawData === 'object' && 'success' in rawData && 'data' in rawData) {
+        updatedFilter = rawData.data;
+      }
+      
       setFilters(prev => prev.map(filter => 
         filter.id === id ? updatedFilter : filter
       ));
@@ -139,7 +167,14 @@ export const useFilters = () => {
         throw new Error('Error al obtener el filtro');
       }
 
-      const filter = await response.json();
+      const rawData = await response.json();
+      
+      // Manejar la estructura estándar de respuesta
+      let filter = rawData;
+      if (rawData && typeof rawData === 'object' && 'success' in rawData && 'data' in rawData) {
+        filter = rawData.data;
+      }
+      
       return filter;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
@@ -161,7 +196,14 @@ export const useFilters = () => {
         throw new Error('Error al aplicar el filtro');
       }
 
-      const tickets = await response.json();
+      const rawData = await response.json();
+      
+      // Manejar la estructura estándar de respuesta
+      let tickets = rawData;
+      if (rawData && typeof rawData === 'object' && 'success' in rawData && 'data' in rawData) {
+        tickets = rawData.data;
+      }
+      
       return tickets;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');

@@ -11,15 +11,16 @@ export function useFloors() {
         setLoading(true);
         try {
             const data = await api.get('/floors');
+            // El api helper ahora maneja automáticamente la estructura {success, data, ...}
+            // y devuelve solo los datos
             if(Array.isArray(data)){
                 setFloors(data);
-            } else if (data && Array.isArray(data.floors)) {
-                setFloors(data.floors);
             } else {
-                console.error('Unexpected data structure:', data);
+                console.error('Unexpected data structure, expected array but got:', typeof data, data);
                 setFloors([]);
             }
         } catch (error) {
+            console.error('Error fetching floors:', error);
             setFloors([]);
         } finally {
             setLoading(false);
