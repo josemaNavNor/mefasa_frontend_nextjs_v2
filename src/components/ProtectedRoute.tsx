@@ -10,9 +10,9 @@ import type { UserRole } from "@/types";
 
 interface ProtectedRouteProps {
   readonly children: ReactNode;
-  readonly allowedRoles?: UserRole | UserRole[]; // Roles permitted to access the route
-  readonly requireAuth?: boolean; // If authentication is required (default true)
-  readonly fallbackPath?: string; // Route to redirect to if no permissions
+  readonly allowedRoles?: UserRole | UserRole[]; // Roles permitidos 
+  readonly requireAuth?: boolean; // Si se requiere autenticación (por defecto true)
+  readonly fallbackPath?: string; // Ruta a la que redirigir si no tiene permisos
 }
 
 export function ProtectedRoute({ 
@@ -25,32 +25,32 @@ export function ProtectedRoute({
   const router = useRouter();
 
   useEffect(() => {
-    if (loading) return; // Wait for auth info to load
+    if (loading) return; // Esperar a que se cargue la información de autenticación
 
-    // If authentication is required and user is not authenticated
+    // Si se requiere autenticación y el usuario no está autenticado
     if (requireAuth && !isAuthenticated) {
       router.push(fallbackPath);
       return;
     }
 
-    // If roles were specified and user doesn't have required permissions
+    // Si se especificaron roles y el usuario no tiene los permisos requeridos
     if (allowedRoles && isAuthenticated && !hasRole(allowedRoles)) {
       router.push(ROUTES.UNAUTHORIZED); 
       return;
     }
   }, [isAuthenticated, hasRole, allowedRoles, requireAuth, loading, router, fallbackPath]);
 
-  // Show loading while auth info is being loaded
+  // Mostrar carga mientras se carga la información de autenticación
   if (loading) {
     return <LoadingScreen message="Verificando permisos..." />;
   }
 
-  // If authentication is required and user is not authenticated, show nothing
+  // Si se requiere autenticación y el usuario no está autenticado, no mostrar nada
   if (requireAuth && !isAuthenticated) {
     return null;
   }
 
-  // If roles were specified and user doesn't have them, show nothing 
+  // Si se especificaron roles y el usuario no los tiene, no mostrar nada 
   if (allowedRoles && isAuthenticated && !hasRole(allowedRoles)) {
     return null;
   }
@@ -58,7 +58,7 @@ export function ProtectedRoute({
   return <>{children}</>;
 }
 
-// Specific components for roles
+// Componentes específicos para roles
 export function AdminOnly({ children }: { readonly children: ReactNode }) {
   return (
     <ProtectedRoute allowedRoles={USER_ROLES.ADMIN}>
@@ -83,7 +83,7 @@ export function AdminOrTech({ children }: { readonly children: ReactNode }) {
   );
 }
 
-// Hook to use in components that need to check roles
+// Hook para usar en componentes que necesitan verificar roles
 export function useRoleCheck() {
   const { isAdmin, isTech, isUserFinal, hasRole } = useAuthContext();
   
@@ -92,7 +92,7 @@ export function useRoleCheck() {
     isTech,
     isUserFinal,
     hasRole,
-    // Specific helper functions
+    // Funciones auxiliares específicas
     canManageUsers: isAdmin,
     canViewAllTickets: isAdmin || isTech,
     canCreateTickets: isAdmin || isTech || isUserFinal,

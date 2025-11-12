@@ -68,9 +68,11 @@ export default function UsersPage() {
 
                 {/* Sheet para agregar usuario */}
                 <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+                    <ProtectedRoute allowedRoles={["Tecnico"]}>
                     <SheetTrigger asChild className="mb-4">
                         <Button variant="outline">Agregar Usuario</Button>
                     </SheetTrigger>
+                    </ProtectedRoute>
                     <SheetContent>
                         <SheetHeader>
                             <SheetTitle>Agregar Usuario</SheetTitle>
