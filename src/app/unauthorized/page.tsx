@@ -1,20 +1,12 @@
 "use client";
-import { useAuthContext } from '@/components/auth-provider';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import ImgLogo from '@/components/img-logo';
 
 export default function UnauthorizedPage() {
-  const { user, logout } = useAuthContext();
   const router = useRouter();
-
   const handleGoHome = () => {
     router.push('/');
-  };
-
-  const handleLogout = () => {
-    logout();
-    router.push('/login');
   };
 
   return (
@@ -33,14 +25,8 @@ export default function UnauthorizedPage() {
             Acceso Denegado
           </h1>
           <p className="text-gray-600 mb-4">
-            No tienes permisos para acceder a esta página.
+            No tienes permisos para esta accion.
           </p>
-          {user && (
-            <p className="text-sm text-gray-500">
-              Usuario: <span className="font-medium">{user.name}</span><br />
-              Rol: <span className="font-medium">{user.role}</span>
-            </p>
-          )}
         </div>
         
         <div className="space-y-3">
@@ -49,14 +35,6 @@ export default function UnauthorizedPage() {
             className="w-full"
           >
             Ir a Inicio
-          </Button>
-          
-          <Button 
-            onClick={handleLogout}
-            variant="destructive"
-            className="w-full"
-          >
-            Cerrar Sesión
           </Button>
         </div>
       </div>
