@@ -169,8 +169,8 @@ export default function ProfilePage() {
                                     {profile.name} {profile.last_name}
                                 </h2>
                                 <p className="text-muted-foreground">{profile.email}</p>
-                                <Badge variant={profile.role?.rol_name === 'Administrador' ? 'default' : 'secondary'} className="mt-1">
-                                    {profile.role?.rol_name}
+                                <Badge variant={profile.role?.role_name === 'Administrador' ? 'default' : 'secondary'} className="mt-1">
+                                    {profile.role?.role_name}
                                 </Badge>
                             </div>
                         </div>

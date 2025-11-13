@@ -88,7 +88,7 @@ export default function RolePermissionsManager() {
       // TODO: Reemplazar con un toast notification
       setError(null);
       // Mensaje temporal hasta implementar toast
-      const message = `Permisos del rol "${selectedRole?.name}" actualizados correctamente`;
+      const message = `Permisos del rol "${selectedRole?.role_name}" actualizados correctamente`;
       alert(message);
     }
   };
@@ -144,7 +144,7 @@ export default function RolePermissionsManager() {
               {roles.map((role) => (
                 <SelectItem key={role.id} value={role.id.toString()}>
                   <div className="flex items-center justify-between w-full">
-                    <span>{role.name}</span>
+                    <span>{role.role_name}</span>
                     <Badge variant="outline" className="ml-2">
                       {role.permissions.length} permisos
                     </Badge>
@@ -156,7 +156,7 @@ export default function RolePermissionsManager() {
 
           {selectedRole && (
             <div className="mt-4 p-4 bg-muted/50 rounded-lg">
-              <h3 className="font-semibold">{selectedRole.name}</h3>
+              <h3 className="font-semibold">{selectedRole.role_name}</h3>
               <p className="text-sm text-muted-foreground">{selectedRole.description}</p>
               <p className="text-xs text-muted-foreground mt-1">
                 Permisos actuales: {selectedRole.permissions.length}

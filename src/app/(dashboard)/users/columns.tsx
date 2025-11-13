@@ -70,8 +70,8 @@ export const createColumns = ({ onEdit, onDelete }: ColumnsProps = {}): ColumnDe
             )
         },
         cell: ({ row }) => {
-            const role = row.getValue("role") as { rol_name?: string };
-            return <div className="text-left">{role?.rol_name ?? "Sin rol"}</div>;
+            const role = row.getValue("role") as { role_name?: string };
+            return <div className="text-left">{role?.role_name ?? "Sin rol"}</div>;
         },
     },
     {

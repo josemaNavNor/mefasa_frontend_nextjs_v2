@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { api } from '@/lib/httpClient';
 
 interface Permission {
   id: number;
@@ -11,7 +12,7 @@ interface Permission {
 
 interface Role {
   id: number;
-  name: string;
+  role_name: string;
   description: string;
   guard_name: string;
   permissions: Permission[];
@@ -31,39 +32,11 @@ export const useRolePermissions = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Helper para obtener headers con autenticación
-  const getAuthHeaders = (): HeadersInit => {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-    return {
-      'Content-Type': 'application/json',
-      ...(token && { 'Authorization': `Bearer ${token}` })
-    };
-  };
-
-  // Helper para manejar errores de respuesta
-  const handleApiError = (response: Response, defaultMessage: string): never => {
-    if (response.status === 401) {
-      throw new Error('No autorizado. Por favor inicia sesión nuevamente.');
-    } else if (response.status === 403) {
-      throw new Error('No tienes permisos para realizar esta acción.');
-    } else if (response.status === 404) {
-      throw new Error('Recurso no encontrado.');
-    } else if (response.status >= 500) {
-      throw new Error('Error del servidor. Por favor intenta más tarde.');
-    } else {
-      throw new Error(defaultMessage);
-    }
-  };
-
   // Obtener todos los roles con sus permisos
   const fetchRoles = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/permissions/roles', {
-        headers: getAuthHeaders()
-      });
-      if (!response.ok) handleApiError(response, 'Error al obtener roles');
-      const data = await response.json();
+      const data = await api.get('/permissions/roles');
       setRoles(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
@@ -76,11 +49,7 @@ export const useRolePermissions = () => {
   const fetchGroupedPermissions = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/permissions/grouped', {
-        headers: getAuthHeaders()
-      });
-      if (!response.ok) handleApiError(response, 'Error al obtener permisos');
-      const data = await response.json();
+      const data = await api.get('/permissions/grouped');
       setGroupedPermissions(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
@@ -92,11 +61,8 @@ export const useRolePermissions = () => {
   // Obtener un rol específico con sus permisos
   const fetchRoleWithPermissions = async (roleId: number): Promise<Role | null> => {
     try {
-      const response = await fetch(`/api/permissions/roles/${roleId}`, {
-        headers: getAuthHeaders()
-      });
-      if (!response.ok) handleApiError(response, 'Error al obtener el rol');
-      return await response.json();
+      const data = await api.get(`/permissions/roles/${roleId}`);
+      return data;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
       return null;
@@ -107,13 +73,7 @@ export const useRolePermissions = () => {
   const syncRolePermissions = async (roleId: number, permissionIds: number[]): Promise<boolean> => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/permissions/roles/${roleId}/sync-permissions`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ permissionIds }),
-      });
-
-      if (!response.ok) handleApiError(response, 'Error al actualizar permisos del rol');
+      await api.post(`/permissions/roles/${roleId}/sync-permissions`, { permissionIds });
 
       // Actualizar la lista de roles localmente
       await fetchRoles();

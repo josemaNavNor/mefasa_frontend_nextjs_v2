@@ -61,17 +61,17 @@ export default function RolesPage() {
                     </SheetHeader>
                     <form onSubmit={createRoleForm.handleSubmit} className="grid flex-1 auto-rows-min gap-6 px-4">
                         <div className="grid gap-3">
-                            <Label htmlFor="rol_name">Nombre</Label>
+                            <Label htmlFor="role_name">Nombre</Label>
                             <Input
-                                id="rol_name"
+                                id="role_name"
                                 type="text"
                                 autoComplete="off"
                                 placeholder="Nombre del rol"
-                                value={createRoleForm.rol_name}
+                                value={createRoleForm.role_name}
                                 onChange={(e) => createRoleForm.setRolName(e.target.value)}
-                                className={`w-full border-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder:text-gray-300${createRoleForm.errors.rol_name ? ' border-red-500' : ' border-gray-200'}`}
+                                className={`w-full border-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder:text-gray-300${createRoleForm.errors.role_name ? ' border-red-500' : ' border-gray-200'}`}
                             />
-                            {createRoleForm.errors.rol_name && <p className="text-red-500 text-xs mt-1">{createRoleForm.errors.rol_name}</p>}
+                            {createRoleForm.errors.role_name && <p className="text-red-500 text-xs mt-1">{createRoleForm.errors.role_name}</p>}
                         </div>
                         <div className="grid gap-3">
                             <Label htmlFor="description">Descripcion</Label>
@@ -107,9 +107,9 @@ export default function RolesPage() {
                     </SheetHeader>
                     <form onSubmit={editRoleForm.handleEditSubmit} className="grid flex-1 auto-rows-min gap-6 px-4">
                         <div className="grid gap-3">
-                            <Label htmlFor="edit_rol_name">Nombre</Label>
+                            <Label htmlFor="edit_role_name">Nombre</Label>
                             <Input
-                                id="edit_rol_name"
+                                id="edit_role_name"
                                 type="text"
                                 autoComplete="off"
                                 placeholder="Nombre del rol"

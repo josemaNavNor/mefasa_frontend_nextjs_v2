@@ -24,7 +24,7 @@ export const userSchema = z.object({
 });
 
 export const roleSchema = z.object({
-    rol_name: z.string()
+    role_name: z.string()
         .min(1, { message: "El nombre del rol es requerido" })
         .max(100, { message: "El nombre del rol debe tener menos de 100 caracteres" }),
     description: z.string()

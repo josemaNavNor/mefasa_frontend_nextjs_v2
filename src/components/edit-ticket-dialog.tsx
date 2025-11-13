@@ -135,7 +135,7 @@ export function EditTicketDialog({ ticket, open, onOpenChange }: EditTicketDialo
     if (!userRole) return false;
 
     // El campo en la base de datos es 'rol_name', no 'role_name'
-    const roleName = (userRole.rol_name || userRole.role_name || '').toLowerCase().trim();
+    const roleName = (userRole.role_name || userRole.role_name || '').toLowerCase().trim();
 
     return roleName.includes('tecnico') ||
       roleName.includes('administrador') ||

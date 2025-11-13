@@ -192,7 +192,7 @@ export default function UsersPage() {
                                     <SelectContent>
                                         {roles.map((role) => (
                                             <SelectItem key={role.id} value={String(role.id)}>
-                                                {role.rol_name}
+                                                {role.role_name}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
@@ -333,7 +333,7 @@ export default function UsersPage() {
                                     <SelectContent>
                                         {roles.map((role) => (
                                             <SelectItem key={role.id} value={String(role.id)}>
-                                                {role.rol_name}
+                                                {role.role_name}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
