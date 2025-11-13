@@ -60,7 +60,7 @@ export default function UsersPage() {
     }), [handleEdit, handleDelete]);
 
     return (
-        <ProtectedRoute allowedRoles={["Administrador"]}>
+        <ProtectedRoute allowedRoles={["Administrador", "Tecnico"]}>
             <div className="w-full px-4 py-4">
                 <div className="mb-4">
                     <h1 className="text-4xl font-bold">Gestión de Usuarios</h1>
