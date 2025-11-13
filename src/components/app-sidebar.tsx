@@ -50,6 +50,12 @@ const menuItems = [
         roles: [USER_ROLES.ADMIN] as UserRole[], 
     },
     {
+        title: "Permisos",
+        url: "/permissions",
+        icon: Footprints,
+        roles: [USER_ROLES.ADMIN] as UserRole[],
+    },
+    {
         title: "Plantas",
         url: "/floors",
         icon: Building2,
