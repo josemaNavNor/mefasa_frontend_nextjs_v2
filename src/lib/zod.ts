@@ -76,6 +76,38 @@ export const loginSchema = z.object({
         }, { message: "El token debe tener exactamente 6 dígitos" })
 });
 
+export const registerSchema = z.object({
+    name: z.string()
+        .min(1, { message: "El nombre es requerido" })
+        .min(2, { message: "El nombre debe tener al menos 2 caracteres" })
+        .max(50, { message: "El nombre no puede tener más de 50 caracteres" })
+        .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s\-]+$/, { message: "Solo se permiten letras, espacios y guiones" }),
+    last_name: z.string()
+        .min(1, { message: "El apellido es requerido" })
+        .min(2, { message: "El apellido debe tener al menos 2 caracteres" })
+        .max(50, { message: "El apellido no puede tener más de 50 caracteres" })
+        .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s\-]+$/, { message: "Solo se permiten letras, espacios y guiones" }),
+    email: z.string()
+        .min(1, { message: "El email es requerido" })
+        .email({ message: "Email inválido" }),
+    password: z.string()
+        .min(1, { message: "La contraseña es requerida" })
+        .min(6, { message: "La contraseña debe tener al menos 6 caracteres" })
+        .max(32, { message: "La contraseña debe tener menos de 32 caracteres" })
+        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, { message: "La contraseña debe contener al menos una mayúscula, una minúscula y un número" }),
+    confirmPassword: z.string()
+        .min(1, { message: "Confirmar contraseña es requerido" }),
+    phone_number: z.string()
+        .regex(/^[0-9\s\-+()]*$/, { message: "Solo números, espacios y los siguientes caracteres: - + ( )" })
+        .min(10, { message: "El número de teléfono debe tener al menos 10 caracteres" })
+        .max(15, { message: "El número de teléfono debe tener menos de 15 caracteres" })
+        .optional()
+        .or(z.literal("").transform(() => undefined))
+}).refine((data) => data.password === data.confirmPassword, {
+    message: "Las contraseñas no coinciden",
+    path: ["confirmPassword"],
+});
+
 export const profileSchema = z.object({
     name: z.string()
         .min(1, { message: "El nombre es requerido" })
