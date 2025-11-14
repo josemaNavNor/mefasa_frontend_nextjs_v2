@@ -61,11 +61,15 @@ export default function Login() {
 
     if (!validation.success) {
       const errors: { [key: string]: string } = {};
+
+      // Mostrar solo el primer error por campo
       validation.error.issues.forEach((error) => {
-        if (error.path[0]) {
-          errors[error.path[0] as string] = error.message;
+        const fieldName = error.path[0] as string;
+        if (fieldName && !errors[fieldName]) {
+          errors[fieldName] = error.message;
         }
       });
+
       setValidationErrors(errors);
       setLoading(false);
       return;
@@ -91,13 +95,13 @@ export default function Login() {
       //console.log('Respuesta del backend:', data);
 
       let authUrl = null;
-      
+
       if (data && data.authUrl) {
         authUrl = data.authUrl;
       }
-      
+
       //console.log('URL de autorización extraída:', authUrl);
-      
+
       if (authUrl) {
         // Redirigir directamente a Microsoft
         window.location.href = authUrl;
@@ -212,15 +216,9 @@ export default function Login() {
                   </InputOTP>
                 </div>
                 {validationErrors.otp && (
-                  <p className="text-sm text-red-500">{validationErrors.otp}</p>
+                  <p className="text-sm align-text-bottom text-red-500">{validationErrors.otp}</p>
                 )}
               </div>
-
-              {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
             </div>
           </form>
         </CardContent>
@@ -232,7 +230,7 @@ export default function Login() {
             disabled={loading || microsoftLoading}
           >
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Iniciar sesión
+            Iniciar sesion
           </Button>
           <Button
             variant="outline"
@@ -245,7 +243,7 @@ export default function Login() {
             ) : (
               <MicrosoftIcon className="mr-2 h-4 w-4" />
             )}
-            Iniciar sesión con Microsoft
+            Iniciar sesion con Microsoft
           </Button>
         </CardFooter>
       </Card>

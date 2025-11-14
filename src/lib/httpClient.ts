@@ -22,24 +22,44 @@ class HttpClient {
 
   private async handleResponse(response: Response) {
     if (response.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      sessionStorage.removeItem('token');
-      sessionStorage.removeItem('user');
+      // Para el endpoint de login, no redirigir automáticamente
+      const isLoginEndpoint = response.url.includes('/auth/login');
       
-      window.location.href = '/login';
-      throw new Error('Token expirado');
+      if (!isLoginEndpoint) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('user');
+        
+        window.location.href = '/login';
+      }
+      
+      // Intentar obtener el mensaje específico del backend
+      const error = await response.json().catch(() => ({ message: 'Credenciales incorrectas' }));
+      const errorMessage = error.message || 'Credenciales incorrectas';
+      
+      const customError = new Error(errorMessage);
+      (customError as any).status = 401;
+      (customError as any).type = 'AUTHENTICATION_ERROR';
+      throw customError;
     }
 
     if (response.status === 403) {
       window.location.href = '/unauthorized';
-      throw new Error('Acceso denegado');
+      const customError = new Error('Acceso denegado');
+      (customError as any).status = 403;
+      (customError as any).type = 'AUTHORIZATION_ERROR';
+      throw customError;
     }
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ message: 'Error desconocido' }));
       const errorMessage = error.message || `Error ${response.status}: ${response.statusText}`;
-      throw new Error(errorMessage);
+      
+      const customError = new Error(errorMessage);
+      (customError as any).status = response.status;
+      (customError as any).type = 'HTTP_ERROR';
+      throw customError;
     }
 
     const jsonData = await response.json();

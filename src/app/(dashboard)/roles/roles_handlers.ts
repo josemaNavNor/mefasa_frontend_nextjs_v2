@@ -123,6 +123,21 @@ export const createRoleHandlers = ({
             return;
         }
 
+        // Verificar si se realizaron cambios
+        const hasChanges = (
+            editRolName !== editingRole.role_name ||
+            editDescription !== editingRole.description
+        );
+        
+        if (!hasChanges) {
+            Notiflix.Notify.warning('Debe modificar al menos un campo para actualizar el rol', {
+                timeout: 4000,
+                pauseOnHover: true,
+                position: 'right-top'
+            });
+            return;
+        }
+
         await updateRole(editingRole.id, {
             role_name: editRolName,
             description: editDescription,

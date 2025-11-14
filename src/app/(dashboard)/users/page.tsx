@@ -71,7 +71,7 @@ export default function UsersPage() {
                     <SheetTrigger asChild className="mb-4">
                         <Button variant="outline">Agregar Usuario</Button>
                     </SheetTrigger>
-                    <SheetContent>
+                    <SheetContent className="overflow-y-auto max-h-screen">
                         <SheetHeader>
                             <SheetTitle>Agregar Usuario</SheetTitle>
                             <SheetDescription>
@@ -211,7 +211,7 @@ export default function UsersPage() {
 
                 {/* Sheet para editar usuario */}
                 <Sheet open={editUserForm.isEditSheetOpen} onOpenChange={editUserForm.setIsEditSheetOpen}>
-                    <SheetContent>
+                    <SheetContent className="overflow-y-auto max-h-screen">
                         <SheetHeader>
                             <SheetTitle>Editar Usuario</SheetTitle>
                             <SheetDescription>
@@ -245,7 +245,6 @@ export default function UsersPage() {
                                 />
                                 {editUserForm.editErrors.last_name && <p className="text-red-500 text-xs mt-1">{editUserForm.editErrors.last_name}</p>}
                             </div>
-                            pr
                             <div className="grid gap-3">
                                 <Label htmlFor="edit_email">Correo electrónico</Label>
                                 <Input

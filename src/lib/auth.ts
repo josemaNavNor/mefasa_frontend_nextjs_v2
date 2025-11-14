@@ -26,10 +26,8 @@ class AuthService {
       const response = await api.post('/auth/login-2fa', credentials);
       return response;
     } catch (error) {
-      if (error instanceof Error) {
-        throw error;
-      }
-      throw new Error("Error de conexión");
+      // Preservar el error original para que useAuth pueda manejarlo apropiadamente
+      throw error;
     }
   }
 

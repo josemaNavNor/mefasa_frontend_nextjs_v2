@@ -69,9 +69,11 @@ export const loginSchema = z.object({
         .min(1, { message: "La contraseña es requerida" })
         .min(6, { message: "La contraseña debe tener más de 6 caracteres" }),
     otp: z.string()
-        .min(6, { message: "El código debe tener 6 dígitos" })
-        .max(6, { message: "El código debe tener 6 dígitos" })
-        .or(z.literal(""))
+        .min(1, { message: "El token es requerido" })
+        .refine((val) => {
+            if (val === "") return true; // Permitir vacío
+            return val.length === 6 && /^[0-9]{6}$/.test(val);
+        }, { message: "El token debe tener exactamente 6 dígitos" })
 });
 
 export const profileSchema = z.object({
@@ -91,4 +93,45 @@ export const profileSchema = z.object({
         .max(15, { message: "El número de teléfono no puede tener más de 15 caracteres" })
         .optional()
         .or(z.literal(""))
+});
+
+export const filterSchema = z.object({
+    startDate: z.string().refine((val) => {
+        return val === "" || !isNaN(Date.parse(val));
+    }, { message: "Fecha de inicio inválida" }),
+    endDate: z.string().refine((val) => {
+        return val === "" || !isNaN(Date.parse(val));
+    }, { message: "Fecha de fin inválida" }),
+});
+
+export const ticketFilterSchema = z.object({
+    filter_name: z.string()
+        .min(1, { message: "El nombre del filtro es requerido" })
+        .max(100, { message: "El nombre no puede tener más de 100 caracteres" }),
+    description: z.string()
+        .max(500, { message: "La descripción no puede tener más de 500 caracteres" })
+        .optional(),
+    is_public: z.boolean(),
+    criteria: z.array(z.object({
+        field_name: z.string()
+            .min(1, { message: "El campo es requerido" }),
+        operator: z.string()
+            .min(1, { message: "El operador es requerido" }),
+        value: z.string()
+            .optional(),
+        logical_operator: z.string()
+            .optional(),
+    }).refine((criterion) => {
+        // Los operadores IS_NULL e IS_NOT_NULL no necesitan valor
+        const operatorsWithoutValue = ['IS_NULL', 'IS_NOT_NULL'];
+        const needsValue = !operatorsWithoutValue.includes(criterion.operator);
+        
+        if (needsValue && (!criterion.value || criterion.value.trim() === '')) {
+            return false;
+        }
+        return true;
+    }, {
+        message: "El valor es requerido para este operador",
+        path: ["value"]
+    })).min(1, { message: "Debe tener al menos un criterio" }),
 });

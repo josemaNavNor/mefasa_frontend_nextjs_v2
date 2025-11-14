@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { useRoles } from "@/hooks/useRoles";
 import { useEventListener } from "@/hooks/useEventListener";
-import { createRoleHandlers } from "@/app/(dashboard)/roles/handlers";
+import { createRoleHandlers } from "@/app/(dashboard)/roles/roles_handlers";
 import { Rol } from "@/types/rol";
 import { ROLE_EVENTS } from "@/lib/events";
 import { eventEmitter } from "./useEventListener";
