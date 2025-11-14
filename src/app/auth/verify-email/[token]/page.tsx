@@ -40,21 +40,20 @@ export default function VerifyEmail() {
       setLoading(true);
       setError('');
       
-      const response = await api.post('/auth/verify-email', {
-        token: verificationToken
-      });
+      const response = await api.get(`/auth/verify-email/${verificationToken}`);
 
-      if (response.success || response.message) {
-        setSuccess(true);
-        setMessage(response.message || 'Email verificado correctamente');
-      } else {
-        throw new Error('Respuesta no válida del servidor');
-      }
+      // Si llegamos aquí, la verificación fue exitosa
+      setSuccess(true);
+      setMessage(typeof response === 'string' ? response : (response?.data || response || 'Email verificado correctamente'));
 
     } catch (error: any) {
       console.error('Error verificando email:', error);
       
-      if (error.response?.data?.message) {
+      // Manejar diferentes tipos de errores
+      if (error.status === 400) {
+        // Error de validación del token
+        setError(error.message || 'Token inválido o expirado');
+      } else if (error.response?.data?.message) {
         setError(error.response.data.message);
       } else if (error.message) {
         setError(error.message);
