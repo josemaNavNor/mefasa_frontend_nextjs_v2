@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuthContext } from '@/components/auth-provider';
 import { loginSchema } from '@/lib/zod';
 import { api } from '@/lib/httpClient';
+import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -49,6 +50,7 @@ export default function Login() {
   const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
 
   const { login } = useAuthContext();
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,7 +81,16 @@ export default function Login() {
     const result = await login(email, password, otp);
 
     if (!result.success) {
-      setError(result.error || 'Error al iniciar sesión');
+      let errorMessage = result.error || 'Error al iniciar sesión';
+      
+      // Manejar caso específico de email no verificado
+      if (errorMessage.toLowerCase().includes('verificar') || 
+          errorMessage.toLowerCase().includes('verify') ||
+          errorMessage.toLowerCase().includes('email no verificado')) {
+        errorMessage = 'Debes verificar tu email antes de poder iniciar sesión. Revisa tu bandeja de entrada y haz clic en el enlace de verificación.';
+      }
+      
+      setError(errorMessage);
     }
 
     setLoading(false);
@@ -134,6 +145,10 @@ export default function Login() {
     }
   }, []);
 
+  const handleGoToRegister = () => {
+    router.push('/register');
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <Card className="w-full max-w-sm">
@@ -146,10 +161,20 @@ export default function Login() {
             Ingresa tus credenciales para iniciar sesion
           </CardDescription>
           <CardAction>
-            <Button variant="link">Registro</Button>
+            <Button variant="link" onClick={handleGoToRegister}>
+              ¿No tienes cuenta? Regístrate
+            </Button>
           </CardAction>
         </CardHeader>
         <CardContent>
+          {error && (
+            <Alert className="mb-4 border-red-200 bg-red-50">
+              <AlertDescription className="text-red-800">
+                {error}
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <form onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
