@@ -1,5 +1,10 @@
 class HttpClient {
   private baseUrl: string;
+  private isRefreshing: boolean = false;
+  private failedQueue: Array<{
+    resolve: (value?: any) => void;
+    reject: (reason?: any) => void;
+  }> = [];
 
   constructor(baseUrl: string = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1') {
     this.baseUrl = baseUrl;
@@ -20,28 +25,100 @@ class HttpClient {
     return headers;
   }
 
-  private async handleResponse(response: Response) {
-    if (response.status === 401) {
-      // Para el endpoint de login, no redirigir automáticamente
-      const isLoginEndpoint = response.url.includes('/auth/login');
-      
-      if (!isLoginEndpoint) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        sessionStorage.removeItem('token');
-        sessionStorage.removeItem('user');
-        
-        window.location.href = '/login';
+  private processQueue(error: any = null, token: string | null = null) {
+    this.failedQueue.forEach((promise) => {
+      if (error) {
+        promise.reject(error);
+      } else {
+        promise.resolve(token);
       }
+    });
+
+    this.failedQueue = [];
+  }
+
+  private async refreshAccessToken(): Promise<string | null> {
+    try {
+      const refreshToken = localStorage.getItem('refresh_token');
       
-      // Intentar obtener el mensaje específico del backend
-      const error = await response.json().catch(() => ({ message: 'Credenciales incorrectas' }));
-      const errorMessage = error.message || 'Credenciales incorrectas';
+      if (!refreshToken) {
+        return null;
+      }
+
+      const response = await fetch(`${this.baseUrl}/auth/refresh`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refresh_token: refreshToken }),
+      });
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const data = await response.json();
+      const newAccessToken = data.access_token;
+
+      // Update stored token
+      localStorage.setItem('token', newAccessToken);
       
-      const customError = new Error(errorMessage);
-      (customError as any).status = 401;
-      (customError as any).type = 'AUTHENTICATION_ERROR';
-      throw customError;
+      return newAccessToken;
+    } catch (error) {
+      console.error('Error refreshing token:', error);
+      return null;
+    }
+  }
+
+  private async handleResponse(response: Response, originalRequest?: { 
+    endpoint: string; 
+    method: string; 
+    data?: any 
+  }): Promise<any> {
+    if (response.status === 401 && originalRequest) {
+      // Token expired, try to refresh
+      if (this.isRefreshing) {
+        // Wait for the token refresh to complete
+        return new Promise((resolve, reject) => {
+          this.failedQueue.push({ resolve, reject });
+        })
+          .then(() => {
+            // Retry the original request with new token
+            return this.retryRequest(originalRequest);
+          })
+          .catch((err) => {
+            throw err;
+          });
+      }
+
+      this.isRefreshing = true;
+
+      try {
+        const newToken = await this.refreshAccessToken();
+
+        if (newToken) {
+          this.processQueue(null, newToken);
+          // Retry the original request
+          return this.retryRequest(originalRequest);
+        } else {
+          // Refresh failed, logout user
+          this.processQueue(new Error('Token refresh failed'), null);
+          this.clearAuthAndRedirect();
+          throw new Error('Token expirado');
+        }
+      } catch (error) {
+        this.processQueue(error, null);
+        this.clearAuthAndRedirect();
+        throw new Error('Token expirado');
+      } finally {
+        this.isRefreshing = false;
+      }
+    }
+
+    if (response.status === 401 && !originalRequest) {
+      // No original request to retry, just logout
+      this.clearAuthAndRedirect();
+      throw new Error('Token expirado');
     }
 
     if (response.status === 403) {
@@ -73,13 +150,41 @@ class HttpClient {
     return jsonData;
   }
 
+  private async retryRequest(request: { endpoint: string; method: string; data?: any }) {
+    const { endpoint, method, data } = request;
+
+    const options: RequestInit = {
+      method,
+      headers: this.getAuthHeaders(),
+    };
+
+    if (data) {
+      options.body = JSON.stringify(data);
+    }
+
+    const response = await fetch(`${this.baseUrl}${endpoint}`, options);
+
+    return this.handleResponse(response);
+  }
+
+  private clearAuthAndRedirect() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('refresh_token');
+    sessionStorage.removeItem('user');
+    
+    window.location.href = '/login';
+  }
+
   async get(endpoint: string) {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       method: 'GET',
       headers: this.getAuthHeaders(),
     });
 
-    return this.handleResponse(response);
+    return this.handleResponse(response, { endpoint, method: 'GET' });
   }
 
   async post(endpoint: string, data: any) {
@@ -89,7 +194,7 @@ class HttpClient {
       body: JSON.stringify(data),
     });
 
-    return this.handleResponse(response);
+    return this.handleResponse(response, { endpoint, method: 'POST', data });
   }
 
   async put(endpoint: string, data: any) {
@@ -99,7 +204,7 @@ class HttpClient {
       body: JSON.stringify(data),
     });
 
-    return this.handleResponse(response);
+    return this.handleResponse(response, { endpoint, method: 'PUT', data });
   }
 
   async delete(endpoint: string) {
@@ -108,7 +213,7 @@ class HttpClient {
       headers: this.getAuthHeaders(),
     });
 
-    return this.handleResponse(response);
+    return this.handleResponse(response, { endpoint, method: 'DELETE' });
   }
 
   async patch(endpoint: string, data: any) {
@@ -118,7 +223,7 @@ class HttpClient {
       body: JSON.stringify(data),
     });
 
-    return this.handleResponse(response);
+    return this.handleResponse(response, { endpoint, method: 'PATCH', data });
   }
 }
 

@@ -28,8 +28,8 @@ export interface LoginCredentials {
 export interface LoginResponse {
   readonly user: User;
   readonly access_token: string;
+  readonly refresh_token: string;
   readonly expires_in?: number;
-  readonly refresh_token?: string;
 }
 
 export interface AuthContextValue {
