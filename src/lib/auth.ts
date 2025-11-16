@@ -9,6 +9,7 @@ interface LoginCredentials {
 
 interface AuthResponse {
   access_token: string;
+  refresh_token: string;
   user: {
     id: number;
     email: string;
@@ -35,13 +36,19 @@ class AuthService {
 
   logout(): void {
     localStorage.removeItem(AUTH_CONFIG.tokenKey);
+    localStorage.removeItem('refresh_token');
     localStorage.removeItem(AUTH_CONFIG.userKey);
     sessionStorage.removeItem(AUTH_CONFIG.tokenKey);
+    sessionStorage.removeItem('refresh_token');
     sessionStorage.removeItem(AUTH_CONFIG.userKey);
   }
 
   getToken(): string | null {
     return localStorage.getItem(AUTH_CONFIG.tokenKey);
+  }
+
+  getRefreshToken(): string | null {
+    return localStorage.getItem('refresh_token');
   }
 
   getUser(): unknown {

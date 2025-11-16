@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
 import { authService } from "@/lib/auth";
+import { api } from "@/lib/httpClient";
 import { notifications } from "@/lib/notifications";
 import { AUTH_CONFIG, USER_ROLES, ROUTES } from "@/lib/constants";
 import type { 
@@ -26,8 +27,10 @@ export function useAuth(): AuthContextValue {
   // Clear authentication state
   const clearAuthState = useCallback(() => {
     localStorage.removeItem(AUTH_CONFIG.tokenKey);
+    localStorage.removeItem('refresh_token');
     localStorage.removeItem(AUTH_CONFIG.userKey);
     sessionStorage.removeItem(AUTH_CONFIG.tokenKey);
+    sessionStorage.removeItem('refresh_token');
     sessionStorage.removeItem(AUTH_CONFIG.userKey);
     
     setState({
@@ -38,8 +41,9 @@ export function useAuth(): AuthContextValue {
   }, []);
 
   // Set authenticated user
-  const setAuthenticatedUser = useCallback((user: AuthUser, token: string) => {
+  const setAuthenticatedUser = useCallback((user: AuthUser, token: string, refreshToken: string) => {
     localStorage.setItem(AUTH_CONFIG.tokenKey, token);
+    localStorage.setItem('refresh_token', refreshToken);
     localStorage.setItem(AUTH_CONFIG.userKey, JSON.stringify(user));
     
     setState({
@@ -111,7 +115,7 @@ export function useAuth(): AuthContextValue {
         };
 
         // Set new user
-        setAuthenticatedUser(user, response.access_token);
+        setAuthenticatedUser(user, response.access_token, response.refresh_token);
         
         notifications.success(`¡Bienvenido de nuevo, ${user.name}!`);
         
@@ -136,13 +140,25 @@ export function useAuth(): AuthContextValue {
   }, [state.user?.id, clearAuthState, setAuthenticatedUser, router]);
 
   // Logout function
-  const logout = useCallback(() => {
-    authService.logout();
-    clearAuthState();
-    
-    setTimeout(() => {
-      router.push(ROUTES.LOGIN);
-    }, 100);
+  const logout = useCallback(async () => {
+    try {
+      const refreshToken = localStorage.getItem('refresh_token');
+      if (refreshToken) {
+        // Intentar revocar el refresh token en el backend
+        await api.post('/auth/logout', { refresh_token: refreshToken }).catch(() => {
+          // Ignorar errores del logout en el backend
+        });
+      }
+    } catch (error) {
+      console.error('Error during logout:', error);
+    } finally {
+      authService.logout();
+      clearAuthState();
+      
+      setTimeout(() => {
+        router.push(ROUTES.LOGIN);
+      }, 100);
+    }
   }, [clearAuthState, router]);
 
   // Role checking helper
