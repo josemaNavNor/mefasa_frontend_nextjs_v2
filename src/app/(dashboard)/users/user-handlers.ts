@@ -1,6 +1,6 @@
 import Notiflix from 'notiflix';
 import { userSchema } from "@/lib/zod";
-import { UserFormData, EditUserFormData, FormState, EditFormState  } from "@/types/forms-user";
+import { FormState, EditFormState  } from "@/types/forms-user";
 
 // Esto define las acciones disponibles para manejar usuarios
 export interface UserHandlersProps {
@@ -184,6 +184,25 @@ export const createHandleEditSubmit = (
         // Esto maneja los errores de validacion
         if (Object.keys(validationErrors).length > 0) {
             editActions.setEditErrors(validationErrors);
+            return;
+        }
+
+        // Verificar si se realizaron cambios
+        const hasChanges = (
+            editName !== editingUser.name ||
+            editLastName !== editingUser.last_name ||
+            editEmail !== editingUser.email ||
+            editPhoneNumber !== (editingUser.phone_number || "") ||
+            editRoleId !== String(editingUser.role?.id || "") ||
+            editPassword.trim() !== ""
+        );
+
+        if (!hasChanges) {
+            Notiflix.Notify.warning('Debe modificar al menos un campo para actualizar el usuario', {
+                timeout: 4000,
+                pauseOnHover: true,
+                position: 'right-top'
+            });
             return;
         }
 

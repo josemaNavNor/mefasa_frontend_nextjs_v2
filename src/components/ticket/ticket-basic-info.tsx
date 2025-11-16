@@ -136,7 +136,7 @@ export function TicketBasicInfo({ ticket, users, types, floors, onTicketUpdate }
 
             case 'technician_id':
                 const canBeTechnician = (user: any) => {
-                    const roleName = user.role?.rol_name || user.role?.role_name
+                    const roleName = user.role?.role_name || user.role?.role_name
                     if (!roleName) return false
                     const roleNameLower = roleName.toLowerCase()
                     const canBe = roleNameLower.includes('técnico') ||

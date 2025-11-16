@@ -1,6 +1,6 @@
 import { floorSchema } from "@/lib/zod";
 import Notiflix from 'notiflix';
-import {FormsFloor as Floor} from "@/types/floor";
+import { FormsFloor as Floor } from "@/types/floor";
 
 interface FloorHandlersProps {
     createFloor: (data: { floor_name: string; description: string }) => Promise<void>;
@@ -13,7 +13,7 @@ export const createFloorHandlers = ({
     updateFloor,
     deleteFloor
 }: FloorHandlersProps) => {
-    
+
     const handleEdit = (
         floor: Floor,
         setEditingFloor: (floor: Floor | null) => void,
@@ -61,7 +61,7 @@ export const createFloorHandlers = ({
     ) => {
         e.preventDefault();
         setErrors({});
-        
+
         const result = floorSchema.safeParse({ floor_name, description });
 
         if (!result.success) {
@@ -72,18 +72,18 @@ export const createFloorHandlers = ({
             });
             return;
         }
-        
+
         try {
             await createFloor({
                 floor_name,
                 description,
             });
-            
+
             // Limpiar formulario
             setFloorName("");
             setDescription("");
             setErrors({});
-            
+
             // Cerrar Sheet si se proporcionó la función
             if (closeSheet) {
                 closeSheet();
@@ -106,7 +106,7 @@ export const createFloorHandlers = ({
     ) => {
         e.preventDefault();
         setEditErrors({});
-        
+
         const result = floorSchema.safeParse({ floor_name: editFloorName, description: editDescription });
 
         if (!result.success) {
@@ -114,6 +114,21 @@ export const createFloorHandlers = ({
             setEditErrors({
                 floor_name: formatted.floor_name?._errors[0] || '',
                 description: formatted.description?._errors[0] || '',
+            });
+            return;
+        }
+
+        // Verificar si se realizaron cambios
+        const hasChanges = (
+            editFloorName !== editingFloor.floor_name ||
+            editDescription !== editingFloor.description
+        );
+
+        if (!hasChanges) {
+            Notiflix.Notify.warning('Debe modificar al menos un campo para actualizar la planta', {
+                timeout: 4000,
+                pauseOnHover: true,
+                position: 'right-top'
             });
             return;
         }

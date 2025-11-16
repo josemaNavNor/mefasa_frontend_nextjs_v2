@@ -2,7 +2,7 @@ export type User = {
     id: string,
     name: string
     last_name: string
-    role: { rol_name: string }
+    role: { role_name: string }
     email: string,
     phone_number: string,
     is_email_verified: boolean,

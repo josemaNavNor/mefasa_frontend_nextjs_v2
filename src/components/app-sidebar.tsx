@@ -41,13 +41,19 @@ const menuItems = [
         title: "Usuarios",
         url: "/users",
         icon: User2,
-        roles: [USER_ROLES.ADMIN] as UserRole[],
+        roles: [USER_ROLES.ADMIN, USER_ROLES.TECH] as UserRole[],
     },
     {
         title: "Roles",
         url: "/roles",
         icon: Notebook,
         roles: [USER_ROLES.ADMIN] as UserRole[], 
+    },
+    {
+        title: "Permisos",
+        url: "/permissions",
+        icon: Footprints,
+        roles: [USER_ROLES.ADMIN] as UserRole[],
     },
     {
         title: "Plantas",

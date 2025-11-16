@@ -42,7 +42,7 @@ export interface User {
     last_name: string
     email: string
     role?: {
-        rol_name: string  
+        role_name: string  
     }
 }
 

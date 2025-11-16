@@ -24,20 +24,20 @@ interface ColumnsProps {
 
 export const createColumns = ({ onEdit, onDelete }: ColumnsProps = {}): ColumnDef<Rol>[] => [
     {
-        accessorKey: "rol_name",
+        accessorKey: "role_name",
         header: ({ column }) => {
             return (
                 <Button
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Name
+                    Nombre
                     <ArrowUpDown className="h-4 w-4" />
                 </Button>
             )
         },
         cell: ({ row }) => (
-            <div className="text-left">{row.getValue("rol_name")}</div>
+            <div className="text-left">{row.getValue("role_name")}</div>
         ),
     },
     {
@@ -48,7 +48,7 @@ export const createColumns = ({ onEdit, onDelete }: ColumnsProps = {}): ColumnDe
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Last Name
+                    Descripcion
                     <ArrowUpDown className="h-4 w-4" />
                 </Button>
             )

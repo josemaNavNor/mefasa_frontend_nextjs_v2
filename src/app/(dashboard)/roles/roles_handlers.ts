@@ -3,13 +3,13 @@ import Notiflix from 'notiflix';
 
 interface Role {
     id: number;
-    rol_name: string;
+    role_name: string;
     description: string;
 }
 
 interface RoleHandlersProps {
-    createRole: (data: { rol_name: string; description: string }) => Promise<void>;
-    updateRole: (id: number, data: { rol_name?: string; description?: string }) => Promise<any>;
+    createRole: (data: { role_name: string; description: string }) => Promise<void>;
+    updateRole: (id: number, data: { role_name?: string; description?: string }) => Promise<any>;
     deleteRole: (id: number) => Promise<boolean>;
 }
 
@@ -28,7 +28,7 @@ export const createRoleHandlers = ({
         setIsEditSheetOpen: (open: boolean) => void
     ) => {
         setEditingRole(role);
-        setEditRolName(role.rol_name);
+        setEditRolName(role.role_name);
         setEditDescription(role.description);
         setEditErrors({});
         setIsEditSheetOpen(true);
@@ -37,7 +37,7 @@ export const createRoleHandlers = ({
     const handleDelete = (role: Role): void => {
         Notiflix.Confirm.show(
             'Confirmar eliminación',
-            `¿Estás seguro de que quieres eliminar el rol "${role.rol_name}"?`,
+            `¿Estás seguro de que quieres eliminar el rol "${role.role_name}"?`,
             'Eliminar',
             'Cancelar',
             async () => {
@@ -57,7 +57,7 @@ export const createRoleHandlers = ({
 
     const handleSubmit = async (
         e: React.FormEvent,
-        rol_name: string,
+        role_name: string,
         description: string,
         setErrors: (errors: { [key: string]: string }) => void,
         setRolName: (name: string) => void,
@@ -67,12 +67,12 @@ export const createRoleHandlers = ({
         e.preventDefault();
         setErrors({});
         
-        const result = roleSchema.safeParse({ rol_name, description });
+        const result = roleSchema.safeParse({ role_name, description });
 
         if (!result.success) {
             const formatted = result.error.format();
             setErrors({
-                rol_name: formatted.rol_name?._errors[0] || '',
+                role_name: formatted.role_name?._errors[0] || '',
                 description: formatted.description?._errors[0] || '',
             });
             return;
@@ -80,7 +80,7 @@ export const createRoleHandlers = ({
         
         try {
             await createRole({
-                rol_name,
+                role_name,
                 description,
             });
             
@@ -112,19 +112,34 @@ export const createRoleHandlers = ({
         e.preventDefault();
         setEditErrors({});
         
-        const result = roleSchema.safeParse({ rol_name: editRolName, description: editDescription });
+        const result = roleSchema.safeParse({ role_name: editRolName, description: editDescription });
 
         if (!result.success) {
             const formatted = result.error.format();
             setEditErrors({
-                rol_name: formatted.rol_name?._errors[0] || '',
+                role_name: formatted.role_name?._errors[0] || '',
                 description: formatted.description?._errors[0] || '',
             });
             return;
         }
 
+        // Verificar si se realizaron cambios
+        const hasChanges = (
+            editRolName !== editingRole.role_name ||
+            editDescription !== editingRole.description
+        );
+        
+        if (!hasChanges) {
+            Notiflix.Notify.warning('Debe modificar al menos un campo para actualizar el rol', {
+                timeout: 4000,
+                pauseOnHover: true,
+                position: 'right-top'
+            });
+            return;
+        }
+
         await updateRole(editingRole.id, {
-            rol_name: editRolName,
+            role_name: editRolName,
             description: editDescription,
         });
 

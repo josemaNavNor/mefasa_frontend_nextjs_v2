@@ -129,6 +129,21 @@ export const useTypeTicketManagement = () => {
             return;
         }
 
+        // Verificar si se realizaron cambios
+        const hasChanges = (
+            editTypeName !== editingType.type_name ||
+            editDescription !== editingType.description
+        );
+        
+        if (!hasChanges) {
+            Notiflix.Notify.warning('Debe modificar al menos un campo para actualizar el tipo de ticket', {
+                timeout: 4000,
+                pauseOnHover: true,
+                position: 'right-top'
+            });
+            return;
+        }
+
         await updateTicketType(editingType.id, {
             type_name: editTypeName,
             description: editDescription,

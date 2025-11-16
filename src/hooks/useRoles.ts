@@ -27,7 +27,7 @@ export function useRoles() {
         }
     }
 
-    async function createRole(role: { rol_name: string, description: string }) {
+    async function createRole(role: { role_name: string, description: string }) {
         setLoading(true);
         try {
             const data = await api.post('/roles', role);
@@ -35,7 +35,7 @@ export function useRoles() {
             // Mantener eventos globales para compatibilidad
             eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'roles');
             eventEmitter.emit(GLOBAL_EVENTS.ROLES_UPDATED);
-            Notiflix.Notify.success(`Rol ${role.rol_name} creado correctamente`);
+            Notiflix.Notify.success(`Rol ${role.role_name} creado correctamente`);
         } catch (error) {
             //console.error("Error al crear el rol:", error);
             Notiflix.Notify.failure(
@@ -46,7 +46,7 @@ export function useRoles() {
         }
     }
 
-    async function updateRole(id: number, role: { rol_name?: string, description?: string }) {
+    async function updateRole(id: number, role: { role_name?: string, description?: string }) {
         setLoading(true);
         try {
             const response = await api.patch(`/roles/${id}`, role);
@@ -58,7 +58,7 @@ export function useRoles() {
             // Mantener eventos globales para compatibilidad
             eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'roles');
             eventEmitter.emit(GLOBAL_EVENTS.ROLES_UPDATED);
-            Notiflix.Notify.success(`Rol ${role.rol_name ?? ''} actualizado correctamente`);
+            Notiflix.Notify.success(`Rol ${role.role_name ?? ''} actualizado correctamente`);
             return response;
         } catch (error) {
             //console.error("Error al actualizar el rol:", error);

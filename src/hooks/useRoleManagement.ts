@@ -1,14 +1,14 @@
 import { useState, useCallback, useMemo } from "react";
 import { useRoles } from "@/hooks/useRoles";
 import { useEventListener } from "@/hooks/useEventListener";
-import { createRoleHandlers } from "@/app/(dashboard)/roles/handlers";
+import { createRoleHandlers } from "@/app/(dashboard)/roles/roles_handlers";
 import { Rol } from "@/types/rol";
 import { ROLE_EVENTS } from "@/lib/events";
 import { eventEmitter } from "./useEventListener";
 
 interface Role {
     id: number;
-    rol_name: string;
+    role_name: string;
     description: string;
 }
 
@@ -16,7 +16,7 @@ export const useRoleManagement = () => {
     const { roles, createRole, updateRole, deleteRole, refetch } = useRoles();
 
     // Estados para crear rol
-    const [rol_name, setRolName] = useState("");
+    const [role_name, setRolName] = useState("");
     const [description, setDescription] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     
@@ -51,7 +51,7 @@ export const useRoleManagement = () => {
         // Convertir Rol a Role para los handlers
         const role: Role = {
             id: parseInt(rol.id),
-            rol_name: rol.rol_name,
+            role_name: rol.role_name,
             description: rol.description
         };
         
@@ -69,7 +69,7 @@ export const useRoleManagement = () => {
         // Convertir Rol a Role para los handlers
         const role: Role = {
             id: parseInt(rol.id),
-            rol_name: rol.rol_name,
+            role_name: rol.role_name,
             description: rol.description
         };
         
@@ -79,7 +79,7 @@ export const useRoleManagement = () => {
     const handleSubmit = useCallback(async (e: React.FormEvent) => {
         await handlers.handleSubmit(
             e,
-            rol_name,
+            role_name,
             description,
             setErrors,
             setRolName,
@@ -89,7 +89,7 @@ export const useRoleManagement = () => {
                 eventEmitter.emit(ROLE_EVENTS.CLOSE_FORM);
             }
         );
-    }, [handlers, rol_name, description]);
+    }, [handlers, role_name, description]);
 
     const handleEditSubmit = useCallback(async (e: React.FormEvent) => {
         if (!editingRole) return;
@@ -109,7 +109,7 @@ export const useRoleManagement = () => {
 
     // Estados del formulario de creación
     const createRoleForm = {
-        rol_name,
+        role_name,
         setRolName,
         description,
         setDescription,
@@ -133,7 +133,7 @@ export const useRoleManagement = () => {
     return {
         roles,
         createRoleForm: {
-            rol_name,
+            role_name,
             setRolName,
             description,
             setDescription,

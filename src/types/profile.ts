@@ -11,7 +11,7 @@ export interface UserProfile {
     updated_at: string;
     role?: {
         id: number;
-        rol_name: string;
+        role_name: string;
         description: string;
     };
 }

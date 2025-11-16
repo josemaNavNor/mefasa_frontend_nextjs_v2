@@ -123,13 +123,20 @@ class HttpClient {
 
     if (response.status === 403) {
       window.location.href = '/unauthorized';
-      throw new Error('Acceso denegado');
+      const customError = new Error('Acceso denegado');
+      (customError as any).status = 403;
+      (customError as any).type = 'AUTHORIZATION_ERROR';
+      throw customError;
     }
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ message: 'Error desconocido' }));
       const errorMessage = error.message || `Error ${response.status}: ${response.statusText}`;
-      throw new Error(errorMessage);
+      
+      const customError = new Error(errorMessage);
+      (customError as any).status = response.status;
+      (customError as any).type = 'HTTP_ERROR';
+      throw customError;
     }
 
     const jsonData = await response.json();

@@ -11,8 +11,7 @@ import { useEventListener } from '@/hooks/useEventListener';
 import { FilterDialog, FilterDetailDialog } from '@/components/filter';
 import { Filter } from '@/types/filter';
 import { FILTER_EVENTS } from '@/lib/events';
-import { Notify } from 'notiflix/build/notiflix-notify-aio';
-import { Confirm } from 'notiflix/build/notiflix-confirm-aio';
+import { createFilterHandlers } from './filters_handlers';
 
 export default function FiltersPage() {
   const { filters, loading, error, deleteFilter, fetchFilters } = useFilters();
@@ -27,57 +26,26 @@ export default function FiltersPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
 
+  // Create handlers using the filters_handlers module
+  const {
+    handleDelete,
+    handleEditFilter,
+    handleViewDetails,
+    handleToggleFavorite
+  } = createFilterHandlers({
+    createFilter: () => Promise.resolve(),
+    updateFilter: () => Promise.resolve(),
+    deleteFilter,
+    toggleFavorite,
+    isFilterFavorite,
+    favLoading
+  });
+
   // Escuchar solo eventos específicos de filtros
   useEventListener(FILTER_EVENTS.REFRESH_FILTERS_PAGE, fetchFilters);
   useEventListener(FILTER_EVENTS.UPDATED, fetchFilters);
   useEventListener(FILTER_EVENTS.CREATED, fetchFilters);
   useEventListener(FILTER_EVENTS.DELETED, fetchFilters);
-
-  const handleDelete = async (filter: Filter) => {
-    Confirm.show(
-      'Confirmar eliminación',
-      `¿Está seguro de que desea eliminar el filtro "${filter.filter_name}"?`,
-      'Sí, eliminar',
-      'Cancelar',
-      async () => {
-        const success = await deleteFilter(filter.id);
-        if (success) {
-          Notify.success('Filtro eliminado correctamente');
-        } else {
-          Notify.failure('Error al eliminar el filtro');
-        }
-      },
-      () => {
-        // Usuario canceló, no hacer nada
-      },
-      {
-        okButtonBackground: '#ef4444',
-        titleColor: '#ef4444',
-      }
-    );
-  };
-
-  const handleEdit = (filter: Filter) => {
-    setSelectedFilter(filter);
-    setIsEditDialogOpen(true);
-  };
-
-  const handleViewDetails = (filter: Filter) => {
-    setSelectedFilter(filter);
-    setIsDetailDialogOpen(true);
-  };
-
-  const handleToggleFavorite = async (filter: Filter) => {
-    // toggleFavorite ahora devuelve 'added' | 'removed' | null
-    const result = await toggleFavorite(filter.id);
-    if (result === 'added') {
-      Notify.success('Filtro agregado a favoritos');
-    } else if (result === 'removed') {
-      Notify.success('Filtro removido de favoritos');
-    } else {
-      Notify.failure('Error al actualizar favoritos');
-    }
-  };
 
   if (loading) {
     return (
@@ -165,7 +133,7 @@ export default function FiltersPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleViewDetails(filter)}
+                  onClick={() => handleViewDetails(filter, setSelectedFilter, setIsDetailDialogOpen)}
                   className="flex-1"
                 >
                   Ver Detalles
@@ -173,7 +141,7 @@ export default function FiltersPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleEdit(filter)}
+                  onClick={() => handleEditFilter(filter, setSelectedFilter, setIsEditDialogOpen)}
                 >
                   <Edit className="h-4 w-4" />
                 </Button>

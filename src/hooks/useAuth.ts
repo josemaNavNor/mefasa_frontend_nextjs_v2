@@ -133,7 +133,34 @@ export function useAuth(): AuthContextValue {
       }
     } catch (error) {
       console.error("Login error:", error);
-      const errorMessage = "Error de conexión. Por favor, inténtalo de nuevo.";
+      
+      let errorMessage = "Error de conexión. Por favor, inténtalo de nuevo.";
+      
+      if (error instanceof Error) {
+        const customError = error as any;
+        
+        // Si es un error de autenticación (401), mostrar mensaje específico
+        if (customError.status === 401 || customError.type === 'AUTHENTICATION_ERROR') {
+          errorMessage = error.message || "Credenciales incorrectas. Por favor, verifica tu email y contraseña.";
+        }
+        // Si es un error de autorización (403), mostrar mensaje específico
+        else if (customError.status === 403 || customError.type === 'AUTHORIZATION_ERROR') {
+          errorMessage = error.message || "Acceso denegado. No tienes permisos para acceder.";
+        }
+        // Para otros errores HTTP específicos del servidor
+        else if (customError.status >= 400 && customError.status < 500) {
+          errorMessage = error.message || "Error en la solicitud. Por favor, verifica los datos ingresados.";
+        }
+        // Para errores del servidor (500+)
+        else if (customError.status >= 500) {
+          errorMessage = "Error del servidor. Por favor, inténtalo más tarde.";
+        }
+        // Si no hay status pero hay mensaje del error, usarlo
+        else if (error.message && !error.message.includes('fetch')) {
+          errorMessage = error.message;
+        }
+      }
+      
       notifications.error(errorMessage);
       return { success: false, error: errorMessage };
     }

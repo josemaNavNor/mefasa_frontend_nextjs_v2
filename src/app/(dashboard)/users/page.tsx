@@ -60,7 +60,7 @@ export default function UsersPage() {
     }), [handleEdit, handleDelete]);
 
     return (
-        <ProtectedRoute allowedRoles={["Administrador"]}>
+        //<ProtectedRoute allowedRoles={["Administrador", "Tecnico"]}>
             <div className="w-full px-4 py-4">
                 <div className="mb-4">
                     <h1 className="text-4xl font-bold">Gestión de Usuarios</h1>
@@ -71,7 +71,7 @@ export default function UsersPage() {
                     <SheetTrigger asChild className="mb-4">
                         <Button variant="outline">Agregar Usuario</Button>
                     </SheetTrigger>
-                    <SheetContent>
+                    <SheetContent className="overflow-y-auto max-h-screen">
                         <SheetHeader>
                             <SheetTitle>Agregar Usuario</SheetTitle>
                             <SheetDescription>
@@ -192,7 +192,7 @@ export default function UsersPage() {
                                     <SelectContent>
                                         {roles.map((role) => (
                                             <SelectItem key={role.id} value={String(role.id)}>
-                                                {role.rol_name}
+                                                {role.role_name}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
@@ -211,7 +211,7 @@ export default function UsersPage() {
 
                 {/* Sheet para editar usuario */}
                 <Sheet open={editUserForm.isEditSheetOpen} onOpenChange={editUserForm.setIsEditSheetOpen}>
-                    <SheetContent>
+                    <SheetContent className="overflow-y-auto max-h-screen">
                         <SheetHeader>
                             <SheetTitle>Editar Usuario</SheetTitle>
                             <SheetDescription>
@@ -245,7 +245,6 @@ export default function UsersPage() {
                                 />
                                 {editUserForm.editErrors.last_name && <p className="text-red-500 text-xs mt-1">{editUserForm.editErrors.last_name}</p>}
                             </div>
-                            pr
                             <div className="grid gap-3">
                                 <Label htmlFor="edit_email">Correo electrónico</Label>
                                 <Input
@@ -333,7 +332,7 @@ export default function UsersPage() {
                                     <SelectContent>
                                         {roles.map((role) => (
                                             <SelectItem key={role.id} value={String(role.id)}>
-                                                {role.rol_name}
+                                                {role.role_name}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
@@ -352,6 +351,6 @@ export default function UsersPage() {
 
                 <DataTable columns={columns} data={users} />
             </div>
-        </ProtectedRoute>
+       // </ProtectedRoute>
     );
 }

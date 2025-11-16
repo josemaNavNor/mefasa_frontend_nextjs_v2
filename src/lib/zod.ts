@@ -24,7 +24,7 @@ export const userSchema = z.object({
 });
 
 export const roleSchema = z.object({
-    rol_name: z.string()
+    role_name: z.string()
         .min(1, { message: "El nombre del rol es requerido" })
         .max(100, { message: "El nombre del rol debe tener menos de 100 caracteres" }),
     description: z.string()
@@ -69,9 +69,43 @@ export const loginSchema = z.object({
         .min(1, { message: "La contraseña es requerida" })
         .min(6, { message: "La contraseña debe tener más de 6 caracteres" }),
     otp: z.string()
-        .min(6, { message: "El código debe tener 6 dígitos" })
-        .max(6, { message: "El código debe tener 6 dígitos" })
-        .or(z.literal(""))
+        .min(1, { message: "El token es requerido" })
+        .refine((val) => {
+            if (val === "") return true; // Permitir vacío
+            return val.length === 6 && /^[0-9]{6}$/.test(val);
+        }, { message: "El token debe tener exactamente 6 dígitos" })
+});
+
+export const registerSchema = z.object({
+    name: z.string()
+        .min(1, { message: "El nombre es requerido" })
+        .min(2, { message: "El nombre debe tener al menos 2 caracteres" })
+        .max(50, { message: "El nombre no puede tener más de 50 caracteres" })
+        .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s\-]+$/, { message: "Solo se permiten letras, espacios y guiones" }),
+    last_name: z.string()
+        .min(1, { message: "El apellido es requerido" })
+        .min(2, { message: "El apellido debe tener al menos 2 caracteres" })
+        .max(50, { message: "El apellido no puede tener más de 50 caracteres" })
+        .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s\-]+$/, { message: "Solo se permiten letras, espacios y guiones" }),
+    email: z.string()
+        .min(1, { message: "El email es requerido" })
+        .email({ message: "Email inválido" }),
+    password: z.string()
+        .min(1, { message: "La contraseña es requerida" })
+        .min(6, { message: "La contraseña debe tener al menos 6 caracteres" })
+        .max(32, { message: "La contraseña debe tener menos de 32 caracteres" })
+        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, { message: "La contraseña debe contener al menos una mayúscula, una minúscula y un número" }),
+    confirmPassword: z.string()
+        .min(1, { message: "Confirmar contraseña es requerido" }),
+    phone_number: z.string()
+        .regex(/^[0-9\s\-+()]*$/, { message: "Solo números, espacios y los siguientes caracteres: - + ( )" })
+        .min(10, { message: "El número de teléfono debe tener al menos 10 caracteres" })
+        .max(15, { message: "El número de teléfono debe tener menos de 15 caracteres" })
+        .optional()
+        .or(z.literal("").transform(() => undefined))
+}).refine((data) => data.password === data.confirmPassword, {
+    message: "Las contraseñas no coinciden",
+    path: ["confirmPassword"],
 });
 
 export const profileSchema = z.object({
@@ -91,4 +125,45 @@ export const profileSchema = z.object({
         .max(15, { message: "El número de teléfono no puede tener más de 15 caracteres" })
         .optional()
         .or(z.literal(""))
+});
+
+export const filterSchema = z.object({
+    startDate: z.string().refine((val) => {
+        return val === "" || !isNaN(Date.parse(val));
+    }, { message: "Fecha de inicio inválida" }),
+    endDate: z.string().refine((val) => {
+        return val === "" || !isNaN(Date.parse(val));
+    }, { message: "Fecha de fin inválida" }),
+});
+
+export const ticketFilterSchema = z.object({
+    filter_name: z.string()
+        .min(1, { message: "El nombre del filtro es requerido" })
+        .max(100, { message: "El nombre no puede tener más de 100 caracteres" }),
+    description: z.string()
+        .max(500, { message: "La descripción no puede tener más de 500 caracteres" })
+        .optional(),
+    is_public: z.boolean(),
+    criteria: z.array(z.object({
+        field_name: z.string()
+            .min(1, { message: "El campo es requerido" }),
+        operator: z.string()
+            .min(1, { message: "El operador es requerido" }),
+        value: z.string()
+            .optional(),
+        logical_operator: z.string()
+            .optional(),
+    }).refine((criterion) => {
+        // Los operadores IS_NULL e IS_NOT_NULL no necesitan valor
+        const operatorsWithoutValue = ['IS_NULL', 'IS_NOT_NULL'];
+        const needsValue = !operatorsWithoutValue.includes(criterion.operator);
+        
+        if (needsValue && (!criterion.value || criterion.value.trim() === '')) {
+            return false;
+        }
+        return true;
+    }, {
+        message: "El valor es requerido para este operador",
+        path: ["value"]
+    })).min(1, { message: "Debe tener al menos un criterio" }),
 });

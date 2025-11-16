@@ -26,6 +26,7 @@ import {
   TicketFilterField 
 } from '@/types/filter';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import { ticketFilterSchema } from '@/lib/zod';
 
 interface FilterDialogProps {
   isOpen: boolean;
@@ -84,6 +85,8 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
     criteria: [{ ...defaultCriterion }],
   });
 
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   useEffect(() => {
     if (mode === 'edit' && filter) {
       setFormData({
@@ -97,6 +100,7 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
           logical_operator: criterion.logical_operator,
         })) || [{ ...defaultCriterion }],
       });
+      setErrors({});
     } else if (mode === 'create') {
       setFormData({
         filter_name: '',
@@ -104,15 +108,83 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
         is_public: false,
         criteria: [{ ...defaultCriterion }],
       });
+      setErrors({});
     }
   }, [mode, filter, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrors({});
     
-    if (!formData.filter_name.trim()) {
-      Notify.failure('El nombre del filtro es requerido');
+    // Validar con zod
+    const result = ticketFilterSchema.safeParse(formData);
+    
+    if (!result.success) {
+      const formatted = result.error.format();
+      const newErrors: { [key: string]: string } = {};
+      
+      if (formatted.filter_name?._errors && formatted.filter_name._errors[0]) {
+        newErrors.filter_name = formatted.filter_name._errors[0];
+      }
+      if (formatted.description?._errors && formatted.description._errors[0]) {
+        newErrors.description = formatted.description._errors[0];
+      }
+      if (formatted.criteria?._errors && formatted.criteria._errors[0]) {
+        newErrors.criteria = formatted.criteria._errors[0];
+      }
+      
+      // Validar criterios individuales
+      if (formatted.criteria && typeof formatted.criteria === 'object' && !Array.isArray(formatted.criteria)) {
+        Object.keys(formatted.criteria).forEach((key) => {
+          if (key !== '_errors') {
+            const criteriaError = formatted.criteria as any;
+            const criterionErrors = criteriaError[key];
+            if (criterionErrors?.field_name?._errors && criterionErrors.field_name._errors[0]) {
+              newErrors[`criteria_${key}_field_name`] = criterionErrors.field_name._errors[0];
+            }
+            if (criterionErrors?.operator?._errors && criterionErrors.operator._errors[0]) {
+              newErrors[`criteria_${key}_operator`] = criterionErrors.operator._errors[0];
+            }
+            if (criterionErrors?.value?._errors && criterionErrors.value._errors[0]) {
+              newErrors[`criteria_${key}_value`] = criterionErrors.value._errors[0];
+            }
+            // Manejar errores a nivel de criterio (como el refine)
+            if (criterionErrors?._errors && criterionErrors._errors[0]) {
+              newErrors[`criteria_${key}_value`] = criterionErrors._errors[0];
+            }
+          }
+        });
+      }
+
+      setErrors(newErrors);
+      Notify.failure('Por favor, corrija los errores en el formulario');
       return;
+    }
+
+    // Validación adicional para modo edición: verificar si hay cambios
+    if (mode === 'edit' && filter) {
+      const hasChanges = (
+        formData.filter_name !== filter.filter_name ||
+        formData.description !== (filter.description || '') ||
+        formData.is_public !== filter.is_public ||
+        JSON.stringify(formData.criteria) !== JSON.stringify(
+          filter.filterCriteria?.map(criterion => ({
+            field_name: criterion.field_name,
+            operator: criterion.operator,
+            value: criterion.value,
+            logical_operator: criterion.logical_operator,
+          })) || [defaultCriterion]
+        )
+      );
+
+      if (!hasChanges) {
+        Notify.warning('Debe modificar al menos un campo para actualizar el filtro', {
+          timeout: 4000,
+          pauseOnHover: true,
+          position: 'right-top'
+        });
+        return;
+      }
     }
 
     // Validar que todos los criterios estén completos
@@ -125,7 +197,8 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
     });
 
     if (incompleteCriteria.length > 0) {
-      Notify.failure('Todos los criterios deben estar completos (campo, operador y valor)');
+      setErrors({ criteria: 'Todos los criterios deben estar completos (campo, operador y valor cuando sea requerido)' });
+      Notify.failure('Todos los criterios deben estar completos (campo, operador y valor cuando sea requerido)');
       return;
     }
 
@@ -211,6 +284,13 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
             }
           }
           
+          // Limpiar errores relacionados con este criterio
+          const errorKey = `criteria_${index}_${field}`;
+          if (errors[errorKey]) {
+            const { [errorKey]: removedError, ...restErrors } = errors;
+            setErrors(restErrors);
+          }
+          
           return updatedCriterion;
         }
         return criterion;
@@ -283,10 +363,19 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
               <Input
                 id="filter_name"
                 value={formData.filter_name}
-                onChange={(e) => setFormData(prev => ({ ...prev, filter_name: e.target.value }))}
+                onChange={(e) => {
+                  setFormData(prev => ({ ...prev, filter_name: e.target.value }));
+                  if (errors.filter_name) {
+                    const { filter_name, ...restErrors } = errors;
+                    setErrors(restErrors);
+                  }
+                }}
                 placeholder="Ej: Tickets Urgentes"
-                required
+                className={errors.filter_name ? 'border-red-500' : ''}
               />
+              {errors.filter_name && (
+                <p className="text-red-500 text-xs mt-1">{errors.filter_name}</p>
+              )}
             </div>
             <div className="flex items-center space-x-2">
               <Switch
@@ -303,10 +392,20 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
             <Textarea
               id="description"
               value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              onChange={(e) => {
+                setFormData(prev => ({ ...prev, description: e.target.value }));
+                if (errors.description) {
+                  const { description, ...restErrors } = errors;
+                  setErrors(restErrors);
+                }
+              }}
               placeholder="Descripción del filtro..."
+              className={errors.description ? 'border-red-500' : ''}
               rows={3}
             />
+            {errors.description && (
+              <p className="text-red-500 text-xs mt-1">{errors.description}</p>
+            )}
           </div>
 
           {/* Criterios de filtrado */}
@@ -321,6 +420,11 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
               </div>
             </CardHeader>
             <CardContent>
+              {errors.criteria && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                  <p className="text-red-600 text-sm">{errors.criteria}</p>
+                </div>
+              )}
               <div className="space-y-4">
                 {formData.criteria.map((criterion, index) => (
                   <div key={index} className="border rounded-lg p-4">
@@ -345,7 +449,7 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
                           value={criterion.field_name}
                           onValueChange={(value) => updateCriterion(index, 'field_name', value)}
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className={errors[`criteria_${index}_field_name`] ? 'border-red-500' : ''}>
                             <SelectValue placeholder="Seleccionar campo" />
                           </SelectTrigger>
                           <SelectContent>
@@ -356,6 +460,9 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
                             ))}
                           </SelectContent>
                         </Select>
+                        {errors[`criteria_${index}_field_name`] && (
+                          <p className="text-red-500 text-xs mt-1">{errors[`criteria_${index}_field_name`]}</p>
+                        )}
                       </div>
 
                       <div>
@@ -364,7 +471,7 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
                           value={criterion.operator}
                           onValueChange={(value) => updateCriterion(index, 'operator', value)}
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className={errors[`criteria_${index}_operator`] ? 'border-red-500' : ''}>
                             <SelectValue placeholder="Seleccionar operador" />
                           </SelectTrigger>
                           <SelectContent>
@@ -375,6 +482,9 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
                             ))}
                           </SelectContent>
                         </Select>
+                        {errors[`criteria_${index}_operator`] && (
+                          <p className="text-red-500 text-xs mt-1">{errors[`criteria_${index}_operator`]}</p>
+                        )}
                       </div>
 
                       <div>
@@ -387,39 +497,56 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
                             className="bg-gray-100 text-gray-500"
                           />
                         ) : shouldShowDropdown(criterion.field_name) ? (
-                          <Select
-                            value={criterion.value}
-                            onValueChange={(value) => updateCriterion(index, 'value', value)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Seleccionar valor" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {getFieldOptions(criterion.field_name).map(option => (
-                                <SelectItem key={option.value} value={option.value}>
-                                  {option.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <>
+                            <Select
+                              value={criterion.value}
+                              onValueChange={(value) => updateCriterion(index, 'value', value)}
+                            >
+                              <SelectTrigger className={errors[`criteria_${index}_value`] ? 'border-red-500' : ''}>
+                                <SelectValue placeholder="Seleccionar valor" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {getFieldOptions(criterion.field_name).map(option => (
+                                  <SelectItem key={option.value} value={option.value}>
+                                    {option.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            {errors[`criteria_${index}_value`] && (
+                              <p className="text-red-500 text-xs mt-1">{errors[`criteria_${index}_value`]}</p>
+                            )}
+                          </>
                         ) : shouldShowDateInput(criterion.field_name) ? (
-                          <Input
-                            type="date"
-                            value={criterion.value ? criterion.value.split('T')[0] : ''}
-                            onChange={(e) => updateCriterion(index, 'value', e.target.value)}
-                            placeholder="Seleccionar fecha"
-                          />
+                          <>
+                            <Input
+                              type="date"
+                              value={criterion.value ? criterion.value.split('T')[0] : ''}
+                              onChange={(e) => updateCriterion(index, 'value', e.target.value)}
+                              placeholder="Seleccionar fecha"
+                              className={errors[`criteria_${index}_value`] ? 'border-red-500' : ''}
+                            />
+                            {errors[`criteria_${index}_value`] && (
+                              <p className="text-red-500 text-xs mt-1">{errors[`criteria_${index}_value`]}</p>
+                            )}
+                          </>
                         ) : (
-                          <Input
-                            type="text"
-                            value={criterion.value}
-                            onChange={(e) => updateCriterion(index, 'value', e.target.value)}
-                            placeholder={
-                              criterion.field_name === TicketFilterField.CREATED_BY 
-                                ? "Email del usuario" 
-                                : "Valor a comparar"
-                            }
-                          />
+                          <>
+                            <Input
+                              type="text"
+                              value={criterion.value}
+                              onChange={(e) => updateCriterion(index, 'value', e.target.value)}
+                              placeholder={
+                                criterion.field_name === TicketFilterField.CREATED_BY 
+                                  ? "Email del usuario" 
+                                  : "Valor a comparar"
+                              }
+                              className={errors[`criteria_${index}_value`] ? 'border-red-500' : ''}
+                            />
+                            {errors[`criteria_${index}_value`] && (
+                              <p className="text-red-500 text-xs mt-1">{errors[`criteria_${index}_value`]}</p>
+                            )}
+                          </>
                         )}
                       </div>
 
