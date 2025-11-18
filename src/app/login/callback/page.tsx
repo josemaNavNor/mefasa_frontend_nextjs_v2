@@ -37,7 +37,8 @@ function LoginCallbackContent() {
           }
         }
         
-        // Guardar en localStorage
+        // IMPORTANTE: Guardar en localStorage ANTES de cualquier validación
+        // para que el token esté disponible cuando se configure 2FA
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
         
