@@ -220,7 +220,10 @@ export default function Login() {
                 )}
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="otp">Codigo de verificacion</Label>
+                <Label htmlFor="otp">Código de verificación (opcional)</Label>
+                <p className="text-xs text-muted-foreground mb-1">
+                  Solo si tienes 2FA activado
+                </p>
                 <div className="flex items-center justify-center gap-2">
                   <InputOTP
                     maxLength={6}

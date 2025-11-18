@@ -70,10 +70,6 @@ export default function VerifyEmail() {
     router.push('/login');
   };
 
-  const handleGoTo2FASetup = () => {
-    router.push('/setup-2fa?returnTo=/login');
-  };
-
   const handleResendVerification = async () => {
     try {
       setLoading(true);
@@ -139,7 +135,10 @@ export default function VerifyEmail() {
 
           {success && (
             <div className="text-center text-green-700 mb-4">
-              <p>Ahora puedes configurar la autenticación de dos factores para mayor seguridad.</p>
+              <p>Ya puedes iniciar sesión con tu cuenta.</p>
+              <p className="text-sm mt-2 text-gray-600">
+                Después de iniciar sesión, podrás configurar la autenticación de dos factores desde tu perfil.
+              </p>
             </div>
           )}
 
@@ -155,21 +154,12 @@ export default function VerifyEmail() {
 
         <CardFooter className="flex flex-col gap-2">
           {success && (
-            <>
-              <Button 
-                className="w-full"
-                onClick={handleGoTo2FASetup}
-              >
-                Configurar 2FA
-              </Button>
-              <Button 
-                variant="outline"
-                className="w-full"
-                onClick={handleGoToLogin}
-              >
-                Ir al login
-              </Button>
-            </>
+            <Button 
+              className="w-full"
+              onClick={handleGoToLogin}
+            >
+              Ir al login
+            </Button>
           )}
           
           {!loading && !success && (

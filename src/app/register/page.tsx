@@ -50,7 +50,7 @@ export default function Register() {
       email,
       password,
       confirmPassword,
-      phone_number: phoneNumber
+      phone_number: phoneNumber 
     });
 
     if (!validation.success) {
@@ -90,9 +90,8 @@ export default function Register() {
     } catch (error: any) {
       console.error('Error en registro:', error);
       
-      if (error.response?.data?.message) {
-        setError(error.response.data.message);
-      } else if (error.message) {
+      // El httpClient ya procesa el error y lo convierte en un Error simple
+      if (error.message) {
         setError(error.message);
       } else {
         setError('Error al registrar usuario. Intenta nuevamente.');

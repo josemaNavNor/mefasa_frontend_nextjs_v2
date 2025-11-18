@@ -69,11 +69,11 @@ export const loginSchema = z.object({
         .min(1, { message: "La contraseña es requerida" })
         .min(6, { message: "La contraseña debe tener más de 6 caracteres" }),
     otp: z.string()
-        .min(1, { message: "El token es requerido" })
+        .optional()
         .refine((val) => {
-            if (val === "") return true; // Permitir vacío
+            if (!val || val === "") return true; // Permitir vacío u opcional
             return val.length === 6 && /^[0-9]{6}$/.test(val);
-        }, { message: "El token debe tener exactamente 6 dígitos" })
+        }, { message: "El token debe tener exactamente 6 dígitos numéricos" })
 });
 
 export const registerSchema = z.object({

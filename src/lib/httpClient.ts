@@ -134,6 +134,7 @@ class HttpClient {
       const errorMessage = error.message || `Error ${response.status}: ${response.statusText}`;
       
       const customError = new Error(errorMessage);
+      console.error('HTTP Error:', errorMessage);
       (customError as any).status = response.status;
       (customError as any).type = 'HTTP_ERROR';
       throw customError;
