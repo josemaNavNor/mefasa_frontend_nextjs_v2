@@ -155,6 +155,7 @@ export function TiptapEditor({ content, onChange, placeholder = "Escribe tu mens
       Color,
     ],
     content,
+    immediatelyRender: false,
     onUpdate: ({ editor }) => {
       const html = editor.getHTML()
       onChange(html)
