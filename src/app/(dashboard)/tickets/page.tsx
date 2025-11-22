@@ -1,25 +1,20 @@
 "use client";
-import { useUsers } from "@/hooks/useUsersAdmin";
-import { createColumns } from "./columns"
-import { createTicketHandlers } from "./handlers";
+
+// React imports
+import { useState, useCallback, useMemo, useEffect } from "react";
+
+// Next.js imports
+import { Download, ChevronLeft, ChevronRight, Filter as FilterIcon } from "lucide-react";
+
+// Component imports
 import { DataTable } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useState, useCallback, useMemo, useEffect } from "react";
-import { useTickets } from "@/hooks/use_tickets";
-import { useType } from "@/hooks/use_typeTickets";
-import { useFloors } from "@/hooks/use_floors";
-import { useEventListener } from "@/hooks/useEventListener";
-import { useSettings } from "@/contexts/SettingsContext";
+import { SimpleDatePicker } from "@/components/ui/simple-date-picker"
 import { EditTicketDialog } from "@/components/edit-ticket-dialog";
 import { TicketDetailsModal } from "@/components/ticket-details-modal";
 import { FavoriteFilters } from "@/components/filter";
-import { Download, ChevronLeft, ChevronRight, Filter as FilterIcon } from "lucide-react";
-import { SimpleDatePicker } from "@/components/ui/simple-date-picker"
-import { Filter } from "@/types/filter";
-import { TICKET_EVENTS } from "@/lib/events";
-
 import {
     Sheet,
     SheetClose,
@@ -37,6 +32,24 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+
+// Hook imports
+import { useTickets } from "@/hooks/useTickets";
+import { useType } from "@/hooks/useTypeTickets";
+import { useFloors } from "@/hooks/useFloors";
+import { useUsers } from "@/hooks/useUsersAdmin";
+import { useEventListener } from "@/hooks/useEventListener";
+import { useSettings } from "@/contexts/SettingsContext";
+
+// Utility imports
+import { createColumns } from "./columns"
+import { createTicketHandlers } from "./handlers";
+import { TICKET_EVENTS } from "@/lib/events";
+import { logger } from "@/lib/logger";
+
+// Type imports
+import type { Ticket } from "@/types";
+import { Filter } from "@/types/filter";
 
 export default function TicketsPage() {
     const { tickets, createTicket, deleteTicket, refetch, exportToExcel, isPolling } = useTickets();
@@ -58,11 +71,11 @@ export default function TicketsPage() {
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
     // Estado para edición de tickets
-    const [editingTicket, setEditingTicket] = useState<any>(null);
+    const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
     const [showEditDialog, setShowEditDialog] = useState(false);
 
     // Estado para el modal de detalles
-    const [selectedTicket, setSelectedTicket] = useState<any>(null);
+    const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
 
     // Estado para controlar el Sheet de creación
@@ -70,83 +83,15 @@ export default function TicketsPage() {
 
     // Estado para filtros
     const [activeFilter, setActiveFilter] = useState<Filter | null>(null);
-    const [filteredTickets, setFilteredTickets] = useState(tickets);
     const [isFiltersCollapsed, setIsFiltersCollapsed] = useState(false);
-
-    // Crear handlers
-    const handlers = createTicketHandlers({
-        createTicket,
-        deleteTicket,
-        exportToExcel
-    });
-
-    // Wrapper functions para los handlers
-    const handleDelete = useCallback((ticket: any) => {
-        handlers.handleDelete(ticket);
-    }, [handlers]);
-
-    const handleEditTicket = useCallback((ticket: any) => {
-        handlers.handleEditTicket(ticket, setEditingTicket, setShowEditDialog);
-    }, [handlers]);
-
-    const handleRowClick = useCallback((ticket: any) => {
-        handlers.handleRowClick(ticket, setSelectedTicket, setShowDetailsModal);
-    }, [handlers]);
-
-    const handleSubmit = useCallback(async (e: React.FormEvent) => {
-        const formData = {
-            ticket_number, summary, description, end_user,
-            technician_id, type_id, floor_id, priority,
-            status, due_date
-        };
-
-        const setters = {
-            setSummary, setDescription, setEndUser, setTechnicianId,
-            setTypeId, setFloorId,setPriority, setStatus, setDueDate,
-            setErrors
-        };
-
-        await handlers.handleSubmit(e, formData, setters, () => {
-            setSheetOpen(false); // Cerrar el sheet cuando se crea exitosamente
-        });
-    }, [handlers, ticket_number, summary, description, end_user, technician_id, type_id, floor_id, priority, status, due_date]);
-
-    const handleExportToExcel = useCallback(() => {
-        handlers.handleExportToExcel();
-    }, [handlers]);
-
-    // Crear columnas con callbacks de edición y eliminación usando useMemo
-    const columns = useMemo(() => createColumns({
-        onEditTicket: handleEditTicket,
-        onDeleteTicket: handleDelete
-    }), [handleEditTicket, handleDelete]);
-
-    const handleDataChange = useCallback(() => {
-        // Solo refrescar cuando hay cambios específicos de tickets
-        refetch();
-    }, [refetch]);
-
-    // Escuchar solo eventos específicos de tickets
-    useEventListener(TICKET_EVENTS.REFRESH_TICKETS_PAGE, handleDataChange);
-    useEventListener(TICKET_EVENTS.UPDATED, handleDataChange);
-    useEventListener(TICKET_EVENTS.CREATED, handleDataChange);
-    useEventListener(TICKET_EVENTS.DELETED, handleDataChange);
-
-    // Función para aplicar filtros
-    const applyFilter = useCallback((filter: Filter) => {
-        //console.log('Aplicando filtro:', filter);
-        setActiveFilter(filter);
-        
-        if (!filter.filterCriteria || filter.filterCriteria.length === 0) {
-            //console.log('Filtro sin criterios, mostrando todos los tickets');
-            setFilteredTickets(tickets);
-            return;
+    
+    // Función para aplicar filtros - movida antes de useMemo
+    const applyFilterLogic = useCallback((filter: Filter | null, ticketsToFilter: Ticket[]): Ticket[] => {
+        if (!filter || !filter.filterCriteria || filter.filterCriteria.length === 0) {
+            return ticketsToFilter;
         }
 
-        //console.log('Filtros a aplicar:', filter.filterCriteria);
-        //console.log('Tickets originales:', tickets.length);
-
-        const filtered = tickets.filter(ticket => {
+        return ticketsToFilter.filter(ticket => {
             let result = true;
             
             filter.filterCriteria!.forEach((criterion, index) => {
@@ -173,15 +118,6 @@ export default function TicketsPage() {
                 
                 const fieldValue = ticket[fieldName as keyof typeof ticket];
                 const criterionValue = criterion.value;
-                
-                // console.log(`Criterio ${index + 1}:`, {
-                //     originalField: criterion.field_name,
-                //     mappedField: fieldName,
-                //     operator: criterion.operator,
-                //     value: criterionValue,
-                //     fieldValue,
-                //     logicalOperator: criterion.logical_operator
-                // });
                 
                 let matches = false;
                 
@@ -226,8 +162,6 @@ export default function TicketsPage() {
                         matches = false;
                 }
 
-                //console.log(`Criterio ${index + 1} matches:`, matches);
-
                 // Para el primer criterio, establecer el resultado inicial
                 if (index === 0) {
                     result = matches;
@@ -239,31 +173,85 @@ export default function TicketsPage() {
                         result = result || matches;
                     }
                 }
-                
-                //console.log(`Resultado acumulado:`, result);
             });
             
             return result;
         });
-        
-        //console.log('Tickets filtrados:', filtered.length);
-        setFilteredTickets(filtered);
-    }, [tickets]);
+    }, []);
+    
+    // Derivar filteredTickets usando useMemo
+    const filteredTickets = useMemo(() => {
+        return applyFilterLogic(activeFilter, tickets);
+    }, [activeFilter, tickets, applyFilterLogic]);
+
+    // Crear handlers
+    const handlers = createTicketHandlers({
+        createTicket,
+        deleteTicket,
+        exportToExcel
+    });
+
+    // Wrapper functions para los handlers
+    const handleDelete = useCallback((ticket: Ticket) => {
+        handlers.handleDelete(ticket);
+    }, [handlers]);
+
+    const handleEditTicket = useCallback((ticket: Ticket) => {
+        handlers.handleEditTicket(ticket, setEditingTicket, setShowEditDialog);
+    }, [handlers]);
+
+    const handleRowClick = useCallback((ticket: Ticket) => {
+        handlers.handleRowClick(ticket, setSelectedTicket, setShowDetailsModal);
+    }, [handlers]);
+
+    const handleSubmit = useCallback(async (e: React.FormEvent) => {
+        const formData = {
+            ticket_number, summary, description, end_user,
+            technician_id, type_id, floor_id, priority,
+            status, due_date
+        };
+
+        const setters = {
+            setSummary, setDescription, setEndUser, setTechnicianId,
+            setTypeId, setFloorId,setPriority, setStatus, setDueDate,
+            setErrors
+        };
+
+        await handlers.handleSubmit(e, formData, setters, () => {
+            setSheetOpen(false); // Cerrar el sheet cuando se crea exitosamente
+        });
+    }, [handlers, ticket_number, summary, description, end_user, technician_id, type_id, floor_id, priority, status, due_date]);
+
+    const handleExportToExcel = useCallback(() => {
+        handlers.handleExportToExcel();
+    }, [handlers]);
+
+    // Crear columnas con callbacks de edición y eliminación usando useMemo
+    const columns = useMemo(() => createColumns({
+        onEditTicket: handleEditTicket,
+        onDeleteTicket: handleDelete
+    }), [handleEditTicket, handleDelete]);
+
+    const handleDataChange = useCallback(() => {
+        // Solo refrescar cuando hay cambios específicos de tickets
+        refetch();
+    }, [refetch]);
+
+    // Escuchar solo eventos específicos de tickets
+    useEventListener(TICKET_EVENTS.REFRESH_TICKETS_PAGE, handleDataChange);
+    useEventListener(TICKET_EVENTS.UPDATED, handleDataChange);
+    useEventListener(TICKET_EVENTS.CREATED, handleDataChange);
+    useEventListener(TICKET_EVENTS.DELETED, handleDataChange);
+
+    // Función para aplicar filtros - ahora solo establece el filtro activo
+    // El filtrado real se hace automáticamente con useMemo
+    const applyFilter = useCallback((filter: Filter) => {
+        setActiveFilter(filter);
+    }, []);
 
     const clearFilter = useCallback(() => {
-        //console.log('Limpiando filtros');
         setActiveFilter(null);
-        setFilteredTickets(tickets);
-    }, [tickets]);
-
-    // Actualizar tickets filtrados cuando cambien los tickets originales
-    useEffect(() => {
-        if (activeFilter) {
-            applyFilter(activeFilter);
-        } else {
-            setFilteredTickets(tickets);
-        }
-    }, [tickets]); // Removemos activeFilter y applyFilter de las dependencias para evitar loops
+    }, []);
 
     return (
         <div className="w-full px-4 py-4">

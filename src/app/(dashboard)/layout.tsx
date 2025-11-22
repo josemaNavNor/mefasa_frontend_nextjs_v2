@@ -1,7 +1,7 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ModeToggle } from "@/components/mode-toggle";
-import { AuthLoadingWrapper } from "@/components/AuthLoadingWrapper";
+//import { AuthLoadingWrapper } from "@/components/AuthLoadingWrapper";
 
 export default function DashboardLayout({
   children,
@@ -9,7 +9,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AuthLoadingWrapper>
+    //<AuthLoadingWrapper>
       <SidebarProvider>
         <AppSidebar />
         <main className="flex-1">
@@ -20,6 +20,6 @@ export default function DashboardLayout({
           {children}
         </main>
       </SidebarProvider>
-    </AuthLoadingWrapper>
+    //</AuthLoadingWrapper>
   );
 }

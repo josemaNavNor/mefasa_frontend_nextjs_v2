@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 
 import { authService } from "@/lib/auth";
@@ -15,6 +15,11 @@ import type {
   LoginCredentials 
 } from "@/types";
 
+/**
+ * Hook personalizado para gestionar la autenticación del usuario
+ * Proporciona funciones para login, logout y verificación de roles
+ * @returns Objeto con estado de autenticación y funciones relacionadas
+ */
 export function useAuth(): AuthContextValue {
   const [state, setState] = useState<AuthState>({
     user: null,
@@ -24,7 +29,9 @@ export function useAuth(): AuthContextValue {
   
   const router = useRouter();
 
-  // Clear authentication state
+  /**
+   * Limpia el estado de autenticación y elimina tokens del almacenamiento
+   */
   const clearAuthState = useCallback(() => {
     localStorage.removeItem(AUTH_CONFIG.tokenKey);
     localStorage.removeItem('refresh_token');
@@ -40,7 +47,12 @@ export function useAuth(): AuthContextValue {
     });
   }, []);
 
-  // Set authenticated user
+  /**
+   * Establece el usuario autenticado y guarda los tokens
+   * @param user - Datos del usuario autenticado
+   * @param token - Token de acceso
+   * @param refreshToken - Token de refresco
+   */
   const setAuthenticatedUser = useCallback((user: AuthUser, token: string, refreshToken: string) => {
     localStorage.setItem(AUTH_CONFIG.tokenKey, token);
     localStorage.setItem('refresh_token', refreshToken);
@@ -85,7 +97,13 @@ export function useAuth(): AuthContextValue {
     return () => clearTimeout(timer);
   }, [clearAuthState]);
 
-  // Login function
+  /**
+   * Inicia sesión con email y contraseña
+   * @param email - Email del usuario
+   * @param password - Contraseña del usuario
+   * @param token - Token OTP opcional para autenticación de dos factores
+   * @returns Promise que se resuelve con el resultado del login
+   */
   const login = useCallback(async (
     email: string, 
     password: string, 
@@ -166,7 +184,9 @@ export function useAuth(): AuthContextValue {
     }
   }, [state.user?.id, clearAuthState, setAuthenticatedUser, router]);
 
-  // Logout function
+  /**
+   * Cierra la sesión del usuario y limpia todos los datos de autenticación
+   */
   const logout = useCallback(async () => {
     try {
       const refreshToken = localStorage.getItem('refresh_token');
@@ -188,7 +208,11 @@ export function useAuth(): AuthContextValue {
     }
   }, [clearAuthState, router]);
 
-  // Role checking helper
+  /**
+   * Verifica si el usuario actual tiene uno de los roles especificados
+   * @param roles - Rol o array de roles a verificar
+   * @returns true si el usuario tiene alguno de los roles especificados
+   */
   const hasRole = useCallback((roles: UserRole | UserRole[]): boolean => {
     if (!state.user) return false;
     
@@ -199,10 +223,10 @@ export function useAuth(): AuthContextValue {
     return roles.includes(state.user.role);
   }, [state.user]);
 
-  // Derived state for role checks
-  const isAdmin = state.user?.role === USER_ROLES.ADMIN;
-  const isTech = state.user?.role === USER_ROLES.TECH;
-  const isUserFinal = state.user?.role === USER_ROLES.USER;
+  // Derived state for role checks - memorizado para evitar recálculos innecesarios
+  const isAdmin = useMemo(() => state.user?.role === USER_ROLES.ADMIN, [state.user?.role]);
+  const isTech = useMemo(() => state.user?.role === USER_ROLES.TECH, [state.user?.role]);
+  const isUserFinal = useMemo(() => state.user?.role === USER_ROLES.USER, [state.user?.role]);
 
   return {
     // State

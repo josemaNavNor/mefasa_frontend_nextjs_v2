@@ -179,6 +179,11 @@ class HttpClient {
     window.location.href = '/login';
   }
 
+  /**
+   * Realiza una petición GET
+   * @param endpoint - Ruta del endpoint a consultar
+   * @returns Promise con los datos de la respuesta
+   */
   async get(endpoint: string) {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       method: 'GET',
@@ -188,6 +193,12 @@ class HttpClient {
     return this.handleResponse(response, { endpoint, method: 'GET' });
   }
 
+  /**
+   * Realiza una petición POST
+   * @param endpoint - Ruta del endpoint
+   * @param data - Datos a enviar en el cuerpo de la petición
+   * @returns Promise con los datos de la respuesta
+   */
   async post(endpoint: string, data: any) {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       method: 'POST',
@@ -198,6 +209,12 @@ class HttpClient {
     return this.handleResponse(response, { endpoint, method: 'POST', data });
   }
 
+  /**
+   * Realiza una petición PUT
+   * @param endpoint - Ruta del endpoint
+   * @param data - Datos a enviar en el cuerpo de la petición
+   * @returns Promise con los datos de la respuesta
+   */
   async put(endpoint: string, data: any) {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       method: 'PUT',
@@ -208,6 +225,11 @@ class HttpClient {
     return this.handleResponse(response, { endpoint, method: 'PUT', data });
   }
 
+  /**
+   * Realiza una petición DELETE
+   * @param endpoint - Ruta del endpoint
+   * @returns Promise con los datos de la respuesta
+   */
   async delete(endpoint: string) {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       method: 'DELETE',
@@ -217,6 +239,12 @@ class HttpClient {
     return this.handleResponse(response, { endpoint, method: 'DELETE' });
   }
 
+  /**
+   * Realiza una petición PATCH
+   * @param endpoint - Ruta del endpoint
+   * @param data - Datos a enviar en el cuerpo de la petición
+   * @returns Promise con los datos de la respuesta
+   */
   async patch(endpoint: string, data: any) {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       method: 'PATCH',

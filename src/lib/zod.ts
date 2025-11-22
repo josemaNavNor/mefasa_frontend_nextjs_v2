@@ -167,3 +167,54 @@ export const ticketFilterSchema = z.object({
         path: ["value"]
     })).min(1, { message: "Debe tener al menos un criterio" }),
 });
+
+export const createTicketSchema = z.object({
+    ticket_number: z.string()
+        .optional()
+        .or(z.literal("")),
+    summary: z.string()
+        .min(1, { message: "El título es requerido" })
+        .max(255, { message: "El título no puede tener más de 255 caracteres" }),
+    description: z.string()
+        .min(1, { message: "La descripción es requerida" })
+        .max(2000, { message: "La descripción no puede tener más de 2000 caracteres" }),
+    end_user: z.string()
+        .email({ message: "Email inválido" })
+        .min(1, { message: "El usuario final es requerido" }),
+    technician_id: z.number().nullable(),
+    type_id: z.number()
+        .min(1, { message: "Debes seleccionar un tipo de ticket" }),
+    priority: z.string()
+        .min(1, { message: "Debes seleccionar una prioridad" }),
+    status: z.string()
+        .min(1, { message: "Debes seleccionar un estado" }),
+    floor_id: z.number().nullable(),
+    due_date: z.string()
+        .refine((val) => {
+            return val === "" || !isNaN(Date.parse(val));
+        }, { message: "Fecha límite inválida" })
+        .optional(),
+});
+
+export const updateTicketSchema = z.object({
+    summary: z.string()
+        .max(255, { message: "El título no puede tener más de 255 caracteres" })
+        .optional(),
+    description: z.string()
+        .max(2000, { message: "La descripción no puede tener más de 2000 caracteres" })
+        .optional(),
+    technician_id: z.number().nullable().optional(),
+    type_id: z.number()
+        .min(1, { message: "El tipo de ticket debe ser válido" })
+        .optional(),
+    priority: z.string()
+        .optional(),
+    status: z.string()
+        .optional(),
+    floor_id: z.number().nullable().optional(),
+    due_date: z.string()
+        .refine((val) => {
+            return !val || val === "" || !isNaN(Date.parse(val));
+        }, { message: "Fecha límite inválida" })
+        .optional(),
+});

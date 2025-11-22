@@ -2,10 +2,11 @@ import { useState, useEffect } from "react"
 import Notiflix from 'notiflix';
 import { eventEmitter } from './useEventListener'
 import { TYPE_EVENTS, GLOBAL_EVENTS } from '@/lib/events'
-import {api} from '@/lib/httpClient'
+import { api } from '@/lib/httpClient'
+import type { TicketType } from '@/types'
 
 export function useType() {
-    const [types, setTypes] = useState<any[]>([]);
+    const [types, setTypes] = useState<TicketType[]>([]);
     const [loading, setLoading] = useState(false);
 
     async function fetchTicketsType() {
@@ -111,3 +112,5 @@ export function useType() {
 
     return { types, loading, createTicketType: createType, refetch, updateTicketType: updateType, deleteTicketType: deleteType };
 }
+
+

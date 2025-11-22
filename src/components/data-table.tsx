@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import * as React from "react"
+import { useMemo, useEffect, useState } from "react"
 
 import {
     DropdownMenu,
@@ -41,6 +42,13 @@ interface DataTableProps<TData, TValue> {
     filterColumns?: string[]
 }
 
+/**
+ * Componente de tabla de datos genérica con funcionalidades de ordenamiento, filtrado y paginación
+ * @template TData - Tipo de datos de las filas
+ * @template TValue - Tipo de valor de las columnas
+ * @param props - Propiedades del componente
+ * @returns Componente de tabla renderizado
+ */
 export function DataTable<TData, TValue>({
     columns,
     data,
@@ -52,7 +60,7 @@ export function DataTable<TData, TValue>({
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
     const [rowSelection, setRowSelection] = React.useState({})
-    const [showNoData, setShowNoData] = React.useState(false)
+    const [showNoData, setShowNoData] = useState(false)
     const table = useReactTable({
         data,
         columns,
@@ -72,17 +80,22 @@ export function DataTable<TData, TValue>({
         },
     })
 
-    React.useEffect(() => {
-        if (!table.getRowModel().rows?.length) {
+    // Derivar si hay filas disponibles
+    const hasRows = useMemo(() => {
+        return table.getRowModel().rows?.length > 0;
+    }, [table.getRowModel().rows?.length]);
+
+    // Efecto solo para el delay de 7 segundos cuando no hay datos
+    useEffect(() => {
+        if (!hasRows) {
             const timer = setTimeout(() => {
                 setShowNoData(true)
-            }, 7000);
+            }, 5000);
             return () => clearTimeout(timer);
         } else {
             setShowNoData(false)
-            return undefined;
         }
-    }, [table.getRowModel().rows?.length])
+    }, [hasRows])
 
     return (
         <div>
