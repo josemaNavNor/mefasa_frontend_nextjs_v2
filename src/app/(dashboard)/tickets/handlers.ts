@@ -20,7 +20,7 @@ export const createTicketHandlers = ({
             'Eliminar',
             'Cancelar',
             async () => {
-                await deleteTicket(ticket.id);
+                await deleteTicket(String(ticket.id));
             },
             () => {
                 // Cancelado, no hacer nada
