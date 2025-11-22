@@ -3,7 +3,7 @@ import type { Ticket, CreateTicketDto } from '@/types';
 
 interface TicketHandlersProps {
     createTicket: (data: CreateTicketDto) => Promise<void>;
-    deleteTicket: (id: string) => Promise<boolean>;
+    deleteTicket: (id: string | number) => Promise<boolean>;
     exportToExcel: (ticketsToExport?: Ticket[]) => void;
 }
 
@@ -20,7 +20,7 @@ export const createTicketHandlers = ({
             'Eliminar',
             'Cancelar',
             async () => {
-                await deleteTicket(String(ticket.id));
+                await deleteTicket(ticket.id);
             },
             () => {
                 // Cancelado, no hacer nada
