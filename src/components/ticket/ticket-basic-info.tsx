@@ -11,7 +11,9 @@ import {
 import { Button } from "@/components/ui/button"
 import { Edit2, Check, X as XIcon } from "lucide-react"
 import { SimpleDatePicker } from "@/components/ui/simple-date-picker"
-import { Ticket, User, TicketType, Floor } from "@/types/ticket"
+import { Ticket, User } from "@/types/ticket"
+import type { TicketType } from "@/types/ticketType"
+import type { Floor } from "@/types/floor"
 
 interface TicketBasicInfoProps {
     ticket: Ticket
@@ -81,12 +83,12 @@ export function TicketBasicInfo({ ticket, users, types, floors, onTicketUpdate }
                 return 'Sin asignar'
             case 'type_id':
                 if (!value) return 'Sin tipo'
-                const type = types.find(t => t.id === value)
+                const type = types.find(t => t.id === value || t.id.toString() === value.toString())
                 return type ? type.type_name : 'Sin tipo'
             case 'floor_id':
                 // Si value es un numero, busca en la lista de floors
                 if (typeof value === 'number' && value !== 0) {
-                    const floor = floors.find(f => f.id === value)
+                    const floor = floors.find(f => f.id.toString() === value.toString())
                     return floor ? floor.floor_name : 'Sin planta'
                 }
                 // Si viene directamente del ticket como objeto floor
