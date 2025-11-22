@@ -1,12 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useTicketComments } from "@/hooks/useTicketsComments"
 import { useTicketHistory } from "@/hooks/useTicketHistory"
-import { useTickets } from "@/hooks/use_tickets"
+import { useTickets } from "@/hooks/useTickets"
 import { useUsers } from "@/hooks/useUsersAdmin"
-import { useType } from "@/hooks/use_typeTickets"
-import { useFloors } from "@/hooks/use_floors"
+import { useType } from "@/hooks/useTypeTickets"
+import { useFloors } from "@/hooks/useFloors"
 import Notiflix from 'notiflix';
 import { createHistoryDescription, getCurrentUserId } from "@/lib/ticket-utils"
 import { Ticket } from "@/types/ticket"
@@ -17,8 +17,14 @@ export const useTicketModal = (ticket: Ticket | null) => {
     const [responseText, setResponseText] = useState("")
     const [selectedFiles, setSelectedFiles] = useState<File[]>([])
     const [currentUserId, setCurrentUserId] = useState<number | null>(null)
-    const [ticketData, setTicketData] = useState(ticket)
+    const [localTicketUpdates, setLocalTicketUpdates] = useState<Partial<Ticket>>({})
     const [markedAsViewedTickets, setMarkedAsViewedTickets] = useState<Set<string | number>>(new Set())
+    
+    // Derivar ticketData del ticket prop y actualizaciones locales
+    const ticketData = useMemo(() => {
+        if (!ticket) return null;
+        return { ...ticket, ...localTicketUpdates };
+    }, [ticket, localTicketUpdates]);
 
     const { comments, loading, createComment } = useTicketComments(
         ticket?.id ? (typeof ticket.id === 'string' ? parseInt(ticket.id) : ticket.id) : undefined
@@ -36,10 +42,10 @@ export const useTicketModal = (ticket: Ticket | null) => {
         setCurrentUserId(getCurrentUserId())
     }, [])
 
-    // Actualizar datos del ticket cuando cambie el prop
+    // Limpiar actualizaciones locales cuando cambie el ticket
     useEffect(() => {
         if (ticket) {
-            setTicketData(ticket)
+            setLocalTicketUpdates({})
             
             // Marcar ticket como visto cuando se abre el modal (solo una vez por ticket)
             if (ticket.id) {
@@ -48,15 +54,12 @@ export const useTicketModal = (ticket: Ticket | null) => {
                 
                 // Solo marcar como visto si no lo hemos hecho antes
                 if (!markedAsViewedTickets.has(ticketIdKey)) {
-                    //console.log(`Marcando ticket ${ticketIdKey} como visto por primera vez`);
                     markTicketAsViewed(ticketId)
                     setMarkedAsViewedTickets(prev => new Set(prev).add(ticketIdKey))
-                } else {
-                    //console.log(`Ticket ${ticketIdKey} ya fue marcado como visto anteriormente`);
                 }
             }
         }
-    }, [ticket?.id]) // Solo depender del ID del ticket
+    }, [ticket?.id, markTicketAsViewed]) // Solo depender del ID del ticket
 
     const handleTicketUpdate = async (field: string, newValue: any, oldValue: any) => {
         if (!ticket || !currentUserId) {
@@ -69,7 +72,7 @@ export const useTicketModal = (ticket: Ticket | null) => {
             const result = await updateTicket(ticket.id.toString(), updateData)
             
             if (result) {
-                setTicketData((prev: any) => ({ ...prev, [field]: newValue }))
+                setLocalTicketUpdates((prev) => ({ ...prev, [field]: newValue }))
                 
                 // Crear entrada en el historial solo si el valor realmente cambió
                 if (oldValue !== newValue) {

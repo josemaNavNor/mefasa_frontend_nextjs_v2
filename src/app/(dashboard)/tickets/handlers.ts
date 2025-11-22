@@ -1,34 +1,10 @@
 import Notiflix from 'notiflix';
-
-interface Ticket {
-    id: string;
-    ticket_number: string;
-    summary: string;
-    description: string;
-    end_user: string;
-    technician_id: number | null;
-    type_id: number;
-    priority: string;
-    status: string;
-    floor_id: number | null;
-    due_date: string;
-}
+import type { Ticket, CreateTicketDto } from '@/types';
 
 interface TicketHandlersProps {
-    createTicket: (data: {
-        ticket_number: string;
-        summary: string;
-        description: string;
-        end_user: string;
-        technician_id: number | null;
-        type_id: number;
-        priority: string;
-        status: string;
-        floor_id: number | null;
-        due_date: string;
-    }) => Promise<void>;
+    createTicket: (data: CreateTicketDto) => Promise<void>;
     deleteTicket: (id: string) => Promise<boolean>;
-    exportToExcel: (ticketsToExport?: any[]) => void;
+    exportToExcel: (ticketsToExport?: Ticket[]) => void;
 }
 
 export const createTicketHandlers = ({
@@ -37,7 +13,7 @@ export const createTicketHandlers = ({
     exportToExcel
 }: TicketHandlersProps) => {
     
-    const handleDelete = (ticket: any): void => {
+    const handleDelete = (ticket: Ticket): void => {
         Notiflix.Confirm.show(
             'Confirmar eliminación',
             `¿Estás seguro de que quieres eliminar el ticket "${ticket.ticket_number} - ${ticket.summary}"?`,
@@ -120,13 +96,13 @@ export const createTicketHandlers = ({
             }
         } catch (error) {
             // Error ya manejado en createTicket
-            console.error('Error creating ticket:', error);
+            // Logging silencioso ya que el error se maneja en createTicket
         }
     };
 
     const handleRowClick = (
-        ticket: any,
-        setSelectedTicket: (ticket: any) => void,
+        ticket: Ticket,
+        setSelectedTicket: (ticket: Ticket) => void,
         setShowDetailsModal: (show: boolean) => void
     ) => {
         setSelectedTicket(ticket);
@@ -134,8 +110,8 @@ export const createTicketHandlers = ({
     };
 
     const handleEditTicket = (
-        ticket: any,
-        setEditingTicket: (ticket: any) => void,
+        ticket: Ticket,
+        setEditingTicket: (ticket: Ticket) => void,
         setShowEditDialog: (show: boolean) => void
     ) => {
         setEditingTicket(ticket);

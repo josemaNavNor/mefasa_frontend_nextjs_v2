@@ -17,6 +17,7 @@ export type { TicketType } from './ticketType';
 export * from './filter';
 export * from './rol';
 export * from './profile';
+export type { CreateTicketDto, UpdateTicketDto, TicketFiltersDto } from './ticket.dto';
 
 // Common utility types
 export type ID = number | string;

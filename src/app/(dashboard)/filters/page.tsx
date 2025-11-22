@@ -11,7 +11,7 @@ import { useEventListener } from '@/hooks/useEventListener';
 import { FilterDialog, FilterDetailDialog } from '@/components/filter';
 import { Filter } from '@/types/filter';
 import { FILTER_EVENTS } from '@/lib/events';
-import { createFilterHandlers } from './filters_handlers';
+import { createFilterHandlers } from './filtersHandlers';
 
 export default function FiltersPage() {
   const { filters, loading, error, deleteFilter, fetchFilters } = useFilters();

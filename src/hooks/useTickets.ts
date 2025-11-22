@@ -1,24 +1,45 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import Notiflix from 'notiflix';
 import { eventEmitter } from './useEventListener'
 import { TICKET_EVENTS, GLOBAL_EVENTS } from '@/lib/events'
 import * as XLSX from 'xlsx'
 import { api } from '@/lib/httpClient'
 import { useSettings } from '@/contexts/SettingsContext'
+import { logger } from '@/lib/logger'
+import { createTicketSchema, updateTicketSchema } from '@/lib/zod'
+import type { Ticket, CreateTicketDto, UpdateTicketDto } from '@/types'
+
+/**
+ * Hook personalizado para gestionar tickets
+ * Proporciona funciones para crear, actualizar, eliminar y obtener tickets
+ * @returns Objeto con estado y funciones para gestionar tickets
+ */
+// Función helper para ordenar tickets por fecha de creación (más nuevo primero)
+const sortTicketsByDate = (tickets: Ticket[]): Ticket[] => {
+    return [...tickets].sort((a, b) => {
+        const dateA = new Date(a.created_at || 0).getTime();
+        const dateB = new Date(b.created_at || 0).getTime();
+        return dateB - dateA; // Orden descendente (más nuevo primero)
+    });
+};
 
 export function useTickets() {
     const { autoRefreshEnabled, autoRefreshInterval } = useSettings();
-    const [tickets, setTickets] = useState<any[]>([]);
+    const [tickets, setTickets] = useState<Ticket[]>([]);
     const [loading, setLoading] = useState(false);
     const [lastTicketCount, setLastTicketCount] = useState(0);
     const [isPolling, setIsPolling] = useState(false);
     const [lastFetchTime, setLastFetchTime] = useState<number>(0);
 
-    async function fetchTickets(showNotification = false) {
+    /**
+     * Obtiene todos los tickets con estado de visualización
+     * @param showNotification - Si es true, muestra notificación cuando hay nuevos tickets
+     * @returns Promise que se resuelve cuando se completan los tickets
+     */
+    const fetchTickets = useCallback(async (showNotification = false) => {
         // Implementar throttling para evitar múltiples llamadas muy seguidas
         const now = Date.now();
         if (now - lastFetchTime < 2000) { // Mínimo 2 segundos entre llamadas
-            //console.log('fetchTickets bloqueado por throttling');
             return;
         }
         setLastFetchTime(now);
@@ -27,7 +48,7 @@ export function useTickets() {
         try {
             // Usar el endpoint con estado de visualización
             const response = await api.get('/tickets/with-view-status');
-            let newTickets: any[] = [];
+            let newTickets: Ticket[] = [];
             
             if (Array.isArray(response)) {
                 newTickets = response;
@@ -36,7 +57,7 @@ export function useTickets() {
             } else if (response && typeof response === 'object' && !Array.isArray(response)) {
                 newTickets = [response];
             } else {
-                console.error('Unexpected data structure:', response);
+                logger.error('Unexpected data structure:', response);
                 newTickets = [];
             }
 
@@ -48,23 +69,21 @@ export function useTickets() {
                 Notiflix.Notify.info(`¡${newTicketsCount} nuevo${newTicketsCount > 1 ? 's' : ''} ticket${newTicketsCount > 1 ? 's' : ''} registrado${newTicketsCount > 1 ? 's' : ''}!`);
             }
             
-            // Ordenar tickets por fecha de creación (más nuevo primero)
-            // Si el ticket tiene estructura con .ticket (del nuevo endpoint), extraer el ticket
-            const sortedTickets = newTickets.map((item: any) => {
+            // Transformar tickets: si el ticket tiene estructura con .ticket (del nuevo endpoint), extraer el ticket
+            const transformedTickets = newTickets.map((item: Ticket & { ticket?: Ticket; isNew?: boolean; viewedAt?: Date }) => {
                 if (item.ticket) {
                     // Agregar propiedades de visualización al ticket
                     return {
                         ...item.ticket,
                         isNew: item.isNew,
                         viewedAt: item.viewedAt
-                    };
+                    } as Ticket & { isNew?: boolean; viewedAt?: Date };
                 }
                 return item;
-            }).sort((a, b) => {
-                const dateA = new Date(a.created_at || 0).getTime();
-                const dateB = new Date(b.created_at || 0).getTime();
-                return dateB - dateA; // Orden descendente (más nuevo primero)
             });
+            
+            // Ordenar tickets por fecha de creación (más nuevo primero)
+            const sortedTickets = sortTicketsByDate(transformedTickets);
             
             setTickets(sortedTickets);
             setLastTicketCount(currentCount);
@@ -77,8 +96,13 @@ export function useTickets() {
         } finally {
             if (!isPolling) setLoading(false);
         }
-    }
+    }, [lastFetchTime, isPolling, lastTicketCount]);
 
+    /**
+     * Obtiene un ticket específico por su ID
+     * @param id - ID del ticket a obtener
+     * @returns Promise que se resuelve con el ticket o null si hay error
+     */
     async function fetchTicketById(id: string) {
         setLoading(true);
         try {
@@ -95,6 +119,11 @@ export function useTickets() {
         }
     }
 
+    /**
+     * Marca un ticket como visto
+     * @param id - ID del ticket a marcar como visto
+     * @returns Promise que se resuelve con true si se marcó correctamente, false en caso contrario
+     */
     async function markTicketAsViewed(id: string) {
         try {
             // Buscar el ticket en el estado local para verificar si ya está marcado como visto
@@ -102,8 +131,7 @@ export function useTickets() {
             const currentTicket = tickets.find(t => t.id === ticketId);
             
             // Si el ticket ya no es nuevo (ya fue visto), no hacer la llamada
-            if (currentTicket && currentTicket.isNew === false) {
-                //console.log(`Ticket ${id} ya fue marcado como visto anteriormente`);
+            if (currentTicket && (currentTicket as Ticket & { isNew?: boolean }).isNew === false) {
                 return true;
             }
             
@@ -113,31 +141,41 @@ export function useTickets() {
             setTickets((prevTickets) => 
                 prevTickets.map(ticket => 
                     ticket.id === ticketId 
-                        ? { ...ticket, isNew: false, viewedAt: new Date() }
+                        ? { ...ticket, isNew: false, viewedAt: new Date() } as Ticket & { isNew?: boolean; viewedAt?: Date }
                         : ticket
                 )
             );
             
             return true;
         } catch (error) {
-            console.error("Error al marcar ticket como visto:", error);
+            logger.error("Error al marcar ticket como visto:", error);
             return false;
         }
     }
 
-    async function updateTicket(id: string, ticket: { summary?: string, description?: string, technician_id?: number | null, type_id?: number, priority?: string, status?: string, floor_id?: number | null, due_date?: string }) {
+    /**
+     * Actualiza un ticket existente
+     * @param id - ID del ticket a actualizar
+     * @param ticket - Datos parciales del ticket a actualizar
+     * @returns Promise que se resuelve con el ticket actualizado o null si hay error
+     */
+    async function updateTicket(id: string, ticket: UpdateTicketDto) {
         setLoading(true);
         try {
-            const response = await api.patch(`/tickets/${id}`, ticket);
+            // Validar datos con Zod
+            const validation = updateTicketSchema.safeParse(ticket);
+            if (!validation.success) {
+                const firstError = validation.error.errors[0];
+                Notiflix.Notify.failure(firstError.message || 'Error de validación');
+                return null;
+            }
+
+            const response = await api.patch(`/tickets/${id}`, validation.data);
 
             setTickets((prevTickets) => {
                 const updatedTickets = prevTickets.map(t => t.id === id ? { ...t, ...response } : t);
-                // Ordenamien por fecha de creacio
-                return updatedTickets.sort((a, b) => {
-                    const dateA = new Date(a.created_at || 0).getTime();
-                    const dateB = new Date(b.created_at || 0).getTime();
-                    return dateB - dateA; // Orden descendente
-                });
+                // Ordenar por fecha de creación usando la función helper
+                return sortTicketsByDate(updatedTickets);
             });
             // Emitir eventos específicos para la página de tickets
             eventEmitter.emit(TICKET_EVENTS.UPDATED, { id, data: response });
@@ -148,7 +186,6 @@ export function useTickets() {
             eventEmitter.emit('ticket-history-updated', parseInt(id));
             return response;
         } catch (error) {
-            //console.error("Error al actualizar el ticket:", error);
             Notiflix.Notify.failure(
                 error instanceof Error ? `Error al actualizar el ticket: ${error.message}` : 'Error al actualizar el ticket'
             );
@@ -158,10 +195,23 @@ export function useTickets() {
         }
     }
 
-    // debe de tomar end user dewsde local storage o contexto de auth
-    async function createTicket(ticket: { summary: string, description: string, end_user: string, technician_id: number | null, type_id: number, priority: string, status: string, floor_id: number | null, due_date: string }) {
+    /**
+     * Crea un nuevo ticket
+     * El end_user se obtiene automáticamente del localStorage
+     * @param ticket - Datos del ticket a crear
+     * @returns Promise que se resuelve cuando se crea el ticket
+     */
+    async function createTicket(ticket: CreateTicketDto) {
         setLoading(true);
         try {
+            // Validar datos con Zod
+            const validation = createTicketSchema.safeParse(ticket);
+            if (!validation.success) {
+                const firstError = validation.error.errors[0];
+                Notiflix.Notify.failure(firstError.message || 'Error de validación');
+                return;
+            }
+
             const userFromStorage = localStorage.getItem('user');
             let endUser = '';
             
@@ -170,12 +220,12 @@ export function useTickets() {
                     const userData = JSON.parse(userFromStorage);
                     endUser = userData.email || '';
                 } catch (error) {
-                    console.error('Error parsing user data from localStorage:', error);
+                    logger.error('Error parsing user data from localStorage:', error);
                     endUser = '';
                 }
             }
             
-            const response = await api.post('/tickets', { ...ticket, end_user: endUser });
+            const response = await api.post('/tickets', { ...validation.data, end_user: endUser });
 
             // En lugar de agregar el ticket básico, refrescar toda la lista para obtener los datos completos
             await fetchTickets();
@@ -188,7 +238,6 @@ export function useTickets() {
             eventEmitter.emit(GLOBAL_EVENTS.TICKETS_UPDATED);
             Notiflix.Notify.success(`Ticket creado correctamente`);
         } catch (error) {
-            //console.error("Error al crear el ticket:", error);
             Notiflix.Notify.failure(
                 error instanceof Error ? `Error al crear el ticket: ${error.message}` : 'Error al crear el ticket'
             );
@@ -197,6 +246,11 @@ export function useTickets() {
         }
     }
 
+    /**
+     * Elimina un ticket
+     * @param id - ID del ticket a eliminar
+     * @returns Promise que se resuelve con true si se eliminó correctamente, false en caso contrario
+     */
     async function deleteTicket(id: string) {
         setLoading(true);
         try {
@@ -211,7 +265,6 @@ export function useTickets() {
             Notiflix.Notify.success('Ticket eliminado correctamente');
             return true;
         } catch (error) {
-            //console.error("Error al eliminar el ticket:", error);
             Notiflix.Notify.failure(
                 error instanceof Error ? `Error al eliminar el ticket: ${error.message}` : 'Error al eliminar el ticket: Error desconocido'
             );
@@ -221,14 +274,21 @@ export function useTickets() {
         }
     }
 
+    /**
+     * Recarga los tickets desde el servidor
+     */
     const refetch = () => {
         fetchTickets();
     };
 
+    /**
+     * Exporta tickets a un archivo Excel
+     * @param ticketsToExport - Array de tickets a exportar (por defecto todos los tickets)
+     */
     const exportToExcel = (ticketsToExport = tickets) => {
         try {
             // datos a exportar
-            const dataToExport = ticketsToExport.map((ticket: any) => ({
+            const dataToExport = ticketsToExport.map((ticket: Ticket) => ({
                 'Número de Ticket': ticket.ticket_number || '',
                 'Título': ticket.summary || '',
                 'Descripción': ticket.description || '',
@@ -236,25 +296,25 @@ export function useTickets() {
                 'Técnico Asignado': ticket.technician ?
                     `${ticket.technician.name} ${ticket.technician.last_name}` :
                     'Sin asignar',
-                'Tipo': ticket.type?.type_name || 'Sin tipo',
+                'Tipo': (ticket as Ticket & { type?: { type_name: string } }).type?.type_name || 'Sin tipo',
                 'Prioridad': ticket.priority || '',
                 'Estado': ticket.status || '',
                 'Piso': ticket.floor?.floor_name || 'Sin piso',
-                'Área': ticket.area?.area_name || 'Sin área',
+                'Área': (ticket as Ticket & { area?: { area_name: string } }).area?.area_name || 'Sin área',
                 'Fecha de Creación': ticket.created_at ?
                     new Date(ticket.created_at).toLocaleString('es-ES') :
                     '',
-                'Fecha de Actualización': ticket.updated_at ?
-                    new Date(ticket.updated_at).toLocaleString('es-ES') :
+                'Fecha de Actualización': (ticket as Ticket & { updated_at?: string }).updated_at ?
+                    new Date((ticket as Ticket & { updated_at?: string }).updated_at!).toLocaleString('es-ES') :
                     '',
                 'Fecha Límite': ticket.due_date ?
                     new Date(ticket.due_date).toLocaleDateString('es-ES') :
                     'No establecida',
-                'Fecha de Asignación': ticket.assigned_at ?
-                    new Date(ticket.assigned_at).toLocaleString('es-ES') :
+                'Fecha de Asignación': (ticket as Ticket & { assigned_at?: string }).assigned_at ?
+                    new Date((ticket as Ticket & { assigned_at?: string }).assigned_at!).toLocaleString('es-ES') :
                     '',
-                'Fecha de Cierre': ticket.closed_at ?
-                    new Date(ticket.closed_at).toLocaleString('es-ES') :
+                'Fecha de Cierre': (ticket as Ticket & { closed_at?: string }).closed_at ?
+                    new Date((ticket as Ticket & { closed_at?: string }).closed_at!).toLocaleString('es-ES') :
                     ''
             }));
 
@@ -297,7 +357,7 @@ export function useTickets() {
             Notiflix.Notify.success(`Se han exportado ${dataToExport.length} tickets a Excel`);
 
         } catch (error) {
-            console.error('Error al exportar a Excel:', error);
+            logger.error('Error al exportar a Excel:', error);
             Notiflix.Notify.failure('Error al exportar a Excel');
         }
     };
@@ -311,14 +371,11 @@ export function useTickets() {
         // Solo iniciar polling si está habilitado en configuraciones
         if (autoRefreshEnabled) {
             setIsPolling(true);
-            //console.log(`Empezando polling cada ${autoRefreshInterval / 1000} segundos`);
             pollingInterval = setInterval(() => {
-               //console.log('Ejecutando auto-refresh de tickets');
                 fetchTickets(true); // true para mostrar notificaciones de nuevos tickets
             }, autoRefreshInterval);
         } else {
             setIsPolling(false);
-            //console.log('Auto-refresh is disabled');
         }
         
         // Cleanup: detener el polling cuando el componente se desmonte o cambien las configuraciones
@@ -328,7 +385,7 @@ export function useTickets() {
                 clearInterval(pollingInterval);
             }
         };
-    }, [autoRefreshEnabled, autoRefreshInterval]);
+    }, [autoRefreshEnabled, autoRefreshInterval, fetchTickets]);
 
     return { 
         tickets, 

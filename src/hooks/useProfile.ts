@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Notiflix from 'notiflix';
 import { UserProfile, UpdateProfileData } from '@/types/profile';
 import { api } from '@/lib/httpClient'
@@ -8,7 +8,7 @@ export const useProfile = (userId?: number) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const fetchProfile = async (id: number) => {
+    const fetchProfile = useCallback(async (id: number) => {
         if (!id) return;
         
         setLoading(true);
@@ -25,7 +25,7 @@ export const useProfile = (userId?: number) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     const updateProfile = async (updateData: UpdateProfileData): Promise<boolean> => {
         if (!profile?.id) return false;
@@ -64,7 +64,7 @@ export const useProfile = (userId?: number) => {
         if (userId) {
             fetchProfile(userId);
         }
-    }, [userId]);
+    }, [userId, fetchProfile]);
 
     return {
         profile,

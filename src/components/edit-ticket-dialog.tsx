@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useTickets } from "@/hooks/use_tickets";
+import { useTickets } from "@/hooks/useTickets";
 import { useUsers } from "@/hooks/useUsersAdmin";
-import { useType } from "@/hooks/use_typeTickets";
-import { useFloors } from "@/hooks/use_floors";
+import { useType } from "@/hooks/useTypeTickets";
+import { useFloors } from "@/hooks/useFloors";
 
 interface EditTicketDialogProps {
   ticket: any;
@@ -37,34 +37,59 @@ export function EditTicketDialog({ ticket, open, onOpenChange }: EditTicketDialo
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const previousTicketIdRef = useRef<string | number | null>(null);
+  const isEditingRef = useRef(false);
 
-  // Llenar formulario cuando cambie el ticket
-  useEffect(() => {
-    if (ticket) {
-      // Helper para convertir fecha de forma segura
-      const formatDate = (date: any): string => {
-        try {
-          if (!date) return "";
-          const dateStr = new Date(date).toISOString().split('T')[0];
-          return dateStr || "";
-        } catch {
-          return "";
-        }
-      };
-
-      setFormData({
-        summary: ticket.summary || "",
-        description: ticket.description || "",
-        technician_id: ticket.technician_id?.toString() || "0",
-        type_id: ticket.type_id?.toString() || "0",
-        priority: ticket.priority || "",
-        status: ticket.status || "",
-        floor_id: ticket.floor_id?.toString() || "0",
-        due_date: formatDate(ticket.due_date)
-      });
-      setErrors({});
+  // Helper para convertir fecha de forma segura
+  const formatDate = (date: any): string => {
+    try {
+      if (!date) return "";
+      const dateStr = new Date(date).toISOString().split('T')[0];
+      return dateStr || "";
+    } catch {
+      return "";
     }
-  }, [ticket]);
+  };
+
+  // Llenar formulario cuando cambie el ticket o cuando se abra el diálogo
+  // Solo sincronizar si el ticket cambió o si el diálogo se acaba de abrir
+  useEffect(() => {
+    if (ticket && open) {
+      const currentTicketId = ticket.id;
+      
+      // Solo sincronizar si:
+      // 1. Es un ticket diferente al anterior, o
+      // 2. Es la primera vez que se abre (previousTicketIdRef.current es null)
+      // Esto evita sobrescribir cambios del usuario mientras edita
+      if (previousTicketIdRef.current !== currentTicketId || previousTicketIdRef.current === null) {
+        setFormData({
+          summary: ticket.summary || "",
+          description: ticket.description || "",
+          technician_id: ticket.technician_id?.toString() || "0",
+          type_id: ticket.type_id?.toString() || "0",
+          priority: ticket.priority || "",
+          status: ticket.status || "",
+          floor_id: ticket.floor_id?.toString() || "0",
+          due_date: formatDate(ticket.due_date)
+        });
+        setErrors({});
+        previousTicketIdRef.current = currentTicketId;
+        isEditingRef.current = false;
+      }
+    }
+    
+    // Resetear cuando se cierra el diálogo
+    if (!open) {
+      isEditingRef.current = false;
+    }
+  }, [ticket, open]);
+
+  // Marcar que el usuario está editando cuando cambia cualquier campo
+  useEffect(() => {
+    if (open && ticket) {
+      isEditingRef.current = true;
+    }
+  }, [formData, open, ticket]);
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};

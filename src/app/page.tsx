@@ -21,16 +21,16 @@ export default function HomePage() {
     }
   }, [user, loading, isAuthenticated]);
 
-  // Show loading screen while determining auth state
-  if (loading) {
-    return <LoadingScreen message="Verificando autenticación..." />;
-  }
+  // // // Show loading screen while determining auth state
+  // // if (loading) {
+  // //   return <LoadingScreen message="Verificando autenticación..." />;
+  // // }
 
-  // Show loading screen while redirect is happening
-  if (!isAuthenticated || !user) {
-    return <LoadingScreen message="Redirigiendo al login..." />;
-  }
+  // // Show loading screen while redirect is happening
+  // if (!isAuthenticated || !user) {
+  //   return <LoadingScreen message="Redirigiendo al login..." />;
+  // }
 
-  // Show loading screen while redirect to dashboard is happening
-  return <LoadingScreen message="Redirigiendo al dashboard..." />;
+  // // Show loading screen while redirect to dashboard is happening
+  // return <LoadingScreen message="Redirigiendo al dashboard..." />;
 }

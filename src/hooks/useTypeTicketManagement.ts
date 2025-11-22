@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { useType } from "@/hooks/use_typeTickets";
+import { useType } from "@/hooks/useTypeTickets";
 import { useEventListener } from "@/hooks/useEventListener";
 import { ticketTypeSchema } from "@/lib/zod";
 import { TicketType } from "@/types/ticketType";

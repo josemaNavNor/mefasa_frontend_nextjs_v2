@@ -3,9 +3,10 @@ import Notiflix from 'notiflix';
 import { eventEmitter } from './useEventListener'
 import { api } from '@/lib/httpClient'
 import { FLOOR_EVENTS, GLOBAL_EVENTS } from '@/lib/events'
+import type { Floor } from '@/types'
 
 export function useFloors() {
-    const [floors, setFloors] = useState<any[]>([]);
+    const [floors, setFloors] = useState<Floor[]>([]);
     const [loading, setLoading] = useState(false);
 
     async function fetchFloors() {
@@ -38,7 +39,6 @@ export function useFloors() {
             eventEmitter.emit('floors-updated');
             Notiflix.Notify.success(`Planta ${floor.floor_name} creada correctamente`);
         } catch (error) {
-            //console.error("Error al crear el piso:", error);
             Notiflix.Notify.failure(
                 error instanceof Error ? `Error al crear el piso: ${error.message}` : 'Error al crear el piso: Error desconocido'
             );
@@ -62,7 +62,6 @@ export function useFloors() {
             Notiflix.Notify.success(`Planta ${floor.floor_name ?? ''} actualizada correctamente`);
             return response;
         } catch (error) {
-            //console.error("Error al actualizar la planta:", error);
             Notiflix.Notify.failure(
                 error instanceof Error ? `Error al actualizar la planta: ${error.message}` : 'Error al actualizar la planta: Error desconocido'
             );
@@ -85,7 +84,6 @@ export function useFloors() {
             Notiflix.Notify.success('Planta eliminada correctamente');
             return true;
         } catch (error) {
-            //console.error("Error al eliminar la planta:", error);
             Notiflix.Notify.failure(
                 error instanceof Error ? `Error al eliminar la planta: ${error.message}` : 'Error al eliminar la planta: Error desconocido'
             );
@@ -105,3 +103,5 @@ export function useFloors() {
 
     return { floors, loading, createFloor, refetch, updateFloor, deleteFloor };
 }
+
+

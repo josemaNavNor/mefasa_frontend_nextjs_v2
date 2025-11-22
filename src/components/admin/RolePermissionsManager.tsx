@@ -105,14 +105,14 @@ export default function RolePermissionsManager() {
     JSON.stringify(selectedPermissions.sort()) !== 
     JSON.stringify(getRolePermissionIds(selectedRole).sort());
 
-  if (loading && roles.length === 0) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <span className="ml-2">Cargando roles y permisos...</span>
-      </div>
-    );
-  }
+  // if (loading && roles.length === 0) {
+  //   return (
+  //     <div className="flex items-center justify-center p-8">
+  //       <Loader2 className="h-8 w-8 animate-spin" />
+  //       <span className="ml-2">Cargando roles y permisos...</span>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="space-y-6">
