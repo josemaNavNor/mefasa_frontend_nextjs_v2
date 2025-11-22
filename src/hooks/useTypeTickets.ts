@@ -59,7 +59,7 @@ export function useType() {
         try {
             const response = await api.patch(`/types/${id}`, type);
             setTypes((prevTypes) =>
-                prevTypes.map((t) => (t.id === id ? { ...t, ...response } : t))
+                prevTypes.map((t) => (t.id === String(id) ? { ...t, ...response } : t))
             );
             // Emitir eventos específicos para tipos de tickets
             eventEmitter.emit(TYPE_EVENTS.UPDATED, { id, data: response });
@@ -83,7 +83,7 @@ export function useType() {
         setLoading(true);
         try {
             await api.delete(`/types/${id}`);
-            setTypes((prevTypes) => prevTypes.filter((type) => type.id !== id));
+            setTypes((prevTypes) => prevTypes.filter((type) => type.id !== String(id)));
             // Emitir eventos específicos para tipos de tickets
             eventEmitter.emit(TYPE_EVENTS.DELETED, { id });
             // Mantener eventos globales para compatibilidad

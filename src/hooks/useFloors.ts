@@ -52,7 +52,7 @@ export function useFloors() {
         try {
             const response = await api.patch(`/floors/${id}`, floor);
             setFloors((prevFloors) =>
-                prevFloors.map((f) => (f.id === id ? { ...f, ...response } : f))
+                prevFloors.map((f) => (f.id.toString() === id.toString() ? { ...f, ...response } : f))
             );
             // Emitir eventos específicos para plantas
             eventEmitter.emit(FLOOR_EVENTS.UPDATED, { id, data: response });
@@ -75,7 +75,7 @@ export function useFloors() {
         setLoading(true);
         try {
             await api.delete(`/floors/${id}`);
-            setFloors((prevFloors) => prevFloors.filter((floor) => floor.id !== id));
+            setFloors((prevFloors) => prevFloors.filter((floor) => floor.id.toString() !== id.toString()));
             // Emitir eventos específicos para plantas
             eventEmitter.emit(FLOOR_EVENTS.DELETED, { id });
             // Mantener eventos globales para compatibilidad

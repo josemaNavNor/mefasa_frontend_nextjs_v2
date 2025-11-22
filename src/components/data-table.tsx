@@ -93,7 +93,8 @@ export function DataTable<TData, TValue>({
             }, 5000);
             return () => clearTimeout(timer);
         } else {
-            setShowNoData(false)
+            setShowNoData(false);
+            return undefined;
         }
     }, [hasRows])
 

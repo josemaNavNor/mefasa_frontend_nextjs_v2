@@ -165,15 +165,15 @@ export function useTickets() {
             // Validar datos con Zod
             const validation = updateTicketSchema.safeParse(ticket);
             if (!validation.success) {
-                const firstError = validation.error.errors[0];
-                Notiflix.Notify.failure(firstError.message || 'Error de validación');
+                const firstError = validation.error.issues[0];
+                Notiflix.Notify.failure(firstError?.message || 'Error de validación');
                 return null;
             }
 
             const response = await api.patch(`/tickets/${id}`, validation.data);
 
             setTickets((prevTickets) => {
-                const updatedTickets = prevTickets.map(t => t.id === id ? { ...t, ...response } : t);
+                const updatedTickets = prevTickets.map(t => t.id === Number(id) ? { ...t, ...response } : t);
                 // Ordenar por fecha de creación usando la función helper
                 return sortTicketsByDate(updatedTickets);
             });
@@ -207,8 +207,8 @@ export function useTickets() {
             // Validar datos con Zod
             const validation = createTicketSchema.safeParse(ticket);
             if (!validation.success) {
-                const firstError = validation.error.errors[0];
-                Notiflix.Notify.failure(firstError.message || 'Error de validación');
+                const firstError = validation.error.issues[0];
+                Notiflix.Notify.failure(firstError?.message || 'Error de validación');
                 return;
             }
 
