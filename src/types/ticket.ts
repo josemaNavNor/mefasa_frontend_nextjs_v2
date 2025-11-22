@@ -68,7 +68,7 @@ export interface TicketFile {
 }
 
 export interface Ticket {
-    id: string | number
+    id: number
     ticket_number: string
     summary: string
     description?: string

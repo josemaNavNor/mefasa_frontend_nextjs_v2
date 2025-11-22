@@ -248,16 +248,19 @@ export function useTickets() {
 
     /**
      * Elimina un ticket
-     * @param id - ID del ticket a eliminar
+     * @param id - ID del ticket a eliminar (puede ser string o number)
      * @returns Promise que se resuelve con true si se eliminó correctamente, false en caso contrario
      */
-    async function deleteTicket(id: string) {
+    async function deleteTicket(id: string | number) {
         setLoading(true);
         try {
-            await api.delete(`/tickets/${id}`);
-            setTickets((prevTickets) => prevTickets.filter((ticket) => ticket.id !== id));
+            // Convertir a string para la URL (las rutas HTTP siempre usan strings)
+            const idString = String(id);
+            await api.delete(`/tickets/${idString}`);
+            // Comparar ambos como strings para el filtro
+            setTickets((prevTickets) => prevTickets.filter((ticket) => String(ticket.id) !== idString));
             // Emitir eventos específicos para la página de tickets
-            eventEmitter.emit(TICKET_EVENTS.DELETED, { id });
+            eventEmitter.emit(TICKET_EVENTS.DELETED, { id: idString });
             eventEmitter.emit(TICKET_EVENTS.REFRESH_TICKETS_PAGE);
             // Mantener eventos globales para compatibilidad
             eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'tickets');

@@ -12,7 +12,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ArrowUpDown } from "lucide-react"
-import { TicketPage as Ticket } from "@/types/ticket"
+import type { Ticket } from "@/types/ticket"
 
 interface ColumnsProps {
     onEditTicket?: (ticket: Ticket) => void;
