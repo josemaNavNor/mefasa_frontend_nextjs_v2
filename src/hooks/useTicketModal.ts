@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { useTicketComments } from "@/hooks/useTicketsComments"
 import { useTicketHistory } from "@/hooks/useTicketHistory"
 import { useTickets } from "@/hooks/useTickets"
@@ -18,7 +18,7 @@ export const useTicketModal = (ticket: Ticket | null) => {
     const [selectedFiles, setSelectedFiles] = useState<File[]>([])
     const [currentUserId, setCurrentUserId] = useState<number | null>(null)
     const [localTicketUpdates, setLocalTicketUpdates] = useState<Partial<Ticket>>({})
-    const [markedAsViewedTickets, setMarkedAsViewedTickets] = useState<Set<string | number>>(new Set())
+    const markedAsViewedRef = useRef<Set<string | number>>(new Set())
     
     // Derivar ticketData del ticket prop y actualizaciones locales
     const ticketData = useMemo(() => {
@@ -44,22 +44,20 @@ export const useTicketModal = (ticket: Ticket | null) => {
 
     // Limpiar actualizaciones locales cuando cambie el ticket
     useEffect(() => {
-        if (ticket) {
+        if (ticket?.id) {
             setLocalTicketUpdates({})
             
             // Marcar ticket como visto cuando se abre el modal (solo una vez por ticket)
-            if (ticket.id) {
-                const ticketId = typeof ticket.id === 'string' ? ticket.id : ticket.id.toString()
-                const ticketIdKey = ticket.id.toString()
-                
-                // Solo marcar como visto si no lo hemos hecho antes
-                if (!markedAsViewedTickets.has(ticketIdKey)) {
-                    markTicketAsViewed(ticketId)
-                    setMarkedAsViewedTickets(prev => new Set(prev).add(ticketIdKey))
-                }
+            const ticketId = typeof ticket.id === 'string' ? ticket.id : ticket.id.toString()
+            const ticketIdKey = ticket.id.toString()
+            
+            // Solo marcar como visto si no lo hemos hecho antes
+            if (!markedAsViewedRef.current.has(ticketIdKey)) {
+                markedAsViewedRef.current.add(ticketIdKey)
+                markTicketAsViewed(ticketId)
             }
         }
-    }, [ticket?.id, markTicketAsViewed]) // Solo depender del ID del ticket
+    }, [ticket?.id]) // Solo depender del ID del ticket
 
     const handleTicketUpdate = async (field: string, newValue: any, oldValue: any) => {
         if (!ticket || !currentUserId) {
@@ -130,14 +128,11 @@ export const useTicketModal = (ticket: Ticket | null) => {
         }
     }
 
-    // Cleanup cuando el ticket cambie o se cierre el modal
+    // Limpiar referencias cuando el ticket cambie a null (modal cerrado)
     useEffect(() => {
-        return () => {
-            // Solo limpiar si el ticket es null (modal cerrado)
-            if (!ticket) {
-                setMarkedAsViewedTickets(new Set());
-            }
-        };
+        if (!ticket) {
+            markedAsViewedRef.current.clear();
+        }
     }, [ticket]);
 
     return {

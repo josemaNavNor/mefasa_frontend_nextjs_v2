@@ -62,7 +62,7 @@ function LoginCallbackContent() {
 
   const handleSetup2FA = () => {
     setShow2FAPrompt(false);
-    // Redirigir a la pagina de configuración de 2FA
+    // Redirigir a la pagina de configuracion de 2FA
     router.push('/setup-2fa?returnTo=/');
   };
 
