@@ -34,10 +34,10 @@ import {
 } from "@/components/ui/select"
 
 // Hook imports
-import { useTickets } from "@/hooks/useTickets";
-import { useType } from "@/hooks/useTypeTickets";
-import { useFloors } from "@/hooks/useFloors";
-import { useUsers } from "@/hooks/useUsersAdmin";
+import { useTicketsContext } from "@/contexts/TicketsContext";
+import { useTypesContext } from "@/contexts/TypesContext";
+import { useFloorsContext } from "@/contexts/FloorsContext";
+import { useUsersMinimalContext } from "@/contexts/UsersMinimalContext";
 import { useEventListener } from "@/hooks/useEventListener";
 import { useSettings } from "@/contexts/SettingsContext";
 
@@ -52,10 +52,10 @@ import type { Ticket } from "@/types";
 import { Filter } from "@/types/filter";
 
 export default function TicketsPage() {
-    const { tickets, createTicket, deleteTicket, refetch, exportToExcel, isPolling } = useTickets();
-    const { types } = useType();
-    const { users } = useUsers();
-    const { floors } = useFloors();
+    const { tickets, createTicket, deleteTicket, refetch, exportToExcel, isPolling } = useTicketsContext();
+    const { types } = useTypesContext();
+    const { users } = useUsersMinimalContext();
+    const { floors } = useFloorsContext();
     const { autoRefreshEnabled } = useSettings();
 
     const [ticket_number] = useState("");
@@ -187,7 +187,7 @@ export default function TicketsPage() {
     // Crear handlers
     const handlers = createTicketHandlers({
         createTicket,
-        deleteTicket,
+        deleteTicket: (id: string | number) => deleteTicket(id).then(() => true).catch(() => false),
         exportToExcel
     });
 

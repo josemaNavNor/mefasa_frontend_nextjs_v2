@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useMemo, useState, useCallback } from "react";
-import { useRoles } from "@/hooks/useRoles";
+import { useRolesContext } from "@/contexts/RolesContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useUserManagement } from "@/hooks/useUserManagement";
 import { useEventListener } from "@/hooks/useEventListener";
@@ -36,7 +36,7 @@ export default function UsersPage() {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [showEditPassword, setShowEditPassword] = useState(false);
     const [showEditConfirmPassword, setShowEditConfirmPassword] = useState(false);
-    const { roles } = useRoles();
+    const { roles } = useRolesContext();
     const {
         users,
         createUserForm,

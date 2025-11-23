@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { useType } from "@/hooks/useTypeTickets";
+import { useTypesContext } from "@/contexts/TypesContext";
 import { useEventListener } from "@/hooks/useEventListener";
 import { ticketTypeSchema } from "@/lib/zod";
 import { TicketType } from "@/types/ticketType";
@@ -14,7 +14,7 @@ interface TypeTicket {
 }
 
 export const useTypeTicketManagement = () => {
-    const { types, createTicketType, updateTicketType, deleteTicketType, refetch } = useType();
+    const { types, createTicketType, updateTicketType, deleteTicketType, refetch } = useTypesContext();
 
     // Estados para crear tipo de ticket
     const [type_name, setTicketTypeName] = useState("");

@@ -3,10 +3,10 @@
 import { useState, useEffect, useMemo, useRef } from "react"
 import { useTicketComments } from "@/hooks/useTicketsComments"
 import { useTicketHistory } from "@/hooks/useTicketHistory"
-import { useTickets } from "@/hooks/useTickets"
-import { useUsers } from "@/hooks/useUsersAdmin"
-import { useType } from "@/hooks/useTypeTickets"
-import { useFloors } from "@/hooks/useFloors"
+import { useTicketsContext } from "@/contexts/TicketsContext"
+import { useUsersMinimalContext } from "@/contexts/UsersMinimalContext"
+import { useTypesContext } from "@/contexts/TypesContext"
+import { useFloorsContext } from "@/contexts/FloorsContext"
 import Notiflix from 'notiflix';
 import { createHistoryDescription, getCurrentUserId } from "@/lib/ticket-utils"
 import { Ticket } from "@/types/ticket"
@@ -29,13 +29,13 @@ export const useTicketModal = (ticket: Ticket | null) => {
     const { comments, loading, createComment } = useTicketComments(
         ticket?.id ? (typeof ticket.id === 'string' ? parseInt(ticket.id) : ticket.id) : undefined
     )
-    const { updateTicket, markTicketAsViewed } = useTickets()
+    const { updateTicket, markTicketAsViewed } = useTicketsContext()
     const { history, createHistoryEntry } = useTicketHistory(
         ticket?.id ? (typeof ticket.id === 'string' ? parseInt(ticket.id) : ticket.id) : undefined
     )
-    const { users } = useUsers()
-    const { types } = useType()
-    const { floors } = useFloors()
+    const { users } = useUsersMinimalContext()
+    const { types } = useTypesContext()
+    const { floors } = useFloorsContext()
 
     // Inicializar usuario actual
     useEffect(() => {

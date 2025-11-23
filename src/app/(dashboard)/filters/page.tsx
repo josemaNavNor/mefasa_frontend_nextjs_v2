@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Edit, Trash2, Star, StarOff } from 'lucide-react';
-import { useFilters } from '@/hooks/useFilters';
-import { useUserFavFilters } from '@/hooks/useUserFavFilters';
+import { useFiltersContext } from '@/contexts/FiltersContext';
+import { useUserFavFiltersContext } from '@/contexts/UserFavFiltersContext';
 import { useEventListener } from '@/hooks/useEventListener';
 import { FilterDialog, FilterDetailDialog } from '@/components/filter';
 import { Filter } from '@/types/filter';
@@ -14,12 +14,12 @@ import { FILTER_EVENTS } from '@/lib/events';
 import { createFilterHandlers } from './filtersHandlers';
 
 export default function FiltersPage() {
-  const { filters, loading, error, deleteFilter, fetchFilters } = useFilters();
+  const { filters, loading, error, deleteFilter, fetchFilters } = useFiltersContext();
   const { 
     isFilterFavorite, 
     toggleFavorite, 
     loading: favLoading 
-  } = useUserFavFilters();
+  } = useUserFavFiltersContext();
   
   const [selectedFilter, setSelectedFilter] = useState<Filter | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);

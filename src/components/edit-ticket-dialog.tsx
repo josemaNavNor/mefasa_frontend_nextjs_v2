@@ -7,10 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useTickets } from "@/hooks/useTickets";
-import { useUsers } from "@/hooks/useUsersAdmin";
-import { useType } from "@/hooks/useTypeTickets";
-import { useFloors } from "@/hooks/useFloors";
+import { useTicketsContext } from "@/contexts/TicketsContext";
+import { useUsersMinimalContext } from "@/contexts/UsersMinimalContext";
+import { useTypesContext } from "@/contexts/TypesContext";
+import { useFloorsContext } from "@/contexts/FloorsContext";
 
 interface EditTicketDialogProps {
   ticket: any;
@@ -19,10 +19,10 @@ interface EditTicketDialogProps {
 }
 
 export function EditTicketDialog({ ticket, open, onOpenChange }: EditTicketDialogProps) {
-  const { updateTicket, loading } = useTickets();
-  const { users } = useUsers();
-  const { types } = useType();
-  const { floors } = useFloors();
+  const { updateTicket, loading } = useTicketsContext();
+  const { users } = useUsersMinimalContext();
+  const { types } = useTypesContext();
+  const { floors } = useFloorsContext();
 
   // Estados del formulario
   const [formData, setFormData] = useState({
@@ -154,13 +154,13 @@ export function EditTicketDialog({ ticket, open, onOpenChange }: EditTicketDialo
 
   // Filtrar soporte (usuarios con rol de técnico o administrador)
   const supportUsers = users.filter(user => {
-    // Verificar si tiene el campo role (singular) o roles (plural)
-    const userRole = user.role || user.roles?.[0];
+    // Verificar si tiene el campo role
+    const userRole = user.role;
 
     if (!userRole) return false;
 
-    // El campo en la base de datos es 'rol_name', no 'role_name'
-    const roleName = (userRole.role_name || userRole.role_name || '').toLowerCase().trim();
+    // El campo en la base de datos es 'role_name'
+    const roleName = (userRole.role_name || '').toLowerCase().trim();
 
     return roleName.includes('tecnico') ||
       roleName.includes('administrador') ||

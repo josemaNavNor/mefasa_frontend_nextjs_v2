@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
-import { useRoles } from "@/hooks/useRoles";
+import { useRolesContext } from "@/contexts/RolesContext";
 import { useEventListener } from "@/hooks/useEventListener";
 import { createRoleHandlers } from "@/app/(dashboard)/roles/rolesHandlers";
 import { Rol } from "@/types/rol";
@@ -13,7 +13,7 @@ interface Role {
 }
 
 export const useRoleManagement = () => {
-    const { roles, createRole, updateRole, deleteRole, refetch } = useRoles();
+    const { roles, createRole, updateRole, deleteRole, refetch } = useRolesContext();
 
     // Estados para crear rol
     const [role_name, setRolName] = useState("");

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 // import { ScrollArea } from '@/components/ui/scroll-area';
 import { Star, Filter as FilterIcon, X } from 'lucide-react';
-import { useUserFavFilters } from '@/hooks/useUserFavFilters';
+import { useUserFavFiltersContext } from '@/contexts/UserFavFiltersContext';
 import { Filter } from '@/types/filter';
 import Loading from '@/components/loading';
 
@@ -17,7 +17,7 @@ interface FavoriteFiltersProps {
 }
 
 export function FavoriteFilters({ onApplyFilter, activeFilter, onClearFilter }: FavoriteFiltersProps) {
-  const { userFavFilters, loading, error } = useUserFavFilters();
+  const { userFavFilters, loading, error } = useUserFavFiltersContext();
   const [collapsed, setCollapsed] = useState(false);
 
   // Validación defensiva para asegurar que userFavFilters sea un array

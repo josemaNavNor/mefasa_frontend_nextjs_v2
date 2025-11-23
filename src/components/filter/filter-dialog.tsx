@@ -11,10 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Trash2 } from 'lucide-react';
-import { useFilters } from '@/hooks/useFilters';
-import { useFloors } from '@/hooks/useFloors';
-import { useType } from '@/hooks/useTypeTickets';
-import { useUsers } from '@/hooks/useUsersAdmin';
+import { useFiltersContext } from '@/contexts/FiltersContext';
+import { useFloorsContext } from '@/contexts/FloorsContext';
+import { useTypesContext } from '@/contexts/TypesContext';
+import { useUsersMinimalContext } from '@/contexts/UsersMinimalContext';
 import { eventEmitter } from '@/hooks/useEventListener';
 import { FILTER_EVENTS } from '@/lib/events';
 import { 
@@ -73,10 +73,10 @@ const operatorLabels: Record<string, string> = {
 };
 
 export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProps) {
-  const { createFilter, updateFilter, loading } = useFilters();
-  const { floors } = useFloors();
-  const { types } = useType();
-  const { users } = useUsers();
+  const { createFilter, updateFilter, loading } = useFiltersContext();
+  const { floors } = useFloorsContext();
+  const { types } = useTypesContext();
+  const { users } = useUsersMinimalContext();
   
   const [formData, setFormData] = useState<FilterFormData>({
     filter_name: '',

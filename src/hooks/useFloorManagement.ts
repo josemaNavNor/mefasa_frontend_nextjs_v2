@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
-import { useFloors } from "@/hooks/useFloors";
+import { useFloorsContext } from "@/contexts/FloorsContext";
 import { useEventListener } from "@/hooks/useEventListener";
 import { createFloorHandlers } from "@/app/(dashboard)/floors/floorHandlers";
 import { Floor, FormsFloor } from "@/types/floor";
@@ -7,7 +7,7 @@ import { FLOOR_EVENTS } from "@/lib/events";
 import { eventEmitter } from "./useEventListener";
 
 export const useFloorManagement = () => {
-    const { floors, createFloor, updateFloor, deleteFloor, refetch } = useFloors();
+    const { floors, createFloor, updateFloor, deleteFloor, refetch } = useFloorsContext();
 
     // Estados para crear planta
     const [floor_name, setFloorName] = useState("");
