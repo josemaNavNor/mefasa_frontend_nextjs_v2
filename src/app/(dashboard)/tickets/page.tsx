@@ -107,6 +107,7 @@ export default function TicketsPage() {
                     'type_id': 'type_id',
                     'floor_id': 'floor_id',
                     'technician_id': 'technician_id',
+                    'assigned_to': 'technician_id',
                     'created_at': 'created_at',
                     'updated_at': 'updated_at'
                 };

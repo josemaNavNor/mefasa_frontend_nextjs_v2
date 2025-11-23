@@ -4,6 +4,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Filter, TicketFilterField, FilterOperator, LogicalOperator } from '@/types/filter';
+import { useFloorsContext } from '@/contexts/FloorsContext';
+import { useTypesContext } from '@/contexts/TypesContext';
+import { useUsersMinimalContext } from '@/contexts/UsersMinimalContext';
 
 interface FilterDetailDialogProps {
   isOpen: boolean;
@@ -35,14 +38,14 @@ const operatorLabels: Record<string, string> = {
   [FilterOperator.LESS_THAN]: 'Menor que',
   [FilterOperator.GREATER_EQUAL]: 'Mayor o igual que',
   [FilterOperator.LESS_EQUAL]: 'Menor o igual que',
-  [FilterOperator.IN]: 'En lista',
-  [FilterOperator.NOT_IN]: 'No en lista',
-  [FilterOperator.IS_NULL]: 'Es nulo',
-  [FilterOperator.IS_NOT_NULL]: 'No es nulo',
 };
 
 export function FilterDetailDialog({ isOpen, onClose, filter }: FilterDetailDialogProps) {
   if (!filter) return null;
+
+  const { floors } = useFloorsContext();
+  const { types } = useTypesContext();
+  const { users } = useUsersMinimalContext();
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('es-ES', {
@@ -52,6 +55,52 @@ export function FilterDetailDialog({ isOpen, onClose, filter }: FilterDetailDial
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  const formatCriterionValue = (fieldName: string, value: string): string => {
+    // Si el campo es "assigned_to", buscar el nombre del usuario
+    if (fieldName === TicketFilterField.ASSIGNED_TO) {
+      const userId = parseInt(value);
+      const user = users.find(u => u.id === userId);
+      if (user) {
+        return `${user.name} ${user.last_name}`;
+      }
+      return value; // Si no se encuentra, devolver el valor original
+    }
+
+    // Si el campo es "type_id", buscar el nombre del tipo
+    if (fieldName === TicketFilterField.TYPE_ID) {
+      const typeId = parseInt(value);
+      const type = types.find(t => t.id.toString() === typeId.toString());
+      if (type) {
+        return type.type_name;
+      }
+      return value;
+    }
+
+    // Si el campo es "floor_id", buscar el nombre de la planta
+    if (fieldName === TicketFilterField.FLOOR_ID) {
+      const floorId = parseInt(value);
+      const floor = floors.find(f => f.id.toString() === floorId.toString());
+      if (floor) {
+        return floor.floor_name;
+      }
+      return value;
+    }
+
+    // Para campos de fecha, formatear si es posible
+    if (fieldName === TicketFilterField.CREATED_AT || fieldName === TicketFilterField.UPDATED_AT) {
+      if (value && value.match(/^\d{4}-\d{2}-\d{2}/)) {
+        try {
+          return formatDate(value);
+        } catch {
+          return value;
+        }
+      }
+    }
+
+    // Para otros campos, devolver el valor tal cual
+    return value;
   };
 
   return (
@@ -138,7 +187,7 @@ export function FilterDetailDialog({ isOpen, onClose, filter }: FilterDetailDial
                         <div className="flex items-center gap-2">
                           <span className="font-medium text-muted-foreground min-w-[80px]">Valor:</span>
                           <code className="bg-muted px-2 py-1 rounded text-xs">
-                            {criterion.value}
+                            {formatCriterionValue(criterion.field_name, criterion.value)}
                           </code>
                         </div>
                       </div>

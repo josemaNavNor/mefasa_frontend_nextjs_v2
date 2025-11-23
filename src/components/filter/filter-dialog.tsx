@@ -66,10 +66,6 @@ const operatorLabels: Record<string, string> = {
   [FilterOperator.LESS_THAN]: 'Menor que',
   [FilterOperator.GREATER_EQUAL]: 'Mayor o igual que',
   [FilterOperator.LESS_EQUAL]: 'Menor o igual que',
-  [FilterOperator.IN]: 'En lista',
-  [FilterOperator.NOT_IN]: 'No en lista',
-  [FilterOperator.IS_NULL]: 'Es nulo',
-  [FilterOperator.IS_NOT_NULL]: 'No es nulo',
 };
 
 export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProps) {
