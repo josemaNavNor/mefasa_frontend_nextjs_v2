@@ -41,11 +41,11 @@ const operatorLabels: Record<string, string> = {
 };
 
 export function FilterDetailDialog({ isOpen, onClose, filter }: FilterDetailDialogProps) {
-  if (!filter) return null;
-
   const { floors } = useFloorsContext();
   const { types } = useTypesContext();
   const { users } = useUsersMinimalContext();
+
+  if (!filter) return null;
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('es-ES', {
