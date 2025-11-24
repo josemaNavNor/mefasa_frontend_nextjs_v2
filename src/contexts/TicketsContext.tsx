@@ -54,7 +54,7 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
 export function useTicketsContext() {
     const context = useContext(TicketsContext);
     if (context === undefined) {
-        throw new Error('useTicketsContext must be used within a TicketsProvider');
+        throw new Error('useTicketsContext debe ser usado dentro de un TicketsProvider');
     }
     return context;
 }

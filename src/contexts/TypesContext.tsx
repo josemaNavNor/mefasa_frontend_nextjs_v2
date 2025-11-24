@@ -28,7 +28,7 @@ export function TypesProvider({ children }: { children: ReactNode }) {
 export function useTypesContext() {
     const context = useContext(TypesContext);
     if (context === undefined) {
-        throw new Error('useTypesContext must be used within a TypesProvider');
+        throw new Error('useTypesContext debe ser usado dentro de un TypesProvider');
     }
     return context;
 }

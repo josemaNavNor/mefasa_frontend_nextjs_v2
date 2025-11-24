@@ -34,7 +34,7 @@ export function RolesProvider({ children }: { children: ReactNode }) {
 export function useRolesContext() {
     const context = useContext(RolesContext);
     if (context === undefined) {
-        throw new Error('useRolesContext must be used within a RolesProvider');
+        throw new Error('useRolesContext debe ser usado dentro de un RolesProvider');
     }
     return context;
 }

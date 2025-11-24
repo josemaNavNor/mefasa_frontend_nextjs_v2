@@ -37,7 +37,7 @@ export function FiltersProvider({ children }: { children: ReactNode }) {
 export function useFiltersContext() {
     const context = useContext(FiltersContext);
     if (context === undefined) {
-        throw new Error('useFiltersContext must be used within a FiltersProvider');
+        throw new Error('useFiltersContext debe ser usado dentro de un FiltersProvider');
     }
     return context;
 }

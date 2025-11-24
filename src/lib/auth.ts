@@ -19,9 +19,6 @@ interface AuthResponse {
 }
 
 class AuthService {
-  // Ya no necesitamos baseUrl porque httpClient lo maneja
-  // private readonly baseUrl = `${API_CONFIG.baseUrl}/api/${API_CONFIG.version}`;
-
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
       const response = await api.post('/auth/login-2fa', credentials);

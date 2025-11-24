@@ -28,7 +28,7 @@ export function FloorsProvider({ children }: { children: ReactNode }) {
 export function useFloorsContext() {
     const context = useContext(FloorsContext);
     if (context === undefined) {
-        throw new Error('useFloorsContext must be used within a FloorsProvider');
+        throw new Error('useFloorsContext debe ser usado dentro de un FloorsProvider');
     }
     return context;
 }

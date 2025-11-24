@@ -54,7 +54,7 @@ export function UserFavFiltersProvider({ children }: { children: ReactNode }) {
 export function useUserFavFiltersContext() {
     const context = useContext(UserFavFiltersContext);
     if (context === undefined) {
-        throw new Error('useUserFavFiltersContext must be used within a UserFavFiltersProvider');
+        throw new Error('useUserFavFiltersContext debe ser usado dentro de un UserFavFiltersProvider');
     }
     return context;
 }

@@ -1,8 +1,7 @@
 "use client";
 
 import { createContext, useContext, ReactNode } from 'react';
-import { useUsersMinimal } from '@/hooks/useUsersMinimal';
-import { MinimalUser } from '@/hooks/useUsersMinimal';
+import { useUsersMinimal, MinimalUser } from '@/hooks/useUsersMinimal';
 
 interface UsersMinimalContextType {
     users: MinimalUser[];
@@ -24,7 +23,7 @@ export function UsersMinimalProvider({ children }: { children: ReactNode }) {
 export function useUsersMinimalContext() {
     const context = useContext(UsersMinimalContext);
     if (context === undefined) {
-        throw new Error('useUsersMinimalContext must be used within a UsersMinimalProvider');
+        throw new Error('useUsersMinimalContext debe ser usado dentro de un UsersMinimalProvider');
     }
     return context;
 }

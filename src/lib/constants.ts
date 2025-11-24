@@ -31,17 +31,15 @@ export const USER_ROLES = {
 } as const;
 
 export const TICKET_STATUS = {
-  PENDING: "Pendiente",
+  OPEN: "Abierto",
   IN_PROGRESS: "En Progreso",
-  RESOLVED: "Resuelto",
   CLOSED: "Cerrado",
 } as const;
 
 export const TICKET_PRIORITY = {
   LOW: "Baja",
   MEDIUM: "Media", 
-  HIGH: "Alta",
-  URGENT: "Urgente",
+  HIGH: "Alta"
 } as const;
 
 export const NOTIFICATION_TYPES = {
