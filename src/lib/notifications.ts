@@ -80,11 +80,26 @@ class NotificationService {
     onConfirm: () => void,
     onCancel?: () => void
   ): void {
-    if (window.confirm(`${title}\n\n${message}`)) {
-      onConfirm();
-    } else if (onCancel) {
-      onCancel();
-    }
+    const toastId = toast(title, {
+      description: message,
+      duration: Infinity, // No se cierra automáticamente
+      action: {
+        label: 'Confirmar',
+        onClick: () => {
+          onConfirm();
+          toast.dismiss(toastId);
+        },
+      },
+      cancel: {
+        label: 'Cancelar',
+        onClick: () => {
+          if (onCancel) {
+            onCancel();
+          }
+          toast.dismiss(toastId);
+        },
+      },
+    });
   }
 }
 

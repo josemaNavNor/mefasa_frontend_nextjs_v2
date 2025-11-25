@@ -47,7 +47,7 @@ export const createFilterHandlers = ({
                 }
             },
             () => {
-                // Usuario canceló, no hacer nada
+                // Usuario cancelo, no hacer nada
             }
         );
     };
