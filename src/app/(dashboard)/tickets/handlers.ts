@@ -1,16 +1,89 @@
 import { notifications } from '@/lib/notifications';
+import { api } from '@/lib/httpClient';
+import { eventEmitter } from '@/hooks/useEventListener';
+import { TICKET_EVENTS, GLOBAL_EVENTS } from '@/lib/events';
+import { createTicketSchema } from '@/lib/zod';
 import type { Ticket, CreateTicketDto } from '@/types';
+import { logger } from '@/lib/logger';
 
 interface TicketHandlersProps {
     createTicket: (data: CreateTicketDto) => Promise<void>;
     deleteTicket: (id: string | number) => Promise<boolean>;
     exportToExcel: (ticketsToExport?: Ticket[]) => void;
+    refetch: () => Promise<void>;
 }
+
+/**
+ * Convierte un archivo a base64
+ */
+const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+            const result = reader.result as string;
+            resolve(result);
+        };
+        reader.onerror = (error) => reject(error);
+    });
+};
+
+/**
+ * Sube un archivo al servidor
+ */
+const uploadFile = async (file: File, ticketId: number): Promise<void> => {
+    try {
+        const base64Data = await fileToBase64(file);
+        
+        await api.post('/files', {
+            filename: file.name,
+            file_type: file.type,
+            ticket_id: ticketId,
+            file_data: base64Data,
+        });
+    } catch (error) {
+        throw new Error(
+            error instanceof Error 
+                ? `Error al subir "${file.name}": ${error.message}`
+                : `Error al subir "${file.name}"`
+        );
+    }
+};
+
+/**
+ * Sube múltiples archivos para un ticket
+ */
+const uploadFiles = async (files: File[], ticketId: number): Promise<void> => {
+    if (files.length === 0) return;
+
+    const uploadPromises = files.map((file) => uploadFile(file, ticketId));
+    const results = await Promise.allSettled(uploadPromises);
+
+    const errors: string[] = [];
+    results.forEach((result, index) => {
+        if (result.status === 'rejected') {
+            errors.push(result.reason?.message || `Error al subir ${files[index].name}`);
+        }
+    });
+
+    if (errors.length > 0) {
+        if (errors.length === files.length) {
+            // Todos los archivos fallaron
+            throw new Error(`Error al subir archivos: ${errors.join(', ')}`);
+        } else {
+            // Algunos archivos fallaron
+            notifications.warning(
+                `Se subieron ${files.length - errors.length} de ${files.length} archivos. Errores: ${errors.join(', ')}`
+            );
+        }
+    }
+};
 
 export const createTicketHandlers = ({
     createTicket,
     deleteTicket,
-    exportToExcel
+    exportToExcel,
+    refetch
 }: TicketHandlersProps) => {
     
     const handleDelete = (ticket: Ticket): void => {
@@ -52,13 +125,16 @@ export const createTicketHandlers = ({
             setDueDate: (value: string) => void;
             setErrors: (errors: { [key: string]: string }) => void;
         },
+        files: File[],
+        setFiles: (files: File[]) => void,
         onSuccess?: () => void
     ) => {
         e.preventDefault();
         setters.setErrors({});
 
         try {
-            await createTicket({
+            // Preparar datos del ticket
+            const ticketData: CreateTicketDto = {
                 ticket_number: formData.ticket_number,
                 summary: formData.summary,
                 description: formData.description,
@@ -69,7 +145,65 @@ export const createTicketHandlers = ({
                 priority: formData.priority,
                 status: formData.status,
                 due_date: formData.due_date
-            });
+            };
+
+            // Validar datos con Zod
+            const validation = createTicketSchema.safeParse(ticketData);
+            if (!validation.success) {
+                const firstError = validation.error.issues[0];
+                notifications.error(firstError?.message || 'Error de validación');
+                setters.setErrors({
+                    [firstError.path[0] as string]: firstError.message
+                });
+                return;
+            }
+
+            // Obtener usuario del localStorage para end_user
+            const userFromStorage = localStorage.getItem('user');
+            let endUser = formData.end_user;
+            
+            if (userFromStorage) {
+                try {
+                    const userData = JSON.parse(userFromStorage);
+                    endUser = userData.email || formData.end_user;
+                } catch (error) {
+                    logger.error('Error parsing user data from localStorage:', error);
+                    endUser = formData.end_user;
+                }
+            }
+
+            // Crear el ticket directamente para obtener la respuesta con el ID
+            const response = await api.post('/tickets', { ...validation.data, end_user: endUser });
+            const createdTicket = response as Ticket;
+
+            // Subir archivos si el ticket se creó correctamente
+            if (createdTicket && files.length > 0) {
+                try {
+                    await uploadFiles(files, createdTicket.id);
+                    if (files.length > 0) {
+                        notifications.success(`${files.length} archivo(s) subido(s) correctamente`);
+                    }
+                } catch (uploadError) {
+                    // El ticket ya se creó, pero hubo error al subir archivos
+                    notifications.warning(
+                        uploadError instanceof Error 
+                            ? uploadError.message 
+                            : 'El ticket se creó pero hubo problemas al subir algunos archivos'
+                    );
+                }
+            }
+
+            // Refrescar la lista de tickets
+            await refetch();
+            
+            // Emitir eventos específicos para la página de tickets
+            eventEmitter.emit(TICKET_EVENTS.CREATED, response);
+            eventEmitter.emit(TICKET_EVENTS.REFRESH_TICKETS_PAGE);
+            // Mantener eventos globales para compatibilidad
+            eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'tickets');
+            eventEmitter.emit(GLOBAL_EVENTS.TICKETS_UPDATED);
+            
+            notifications.success('Ticket creado correctamente');
 
             // Reset form
             setters.setSummary("");
@@ -81,6 +215,7 @@ export const createTicketHandlers = ({
             setters.setPriority("");
             setters.setStatus("");
             setters.setDueDate("");
+            setFiles([]);
 
             // Call success callback to close the sheet
             if (onSuccess) {

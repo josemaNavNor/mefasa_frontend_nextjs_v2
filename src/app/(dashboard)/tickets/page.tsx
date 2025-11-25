@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { SimpleDatePicker } from "@/components/ui/simple-date-picker"
+import { TiptapEditor } from "@/components/ui/tiptap-editor"
+import { FileUpload } from "@/components/ui/file-upload"
 import { EditTicketDialog } from "@/components/edit-ticket-dialog";
 import { TicketDetailsModal } from "@/components/ticket-details-modal";
 import { FavoriteFilters } from "@/components/filter";
@@ -69,6 +71,7 @@ export default function TicketsPage() {
     const [status, setStatus] = useState("");
     const [due_date, setDueDate] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
     // Estado para edición de tickets
     const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
@@ -189,7 +192,8 @@ export default function TicketsPage() {
     const handlers = createTicketHandlers({
         createTicket,
         deleteTicket: (id: string | number) => deleteTicket(id).then(() => true).catch(() => false),
-        exportToExcel
+        exportToExcel,
+        refetch
     });
 
     // Wrapper functions para los handlers
@@ -218,7 +222,7 @@ export default function TicketsPage() {
             setErrors
         };
 
-        await handlers.handleSubmit(e, formData, setters, () => {
+        await handlers.handleSubmit(e, formData, setters, selectedFiles, setSelectedFiles, () => {
             setSheetOpen(false); // Cerrar el sheet cuando se crea exitosamente
         });
     }, [handlers, ticket_number, summary, description, end_user, technician_id, type_id, floor_id, priority, status, due_date]);
@@ -290,7 +294,13 @@ export default function TicketsPage() {
             </div>
             
             <div className="flex gap-2 mb-4">
-                <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+                <Sheet open={sheetOpen} onOpenChange={(open) => {
+                    setSheetOpen(open);
+                    if (!open) {
+                        // Limpiar archivos cuando se cierra el sheet
+                        setSelectedFiles([]);
+                    }
+                }}>
                     <SheetTrigger asChild>
                         <Button variant="outline">Agregar Ticket</Button>
                     </SheetTrigger>
@@ -318,15 +328,20 @@ export default function TicketsPage() {
 
                             <div className="grid gap-3">
                                 <Label htmlFor="description">Descripción</Label>
-                                <Input
-                                    id="description"
-                                    type="text"
-                                    autoComplete="off"
+                                <TiptapEditor
+                                    content={description}
+                                    onChange={setDescription}
                                     placeholder="Descripción del ticket"
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
                                     className="w-full"
-                                    required
+                                />
+                            </div>
+
+                            <div className="grid gap-3">
+                                <Label>Archivos adjuntos (opcional)</Label>
+                                <FileUpload
+                                    files={selectedFiles}
+                                    onFilesChange={setSelectedFiles}
+                                    maxSizeMB={40}
                                 />
                             </div>
 

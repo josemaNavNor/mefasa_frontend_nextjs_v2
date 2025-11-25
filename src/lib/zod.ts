@@ -177,6 +177,11 @@ export const createTicketSchema = z.object({
         .max(255, { message: "El título no puede tener más de 255 caracteres" }),
     description: z.string()
         .min(1, { message: "La descripción es requerida" })
+        .refine((val) => {
+            // Remover tags HTML y espacios para verificar si hay contenido real
+            const textContent = val.replace(/<[^>]*>/g, '').trim();
+            return textContent.length > 0;
+        }, { message: "La descripción es requerida" })
         .max(2000, { message: "La descripción no puede tener más de 2000 caracteres" }),
     end_user: z.string()
         .email({ message: "Debe ser un email válido" })
