@@ -82,13 +82,13 @@ export default function Login() {
 
     if (!result.success) {
       let errorMessage = result.error || 'Error al iniciar sesión';
-      
+
       // Manejar caso especifico de email no verificado
-      if (errorMessage.toLowerCase().includes('verificar') || 
-          errorMessage.toLowerCase().includes('verify') ||
-          errorMessage.toLowerCase().includes('email no verificado')) {
+      if (errorMessage.toLowerCase().includes('verificar') ||
+        errorMessage.toLowerCase().includes('verify') ||
+        errorMessage.toLowerCase().includes('email no verificado')) {
       }
-      
+
       setError(errorMessage);
     }
 
@@ -166,14 +166,6 @@ export default function Login() {
           </CardAction>
         </CardHeader>
         <CardContent>
-          {error && (
-            <Alert className="mb-4 border-red-200 bg-red-50">
-              <AlertDescription className="text-red-800">
-                {error}
-              </AlertDescription>
-            </Alert>
-          )}
-          
           <form onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
@@ -218,6 +210,13 @@ export default function Login() {
                   <p className="text-sm text-red-500">{validationErrors.password}</p>
                 )}
               </div>
+              {error && (
+                <Alert className="mb-4 border-red-200 bg-red-50">
+                  <AlertDescription className="text-red-800">
+                    {error}
+                  </AlertDescription>
+                </Alert>
+              )}
               <div className="grid gap-2">
                 <Label htmlFor="otp">Código de verificación (opcional)</Label>
                 <p className="text-xs text-muted-foreground mb-1">
