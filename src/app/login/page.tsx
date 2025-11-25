@@ -118,7 +118,7 @@ export default function Login() {
         window.location.href = authUrl;
       } else {
         console.error('Respuesta del backend:', data);
-        console.error('No se encontró authUrl en:', {
+        console.error('No se encontro authUrl en:', {
           'data.data': data.data,
           'data.authUrl': data.authUrl,
           'data.data?.authUrl': data.data?.authUrl
