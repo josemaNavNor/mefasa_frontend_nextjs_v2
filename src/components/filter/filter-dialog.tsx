@@ -369,13 +369,22 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
                 <p className="text-red-500 text-xs mt-1">{errors.filter_name}</p>
               )}
             </div>
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="is_public"
-                checked={formData.is_public}
-                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_public: checked }))}
-              />
-              <Label htmlFor="is_public">Filtro público</Label>
+            <div className="flex flex-col space-y-2">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="is_public"
+                  checked={formData.is_public}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_public: checked }))}
+                />
+                <Label htmlFor="is_public" className="cursor-pointer">
+                  Filtro público
+                </Label>
+              </div>
+              <p className="text-xs text-muted-foreground ml-8">
+                {formData.is_public 
+                  ? "Este filtro será visible para todos los usuarios" 
+                  : "Este filtro será privado y solo tú podrás verlo"}
+              </p>
             </div>
           </div>
 

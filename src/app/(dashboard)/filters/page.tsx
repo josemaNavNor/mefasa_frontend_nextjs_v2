@@ -116,8 +116,10 @@ export default function FiltersPage() {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2 mb-4">
-                {filter.is_public && (
+                {filter.is_public ? (
                   <Badge variant="secondary">Público</Badge>
+                ) : (
+                  <Badge variant="outline" className="border-orange-500 text-orange-700">Privado</Badge>
                 )}
                 {filter.is_system_default && (
                   <Badge variant="default">Sistema</Badge>
@@ -128,6 +130,11 @@ export default function FiltersPage() {
                   </Badge>
                 )}
               </div>
+              {filter.is_public && filter.user && (
+                <p className="text-xs text-muted-foreground mb-2">
+                  Creado por: {filter.user.name} {filter.user.last_name}
+                </p>
+              )}
               
               <div className="flex gap-2">
                 <Button
