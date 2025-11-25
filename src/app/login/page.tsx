@@ -83,11 +83,10 @@ export default function Login() {
     if (!result.success) {
       let errorMessage = result.error || 'Error al iniciar sesión';
       
-      // Manejar caso específico de email no verificado
+      // Manejar caso especifico de email no verificado
       if (errorMessage.toLowerCase().includes('verificar') || 
           errorMessage.toLowerCase().includes('verify') ||
           errorMessage.toLowerCase().includes('email no verificado')) {
-        errorMessage = 'Debes verificar tu email antes de poder iniciar sesión. Revisa tu bandeja de entrada y haz clic en el enlace de verificación.';
       }
       
       setError(errorMessage);
@@ -101,7 +100,7 @@ export default function Login() {
       setMicrosoftLoading(true);
       setError('');
 
-      // Obtener URL de autorizacion del backend usando api
+      // Obtener URL de autorizacion del backend usando API
       const data = await api.get('/auth/microsoft/login');
       //console.log('Respuesta del backend:', data);
 
@@ -111,10 +110,10 @@ export default function Login() {
         authUrl = data.authUrl;
       }
 
-      //console.log('URL de autorización extraída:', authUrl);
+      //console.log('URL de autorizacion extraida:', authUrl);
 
       if (authUrl) {
-        // Redirigir directamente a Microsoft
+        // Redirigir directamente a Microsoft Autorization
         window.location.href = authUrl;
       } else {
         console.error('Respuesta del backend:', data);
@@ -123,7 +122,7 @@ export default function Login() {
           'data.authUrl': data.authUrl,
           'data.data?.authUrl': data.data?.authUrl
         });
-        throw new Error('No se recibió URL de autorización del servidor');
+        throw new Error('No se recibio URL de autorizacion del servidor');
       }
     } catch (error) {
       console.error('Error en login con Microsoft:', error);
@@ -133,14 +132,14 @@ export default function Login() {
     }
   };
 
-  // Manejar errores de URL
+  // Manejar errores de URL Authorization
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const error = urlParams.get('error');
 
     if (error) {
       setError(decodeURIComponent(error));
-      // Limpiar URL
+      // Limpiar URL Authorization
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, []);
