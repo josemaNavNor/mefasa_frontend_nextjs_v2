@@ -7,7 +7,7 @@ import { useTicketsContext } from "@/contexts/TicketsContext"
 import { useUsersMinimalContext } from "@/contexts/UsersMinimalContext"
 import { useTypesContext } from "@/contexts/TypesContext"
 import { useFloorsContext } from "@/contexts/FloorsContext"
-import Notiflix from 'notiflix';
+import { notifications } from '@/lib/notifications';
 import { createHistoryDescription, getCurrentUserId } from "@/lib/ticket-utils"
 import { Ticket } from "@/types/ticket"
 import { eventEmitter } from "./useEventListener"
@@ -88,13 +88,13 @@ export const useTicketModal = (ticket: Ticket | null) => {
                     eventEmitter.emit(TICKET_EVENTS.REFRESH_TICKETS_PAGE);
                 }
 
-                Notiflix.Notify.success(`Campo actualizado correctamente`)
+                notifications.success(`Campo actualizado correctamente`)
             } else {
-                Notiflix.Notify.failure('No se pudo actualizar el ticket')
+                notifications.error('No se pudo actualizar el ticket')
             }
         } catch (error) {
             console.error('Error actualizando ticket:', error)
-            Notiflix.Notify.failure('Error al actualizar el ticket')
+            notifications.error('Error al actualizar el ticket')
         }
     }
 
@@ -102,12 +102,12 @@ export const useTicketModal = (ticket: Ticket | null) => {
         e.preventDefault();
 
         if (!responseText.trim()) {
-            Notiflix.Notify.warning('Por favor escribe un comentario')
+            notifications.warning('Por favor escribe un comentario')
             return
         }
 
         if (!currentUserId) {
-            Notiflix.Notify.warning('Error: Usuario no identificado')
+            notifications.warning('Error: Usuario no identificado')
             return
         }
 
@@ -120,11 +120,11 @@ export const useTicketModal = (ticket: Ticket | null) => {
 
             setResponseText("")
             setSelectedFiles([])
-            //Notiflix.Notify.success('Comentario enviado correctamente')
+            //notifications.success('Comentario enviado correctamente')
 
         } catch (error) {
             console.error('Error al enviar respuesta:', error)
-            Notiflix.Notify.failure('Error al enviar comentario')
+            notifications.error('Error al enviar comentario')
         }
     }
 

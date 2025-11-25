@@ -73,6 +73,19 @@ class NotificationService {
       toast.dismiss();
     }
   }
+
+  confirm(
+    title: string,
+    message: string,
+    onConfirm: () => void,
+    onCancel?: () => void
+  ): void {
+    if (window.confirm(`${title}\n\n${message}`)) {
+      onConfirm();
+    } else if (onCancel) {
+      onCancel();
+    }
+  }
 }
 
 export const notifications = new NotificationService();

@@ -1,5 +1,5 @@
 import { roleSchema } from "@/lib/zod";
-import Notiflix from 'notiflix';
+import { notifications } from '@/lib/notifications';
 
 interface Role {
     id: number;
@@ -35,22 +35,14 @@ export const createRoleHandlers = ({
     };
 
     const handleDelete = (role: Role): void => {
-        Notiflix.Confirm.show(
+        notifications.confirm(
             'Confirmar eliminación',
             `¿Estás seguro de que quieres eliminar el rol "${role.role_name}"?`,
-            'Eliminar',
-            'Cancelar',
             async () => {
                 await deleteRole(role.id);
             },
             () => {
                 // Cancelado, no hacer nada
-            },
-            {
-                width: '320px',
-                borderRadius: '8px',
-                titleColor: '#f43f5e',
-                okButtonBackground: '#f43f5e',
             }
         );
     };
@@ -130,11 +122,7 @@ export const createRoleHandlers = ({
         );
         
         if (!hasChanges) {
-            Notiflix.Notify.warning('Debe modificar al menos un campo para actualizar el rol', {
-                timeout: 4000,
-                pauseOnHover: true,
-                position: 'right-top'
-            });
+            notifications.warning('Debe modificar al menos un campo para actualizar el rol');
             return;
         }
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import Notiflix from 'notiflix';
+import { notifications } from '@/lib/notifications';
 import { UserProfile, UpdateProfileData } from '@/types/profile';
 import { api } from '@/lib/httpClient'
 
@@ -21,7 +21,7 @@ export const useProfile = (userId?: number) => {
             const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
             setError(errorMessage);
             console.error('Error fetching profile:', err);
-            Notiflix.Notify.failure('Error al cargar el perfil');
+            notifications.error('Error al cargar el perfil');
         } finally {
             setLoading(false);
         }
@@ -36,14 +36,14 @@ export const useProfile = (userId?: number) => {
         try {
             const response = await api.patch(`/users/profile/${profile.id}`, updateData);
             setProfile(response);
-            Notiflix.Notify.success('Perfil actualizado exitosamente');
+            notifications.success('Perfil actualizado exitosamente');
             return true;
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
             setError(errorMessage);
             console.error('Error updating profile:', err);
 
-            Notiflix.Notify.failure(
+            notifications.error(
                 errorMessage || 'No se pudo actualizar el perfil'
             );
             return false;

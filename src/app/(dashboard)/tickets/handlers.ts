@@ -1,4 +1,4 @@
-import Notiflix from 'notiflix';
+import { notifications } from '@/lib/notifications';
 import type { Ticket, CreateTicketDto } from '@/types';
 
 interface TicketHandlersProps {
@@ -14,22 +14,14 @@ export const createTicketHandlers = ({
 }: TicketHandlersProps) => {
     
     const handleDelete = (ticket: Ticket): void => {
-        Notiflix.Confirm.show(
+        notifications.confirm(
             'Confirmar eliminación',
             `¿Estás seguro de que quieres eliminar el ticket "${ticket.ticket_number} - ${ticket.summary}"?`,
-            'Eliminar',
-            'Cancelar',
             async () => {
                 await deleteTicket(ticket.id);
             },
             () => {
                 // Cancelado, no hacer nada
-            },
-            {
-                width: '320px',
-                borderRadius: '8px',
-                titleColor: '#f43f5e',
-                okButtonBackground: '#f43f5e',
             }
         );
     };

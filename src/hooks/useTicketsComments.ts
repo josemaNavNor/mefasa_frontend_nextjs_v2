@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import Notiflix from 'notiflix';
+import { notifications } from '@/lib/notifications';
 import { eventEmitter } from './useEventListener';
 import { api } from '@/lib/httpClient';
 import { TICKET_EVENTS } from '@/lib/events';
@@ -50,7 +50,7 @@ export function useTicketComments(ticketId?: number) {
       }
     } catch (error) {
       console.error('Error al obtener los comentarios:', error);
-      Notiflix.Notify.failure('Error al cargar los comentarios');
+      notifications.error('Error al cargar los comentarios');
       setComments([]);
     } finally {
       setLoading(false);
@@ -69,11 +69,11 @@ export function useTicketComments(ticketId?: number) {
       eventEmitter.emit(TICKET_EVENTS.UPDATED, { ticketId });
       eventEmitter.emit(TICKET_EVENTS.REFRESH_TICKETS_PAGE);
       eventEmitter.emitWithDebounce('ticket-history-updated', 300, ticketId);
-      Notiflix.Notify.success('Respuesta enviada con éxito');
+      notifications.success('Respuesta enviada con éxito');
       return response;
     } catch (error) {
       console.error('Error al crear el comentario:', error);
-      Notiflix.Notify.failure(
+      notifications.error(
         error instanceof Error ? `Error al crear el comentario: ${error.message}` : 'Error al crear el comentario'
       );
       throw error;

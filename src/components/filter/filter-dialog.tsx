@@ -25,7 +25,7 @@ import {
   LogicalOperator, 
   TicketFilterField 
 } from '@/types/filter';
-import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import { notifications } from '@/lib/notifications';
 import { ticketFilterSchema } from '@/lib/zod';
 
 interface FilterDialogProps {
@@ -153,7 +153,7 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
       }
 
       setErrors(newErrors);
-      Notify.failure('Por favor, corrija los errores en el formulario');
+      notifications.error('Por favor, corrija los errores en el formulario');
       return;
     }
 
@@ -174,11 +174,7 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
       );
 
       if (!hasChanges) {
-        Notify.warning('Debe modificar al menos un campo para actualizar el filtro', {
-          timeout: 4000,
-          pauseOnHover: true,
-          position: 'right-top'
-        });
+        notifications.warning('Debe modificar al menos un campo para actualizar el filtro');
         return;
       }
     }
@@ -194,7 +190,7 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
 
     if (incompleteCriteria.length > 0) {
       setErrors({ criteria: 'Todos los criterios deben estar completos (campo, operador y valor cuando sea requerido)' });
-      Notify.failure('Todos los criterios deben estar completos (campo, operador y valor cuando sea requerido)');
+      notifications.error('Todos los criterios deben estar completos (campo, operador y valor cuando sea requerido)');
       return;
     }
 
@@ -229,7 +225,7 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
     }
 
     if (success) {
-      Notify.success(
+      notifications.success(
         mode === 'create' 
           ? 'Filtro creado correctamente con todos sus criterios' 
           : 'Filtro actualizado correctamente'

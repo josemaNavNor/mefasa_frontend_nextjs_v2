@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import Notiflix from 'notiflix';
+import { notifications } from '@/lib/notifications';
 import { eventEmitter } from './useEventListener';
 import { api } from '@/lib/httpClient';
 import { USER_EVENTS } from '@/lib/events';
@@ -25,7 +25,7 @@ export function useUsers() {
             }
         } catch (error) {
             console.error('Error fetching users:', error);
-            Notiflix.Notify.failure('Error al cargar usuarios');
+            notifications.error('Error al cargar usuarios');
             setUsers([]);
         } finally {
             setLoading(false);
@@ -50,9 +50,9 @@ export function useUsers() {
             setUsers((prevUsers) => [...prevUsers, response]);
             eventEmitter.emit(USER_EVENTS.CREATED);
             eventEmitter.emit(USER_EVENTS.REFRESH_USERS_PAGE);
-            Notiflix.Notify.success(`Usuario ${user.name} ${user.last_name} creado correctamente`);
+            notifications.success(`Usuario ${user.name} ${user.last_name} creado correctamente`);
         } catch (error) {
-            Notiflix.Notify.failure(
+            notifications.error(
                 error instanceof Error ? `Error al crear el usuario: ${error.message}` : 'Error al crear el usuario: Error desconocido'
             );
         } finally {
@@ -80,12 +80,12 @@ export function useUsers() {
             );
             eventEmitter.emit(USER_EVENTS.UPDATED);
             eventEmitter.emit(USER_EVENTS.REFRESH_USERS_PAGE);
-            Notiflix.Notify.success(`Usuario ${user.name ?? ''} ${user.last_name ?? ''} actualizado correctamente`);
+            notifications.success(`Usuario ${user.name ?? ''} ${user.last_name ?? ''} actualizado correctamente`);
             return response;
         } catch (error) {
             //console.error("Error al actualizar el usuario:", error);
             const errorMessage = error instanceof Error ? error.message : 'Error al actualizar el usuario: Error desconocido';
-            Notiflix.Notify.failure(errorMessage);
+            notifications.error(errorMessage);
             throw error; // Re-throw para que el handler pueda manejarlo
         } finally {
             setLoading(false);
@@ -99,11 +99,11 @@ export function useUsers() {
             setUsers((prevUsers) => prevUsers.filter((user) => user.id !== id));
             eventEmitter.emit(USER_EVENTS.DELETED);
             eventEmitter.emit(USER_EVENTS.REFRESH_USERS_PAGE);
-            Notiflix.Notify.success('Usuario eliminado correctamente');
+            notifications.success('Usuario eliminado correctamente');
             return true;
         } catch (error) {
             //console.error("Error al eliminar el usuario:", error);
-            Notiflix.Notify.failure(
+            notifications.error(
                 error instanceof Error ? `Error al eliminar el usuario: ${error.message}` : 'Error al eliminar el usuario: Error desconocido'
             );
             return false;

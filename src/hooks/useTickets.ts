@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react"
-import Notiflix from 'notiflix';
+import { notifications } from '@/lib/notifications';
 import { eventEmitter } from './useEventListener'
 import { TICKET_EVENTS, GLOBAL_EVENTS } from '@/lib/events'
 import * as XLSX from 'xlsx'
@@ -66,7 +66,7 @@ export function useTickets() {
             
             if (lastTicketCount > 0 && currentCount > lastTicketCount && showNotification) {
                 const newTicketsCount = currentCount - lastTicketCount;
-                Notiflix.Notify.info(`¡${newTicketsCount} nuevo${newTicketsCount > 1 ? 's' : ''} ticket${newTicketsCount > 1 ? 's' : ''} registrado${newTicketsCount > 1 ? 's' : ''}!`);
+                notifications.info(`¡${newTicketsCount} nuevo${newTicketsCount > 1 ? 's' : ''} ticket${newTicketsCount > 1 ? 's' : ''} registrado${newTicketsCount > 1 ? 's' : ''}!`);
             }
             
             // Transformar tickets: si el ticket tiene estructura con .ticket (del nuevo endpoint), extraer el ticket
@@ -90,7 +90,7 @@ export function useTickets() {
             
         } catch (error) {
             if (!isPolling) {
-                Notiflix.Notify.failure('Error al cargar tickets');
+                notifications.error('Error al cargar tickets');
                 setTickets([]);
             }
         } finally {
@@ -110,7 +110,7 @@ export function useTickets() {
             
             return response;
         } catch (error) {
-            Notiflix.Notify.failure(
+            notifications.error(
                 error instanceof Error ? `Error al cargar ticket: ${error.message}` : 'Error al cargar ticket'
             );
             return null;
@@ -166,7 +166,7 @@ export function useTickets() {
             const validation = updateTicketSchema.safeParse(ticket);
             if (!validation.success) {
                 const firstError = validation.error.issues[0];
-                Notiflix.Notify.failure(firstError?.message || 'Error de validación');
+                notifications.error(firstError?.message || 'Error de validación');
                 return null;
             }
 
@@ -186,7 +186,7 @@ export function useTickets() {
             eventEmitter.emit('ticket-history-updated', parseInt(id));
             return response;
         } catch (error) {
-            Notiflix.Notify.failure(
+            notifications.error(
                 error instanceof Error ? `Error al actualizar el ticket: ${error.message}` : 'Error al actualizar el ticket'
             );
             return null;
@@ -208,7 +208,7 @@ export function useTickets() {
             const validation = createTicketSchema.safeParse(ticket);
             if (!validation.success) {
                 const firstError = validation.error.issues[0];
-                Notiflix.Notify.failure(firstError?.message || 'Error de validación');
+                notifications.error(firstError?.message || 'Error de validación');
                 return;
             }
 
@@ -236,9 +236,9 @@ export function useTickets() {
             // Mantener eventos globales para compatibilidad
             eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'tickets');
             eventEmitter.emit(GLOBAL_EVENTS.TICKETS_UPDATED);
-            Notiflix.Notify.success(`Ticket creado correctamente`);
+            notifications.success(`Ticket creado correctamente`);
         } catch (error) {
-            Notiflix.Notify.failure(
+            notifications.error(
                 error instanceof Error ? `Error al crear el ticket: ${error.message}` : 'Error al crear el ticket'
             );
         } finally {
@@ -265,10 +265,10 @@ export function useTickets() {
             // Mantener eventos globales para compatibilidad
             eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'tickets');
             eventEmitter.emit(GLOBAL_EVENTS.TICKETS_UPDATED);
-            Notiflix.Notify.success('Ticket eliminado correctamente');
+            notifications.success('Ticket eliminado correctamente');
             return true;
         } catch (error) {
-            Notiflix.Notify.failure(
+            notifications.error(
                 error instanceof Error ? `Error al eliminar el ticket: ${error.message}` : 'Error al eliminar el ticket: Error desconocido'
             );
             return false;
@@ -357,11 +357,11 @@ export function useTickets() {
             // Descargar el archivo
             XLSX.writeFile(workbook, filename);
 
-            Notiflix.Notify.success(`Se han exportado ${dataToExport.length} tickets a Excel`);
+            notifications.success(`Se han exportado ${dataToExport.length} tickets a Excel`);
 
         } catch (error) {
             logger.error('Error al exportar a Excel:', error);
-            Notiflix.Notify.failure('Error al exportar a Excel');
+            notifications.error('Error al exportar a Excel');
         }
     };
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import Notiflix from 'notiflix';
+import { notifications } from '@/lib/notifications';
 import { api } from '@/lib/httpClient';
 
 interface PasswordChangeData {
@@ -32,7 +32,7 @@ export const usePasswordChange = (userId?: number) => {
 
     const changePassword = async (data: PasswordChangeData): Promise<boolean> => {
         if (!userId) {
-            Notiflix.Notify.failure('ID de usuario no válido');
+            notifications.error('ID de usuario no válido');
             return false;
         }
 
@@ -48,12 +48,12 @@ export const usePasswordChange = (userId?: number) => {
                 password: data.password
             });
 
-            Notiflix.Notify.success('Contraseña actualizada exitosamente');
+            notifications.success('Contraseña actualizada exitosamente');
             return true;
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
             console.error('Error changing password:', err);
-            Notiflix.Notify.failure(
+            notifications.error(
                 errorMessage || 'No se pudo cambiar la contraseña'
             );
             return false;

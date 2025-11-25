@@ -4,7 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/components/auth-provider";
 import { SettingsProvider } from "@/contexts/SettingsContext";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "sonner";
+// import { Toaster } from "sonner";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -62,7 +62,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
               <div id="app-root" className="relative flex min-h-screen flex-col">
                 {children}
               </div>
-              <Toaster 
+              {/* <Toaster 
                 richColors 
                 position="top-right" 
                 closeButton
@@ -75,7 +75,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                     info: 'border-blue-500',
                   },
                 }}
-              />
+              /> */}
             </ThemeProvider>
           </SettingsProvider>
         </AuthProvider>

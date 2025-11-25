@@ -1,5 +1,5 @@
 import { ticketFilterSchema } from "@/lib/zod";
-import Notiflix from 'notiflix';
+import { notifications } from '@/lib/notifications';
 import { Filter } from '@/types/filter';
 
 interface FilterHandlersProps {
@@ -35,25 +35,19 @@ export const createFilterHandlers = ({
     };
 
     const handleDelete = async (filter: Filter) => {
-        Notiflix.Confirm.show(
+        notifications.confirm(
             'Confirmar eliminación',
             `¿Está seguro de que desea eliminar el filtro "${filter.filter_name}"?`,
-            'Sí, eliminar',
-            'Cancelar',
             async () => {
                 const success = await deleteFilter(filter.id);
                 if (success) {
-                    Notiflix.Notify.success('Filtro eliminado correctamente');
+                    notifications.success('Filtro eliminado correctamente');
                 } else {
-                    Notiflix.Notify.failure('Error al eliminar el filtro');
+                    notifications.error('Error al eliminar el filtro');
                 }
             },
             () => {
                 // Usuario canceló, no hacer nada
-            },
-            {
-                okButtonBackground: '#ef4444',
-                titleColor: '#ef4444',
             }
         );
     };
@@ -97,11 +91,7 @@ export const createFilterHandlers = ({
             setErrors({});
             if (closeSheet) closeSheet();
         } catch (error) {
-            Notiflix.Notify.failure('Error al crear el filtro. Por favor, inténtalo de nuevo.', {
-                timeout: 4000,
-                pauseOnHover: true,
-                position: 'right-top'
-            });
+            notifications.error('Error al crear el filtro. Por favor, inténtalo de nuevo.');
         }
     };
 
@@ -119,11 +109,11 @@ export const createFilterHandlers = ({
         // toggleFavorite ahora devuelve 'added' | 'removed' | null
         const result = await toggleFavorite(filter.id);
         if (result === 'added') {
-            Notiflix.Notify.success('Filtro agregado a favoritos');
+            notifications.success('Filtro agregado a favoritos');
         } else if (result === 'removed') {
-            Notiflix.Notify.success('Filtro removido de favoritos');
+            notifications.success('Filtro removido de favoritos');
         } else {
-            Notiflix.Notify.failure('Error al actualizar favoritos');
+            notifications.error('Error al actualizar favoritos');
         }
     };
 
