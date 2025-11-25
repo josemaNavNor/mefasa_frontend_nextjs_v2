@@ -5,6 +5,7 @@ import { TICKET_EVENTS, GLOBAL_EVENTS } from '@/lib/events';
 import { createTicketSchema } from '@/lib/zod';
 import type { Ticket, CreateTicketDto } from '@/types';
 import { logger } from '@/lib/logger';
+import { getCurrentUserEmail } from '@/lib/ticket-utils';
 
 interface TicketHandlersProps {
     createTicket: (data: CreateTicketDto) => Promise<void>;
@@ -133,12 +134,19 @@ export const createTicketHandlers = ({
         setters.setErrors({});
 
         try {
-            // Preparar datos del ticket
+            // Obtener email del usuario del localStorage ANTES de validar
+            const endUserEmail = getCurrentUserEmail();
+            if (!endUserEmail) {
+                notifications.error('No se pudo obtener el email del usuario autenticado. Por favor, inicia sesión nuevamente.');
+                return;
+            }
+
+            // Preparar datos del ticket con el email del usuario
             const ticketData: CreateTicketDto = {
                 ticket_number: formData.ticket_number,
                 summary: formData.summary,
                 description: formData.description,
-                end_user: formData.end_user,
+                end_user: endUserEmail, // Usar siempre el email del localStorage
                 technician_id: formData.technician_id && formData.technician_id !== "0" ? Number(formData.technician_id) : null,
                 type_id: Number(formData.type_id),
                 floor_id: formData.floor_id && formData.floor_id !== "0" ? Number(formData.floor_id) : null,
@@ -158,22 +166,8 @@ export const createTicketHandlers = ({
                 return;
             }
 
-            // Obtener usuario del localStorage para end_user
-            const userFromStorage = localStorage.getItem('user');
-            let endUser = formData.end_user;
-            
-            if (userFromStorage) {
-                try {
-                    const userData = JSON.parse(userFromStorage);
-                    endUser = userData.email || formData.end_user;
-                } catch (error) {
-                    logger.error('Error parsing user data from localStorage:', error);
-                    endUser = formData.end_user;
-                }
-            }
-
             // Crear el ticket directamente para obtener la respuesta con el ID
-            const response = await api.post('/tickets', { ...validation.data, end_user: endUser });
+            const response = await api.post('/tickets', validation.data);
             const createdTicket = response as Ticket;
 
             // Subir archivos si el ticket se creó correctamente
@@ -208,7 +202,9 @@ export const createTicketHandlers = ({
             // Reset form
             setters.setSummary("");
             setters.setDescription("");
-            setters.setEndUser("");
+            // Resetear end_user al email del usuario actual
+            const currentUserEmail = getCurrentUserEmail();
+            setters.setEndUser(currentUserEmail || "");
             setters.setTechnicianId("0");
             setters.setTypeId("");
             setters.setFloorId("0");

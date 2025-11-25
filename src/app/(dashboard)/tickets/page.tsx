@@ -48,6 +48,7 @@ import { createColumns } from "./columns"
 import { createTicketHandlers } from "./handlers";
 import { TICKET_EVENTS } from "@/lib/events";
 import { logger } from "@/lib/logger";
+import { getCurrentUserEmail } from "@/lib/ticket-utils";
 
 // Type imports
 import type { Ticket } from "@/types";
@@ -63,7 +64,8 @@ export default function TicketsPage() {
     const [ticket_number] = useState("");
     const [summary, setSummary] = useState("");
     const [description, setDescription] = useState("");
-    const [end_user, setEndUser] = useState("");
+    // Inicializar end_user con el email del usuario del localStorage
+    const [end_user, setEndUser] = useState(() => getCurrentUserEmail() || "");
     const [technician_id, setTechnicianId] = useState("0");
     const [type_id, setTypeId] = useState("");
     const [floor_id, setFloorId] = useState("0");

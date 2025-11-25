@@ -8,6 +8,7 @@ import { useSettings } from '@/contexts/SettingsContext'
 import { logger } from '@/lib/logger'
 import { createTicketSchema, updateTicketSchema } from '@/lib/zod'
 import type { Ticket, CreateTicketDto, UpdateTicketDto } from '@/types'
+import { getCurrentUserEmail } from '@/lib/ticket-utils'
 
 /**
  * Hook personalizado para gestionar tickets
@@ -204,28 +205,28 @@ export function useTickets() {
     async function createTicket(ticket: CreateTicketDto) {
         setLoading(true);
         try {
+            // Obtener email del usuario del localStorage ANTES de validar
+            const endUserEmail = getCurrentUserEmail();
+            if (!endUserEmail) {
+                notifications.error('No se pudo obtener el email del usuario autenticado. Por favor, inicia sesión nuevamente.');
+                return;
+            }
+
+            // Preparar datos del ticket con el email del usuario
+            const ticketDataWithEmail: CreateTicketDto = {
+                ...ticket,
+                end_user: endUserEmail // Usar siempre el email del localStorage
+            };
+
             // Validar datos con Zod
-            const validation = createTicketSchema.safeParse(ticket);
+            const validation = createTicketSchema.safeParse(ticketDataWithEmail);
             if (!validation.success) {
                 const firstError = validation.error.issues[0];
                 notifications.error(firstError?.message || 'Error de validación');
                 return;
             }
-
-            const userFromStorage = localStorage.getItem('user');
-            let endUser = '';
             
-            if (userFromStorage) {
-                try {
-                    const userData = JSON.parse(userFromStorage);
-                    endUser = userData.email || '';
-                } catch (error) {
-                    logger.error('Error parsing user data from localStorage:', error);
-                    endUser = '';
-                }
-            }
-            
-            const response = await api.post('/tickets', { ...validation.data, end_user: endUser });
+            const response = await api.post('/tickets', validation.data);
 
             // En lugar de agregar el ticket básico, refrescar toda la lista para obtener los datos completos
             await fetchTickets();
