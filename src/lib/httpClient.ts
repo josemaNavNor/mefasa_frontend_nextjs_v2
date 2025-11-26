@@ -12,7 +12,7 @@ class HttpClient {
   // Configuración de mensajes de error de autorización
   private readonly unauthorizedMessage = 'Acceso denegado. No tienes permisos para realizar esta acción.';
   private readonly unauthorizedDuration = 5000; // 5 segundos
-  private readonly unauthorizedPosition: "top-left" | "top-center" | "top-right" | "bottom-left" | "bottom-center" | "bottom-right" = 'top-center';
+  private readonly unauthorizedPosition: "top-left" | "top-center" | "top-right" | "bottom-left" | "bottom-center" | "bottom-right" = 'top-right';
 
   constructor(baseUrl: string = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1') {
     this.baseUrl = baseUrl;

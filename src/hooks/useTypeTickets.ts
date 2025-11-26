@@ -45,6 +45,10 @@ export function useType() {
             
             notifications.success('Tipo creado correctamente');
         } catch (error) {
+            // No mostrar notificación si es error de autorización (ya se muestra en httpClient)
+            if ((error as any)?.type === 'AUTHORIZATION_ERROR') {
+                throw error;
+            }
             console.error("Error al crear el tipo:", error);
             notifications.error(
                 error instanceof Error ? `Error al crear el tipo: ${error.message}` : 'Error al crear el tipo'
@@ -69,6 +73,10 @@ export function useType() {
             notifications.success('Tipo de ticket actualizado correctamente');
             return response;
         } catch (error) {
+            // No mostrar notificación si es error de autorización (ya se muestra en httpClient)
+            if ((error as any)?.type === 'AUTHORIZATION_ERROR') {
+                return null;
+            }
             console.error("Error al actualizar el tipo de ticket:", error);
             notifications.error(
                 error instanceof Error ? `Error al actualizar el tipo: ${error.message}` : 'Error al actualizar el tipo: Error desconocido'
@@ -92,6 +100,10 @@ export function useType() {
             notifications.success('Tipo de ticket eliminado correctamente');
             return true;
         } catch (error) {
+            // No mostrar notificación si es error de autorización (ya se muestra en httpClient)
+            if ((error as any)?.type === 'AUTHORIZATION_ERROR') {
+                return false;
+            }
             console.error("Error al eliminar el tipo de ticket:", error);
             notifications.error(
                 error instanceof Error ? `Error al eliminar el tipo: ${error.message}` : 'Error al eliminar el tipo: Error desconocido'

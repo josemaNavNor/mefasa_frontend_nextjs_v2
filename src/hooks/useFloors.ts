@@ -39,6 +39,10 @@ export function useFloors() {
             eventEmitter.emit('floors-updated');
             notifications.success(`Planta ${floor.floor_name} creada correctamente`);
         } catch (error) {
+            // No mostrar notificación si es error de autorización (ya se muestra en httpClient)
+            if ((error as any)?.type === 'AUTHORIZATION_ERROR') {
+                throw error;
+            }
             notifications.error(
                 error instanceof Error ? `Error al crear el piso: ${error.message}` : 'Error al crear el piso: Error desconocido'
             );
@@ -62,6 +66,10 @@ export function useFloors() {
             notifications.success(`Planta ${floor.floor_name ?? ''} actualizada correctamente`);
             return response;
         } catch (error) {
+            // No mostrar notificación si es error de autorización (ya se muestra en httpClient)
+            if ((error as any)?.type === 'AUTHORIZATION_ERROR') {
+                return null;
+            }
             notifications.error(
                 error instanceof Error ? `Error al actualizar la planta: ${error.message}` : 'Error al actualizar la planta: Error desconocido'
             );
@@ -84,6 +92,10 @@ export function useFloors() {
             notifications.success('Planta eliminada correctamente');
             return true;
         } catch (error) {
+            // No mostrar notificación si es error de autorización (ya se muestra en httpClient)
+            if ((error as any)?.type === 'AUTHORIZATION_ERROR') {
+                return false;
+            }
             notifications.error(
                 error instanceof Error ? `Error al eliminar la planta: ${error.message}` : 'Error al eliminar la planta: Error desconocido'
             );

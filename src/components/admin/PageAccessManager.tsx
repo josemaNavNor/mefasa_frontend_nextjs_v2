@@ -128,6 +128,12 @@ export default function PageAccessManager() {
       notifications.success('Acceso a página actualizado correctamente');
       await reloadPages();
     } catch (err) {
+      // No mostrar notificación si es error de autorización (ya se muestra en httpClient)
+      if ((err as any)?.type === 'AUTHORIZATION_ERROR') {
+        setError(err instanceof Error ? err.message : 'Error desconocido');
+        setSaving(false);
+        return;
+      }
       const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
       notifications.error(`Error al guardar: ${errorMessage}`);
       setError(errorMessage);
@@ -150,6 +156,12 @@ export default function PageAccessManager() {
       notifications.success('Todos los cambios guardados correctamente');
       await reloadPages();
     } catch (err) {
+      // No mostrar notificación si es error de autorización (ya se muestra en httpClient)
+      if ((err as any)?.type === 'AUTHORIZATION_ERROR') {
+        setError(err instanceof Error ? err.message : 'Error desconocido');
+        setSaving(false);
+        return;
+      }
       const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
       notifications.error(`Error al guardar: ${errorMessage}`);
       setError(errorMessage);

@@ -30,7 +30,7 @@ export function ProtectedRoute({
   checkPageAccess = true,
   unauthorizedMessage = 'No tienes permisos para acceder a esta página.',
   unauthorizedDuration = 5000,
-  unauthorizedPosition = 'top-center',
+  unauthorizedPosition = 'top-right',
 }: ProtectedRouteProps) {
   const { isAuthenticated, hasRole, loading: authLoading } = useAuthContext();
   const { hasAccess, loading: pageAccessLoading } = usePageAccess();

@@ -239,6 +239,10 @@ export function useTickets() {
             eventEmitter.emit(GLOBAL_EVENTS.TICKETS_UPDATED);
             notifications.success(`Ticket creado correctamente`);
         } catch (error) {
+            // No mostrar notificación si es error de autorización (ya se muestra en httpClient)
+            if ((error as any)?.type === 'AUTHORIZATION_ERROR') {
+                throw error;
+            }
             notifications.error(
                 error instanceof Error ? `Error al crear el ticket: ${error.message}` : 'Error al crear el ticket'
             );
@@ -269,6 +273,10 @@ export function useTickets() {
             notifications.success('Ticket eliminado correctamente');
             return true;
         } catch (error) {
+            // No mostrar notificación si es error de autorización (ya se muestra en httpClient)
+            if ((error as any)?.type === 'AUTHORIZATION_ERROR') {
+                return false;
+            }
             notifications.error(
                 error instanceof Error ? `Error al eliminar el ticket: ${error.message}` : 'Error al eliminar el ticket: Error desconocido'
             );

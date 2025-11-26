@@ -91,6 +91,10 @@ export const createFilterHandlers = ({
             setErrors({});
             if (closeSheet) closeSheet();
         } catch (error) {
+            // No mostrar notificación si es error de autorización (ya se muestra en httpClient)
+            if ((error as any)?.type === 'AUTHORIZATION_ERROR') {
+                return;
+            }
             notifications.error('Error al crear el filtro. Por favor, inténtalo de nuevo.');
         }
     };

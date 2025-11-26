@@ -72,6 +72,10 @@ export function useTicketComments(ticketId?: number) {
       notifications.success('Respuesta enviada con éxito');
       return response;
     } catch (error) {
+      // No mostrar notificación si es error de autorización (ya se muestra en httpClient)
+      if ((error as any)?.type === 'AUTHORIZATION_ERROR') {
+        throw error;
+      }
       console.error('Error al crear el comentario:', error);
       notifications.error(
         error instanceof Error ? `Error al crear el comentario: ${error.message}` : 'Error al crear el comentario'

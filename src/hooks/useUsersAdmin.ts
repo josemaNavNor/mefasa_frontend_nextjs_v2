@@ -52,6 +52,10 @@ export function useUsers() {
             eventEmitter.emit(USER_EVENTS.REFRESH_USERS_PAGE);
             notifications.success(`Usuario ${user.name} ${user.last_name} creado correctamente`);
         } catch (error) {
+            // No mostrar notificación si es error de autorización (ya se muestra en httpClient)
+            if ((error as any)?.type === 'AUTHORIZATION_ERROR') {
+                throw error; // Re-lanzar para que el componente pueda manejarlo si es necesario
+            }
             notifications.error(
                 error instanceof Error ? `Error al crear el usuario: ${error.message}` : 'Error al crear el usuario: Error desconocido'
             );
@@ -83,6 +87,10 @@ export function useUsers() {
             notifications.success(`Usuario ${user.name ?? ''} ${user.last_name ?? ''} actualizado correctamente`);
             return response;
         } catch (error) {
+            // No mostrar notificación si es error de autorización (ya se muestra en httpClient)
+            if ((error as any)?.type === 'AUTHORIZATION_ERROR') {
+                throw error; // Re-lanzar para que el componente pueda manejarlo si es necesario
+            }
             //console.error("Error al actualizar el usuario:", error);
             const errorMessage = error instanceof Error ? error.message : 'Error al actualizar el usuario: Error desconocido';
             notifications.error(errorMessage);
@@ -102,6 +110,10 @@ export function useUsers() {
             notifications.success('Usuario eliminado correctamente');
             return true;
         } catch (error) {
+            // No mostrar notificación si es error de autorización (ya se muestra en httpClient)
+            if ((error as any)?.type === 'AUTHORIZATION_ERROR') {
+                return false;
+            }
             //console.error("Error al eliminar el usuario:", error);
             notifications.error(
                 error instanceof Error ? `Error al eliminar el usuario: ${error.message}` : 'Error al eliminar el usuario: Error desconocido'
