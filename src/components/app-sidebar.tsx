@@ -15,72 +15,28 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import ImgLogo from "@/components/img-logo"
 import { useAuthContext } from "@/components/auth-provider" 
 import { ChevronUp, Home, Settings, User2, Building2, Ticket, Notebook, Footprints, LogOut, Filter } from "lucide-react"
-import { USER_ROLES } from "@/lib/constants"
-import type { UserRole } from "@/types/use_auth"
+import { usePages } from "@/hooks/usePages"
 
-const menuItems = [
-    {
-        title: "Home",
-        url: "/",
-        icon: Home,
-        roles: [USER_ROLES.ADMIN, USER_ROLES.TECH] as UserRole[], 
-    },
-    {
-        title: "Tickets",
-        url: "/tickets",
-        icon: Ticket,
-        roles: [USER_ROLES.ADMIN, USER_ROLES.TECH] as UserRole[], 
-    },
-    {
-        title: "Filtros",
-        url: "/filters",
-        icon: Filter,
-        roles: [USER_ROLES.ADMIN, USER_ROLES.TECH] as UserRole[], 
-    },
-    {
-        title: "Usuarios",
-        url: "/users",
-        icon: User2,
-        roles: [USER_ROLES.ADMIN] as UserRole[],
-    },
-    {
-        title: "Roles",
-        url: "/roles",
-        icon: Notebook,
-        roles: [USER_ROLES.ADMIN] as UserRole[], 
-    },
-    {
-        title: "Permisos",
-        url: "/permissions",
-        icon: Footprints,
-        roles: [USER_ROLES.ADMIN] as UserRole[],
-    },
-    {
-        title: "Plantas",
-        url: "/floors",
-        icon: Building2,
-        roles: [USER_ROLES.ADMIN] as UserRole[], 
-    },
-    {
-        title: "Tipos de Tickets",
-        url: "/type_tickets",
-        icon: Ticket,
-        roles: [USER_ROLES.ADMIN] as UserRole[], 
-    }
-]
+// Mapeo de nombres de iconos a componentes de Lucide
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+    'Home': Home,
+    'Ticket': Ticket,
+    'Filter': Filter,
+    'User2': User2,
+    'Notebook': Notebook,
+    'Footprints': Footprints,
+    'Building2': Building2,
+};
 
 export function AppSidebar() {
-    const { user, logout, hasRole, loading } = useAuthContext(); 
+    const { user, logout, loading: authLoading } = useAuthContext();
+    const { menuItems, loading: pagesLoading } = usePages();
 
     const handleSignOut = () => {
         logout();
     };
 
-    // Filtrar elementos del menú basados en el rol del usuario (similar a tu ejemplo de Express)
-    const visibleMenuItems = loading ? [] : menuItems.filter(item => {
-        if (!user) return false;
-        return hasRole(item.roles);
-    });
+    const loading = authLoading || pagesLoading;
 
     return (
         <Sidebar collapsible="icon">
@@ -90,16 +46,27 @@ export function AppSidebar() {
                     <SidebarGroupLabel>HDM - Help Desk Mefasa</SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
-                            {visibleMenuItems.map((item) => (
-                                <SidebarMenuItem key={item.title}>
-                                    <SidebarMenuButton asChild>
-                                        <a href={item.url}>
-                                            <item.icon />
-                                            <span>{item.title}</span>
-                                        </a>
+                            {loading ? (
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton disabled>
+                                        <span>Cargando...</span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
-                            ))}
+                            ) : (
+                                menuItems.map((item) => {
+                                    const IconComponent = iconMap[item.icon] || Home;
+                                    return (
+                                        <SidebarMenuItem key={item.title}>
+                                            <SidebarMenuButton asChild>
+                                                <a href={item.url}>
+                                                    <IconComponent />
+                                                    <span>{item.title}</span>
+                                                </a>
+                                            </SidebarMenuButton>
+                                        </SidebarMenuItem>
+                                    );
+                                })
+                            )}
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
@@ -111,7 +78,7 @@ export function AppSidebar() {
                             <DropdownMenuTrigger asChild>
                                 <SidebarMenuButton>
                                     <User2 /> 
-                                    {loading ? 'Cargando...' : (user?.email || 'Username')}
+                                    {authLoading ? 'Cargando...' : (user?.email || 'Username')}
                                     <ChevronUp className="ml-auto" />
                                 </SidebarMenuButton>
                             </DropdownMenuTrigger>
