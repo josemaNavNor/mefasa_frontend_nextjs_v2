@@ -1,3 +1,5 @@
+import { notifications } from './notifications';
+
 class HttpClient {
   private baseUrl: string;
   private isRefreshing: boolean = false;
@@ -5,6 +7,11 @@ class HttpClient {
     resolve: (value?: any) => void;
     reject: (reason?: any) => void;
   }> = [];
+
+  // Configuración de mensajes de error de autorización
+  private readonly unauthorizedMessage = 'Acceso denegado. No tienes permisos para realizar esta acción.';
+  private readonly unauthorizedDuration = 5000; // 5 segundos
+  private readonly unauthorizedPosition: "top-left" | "top-center" | "top-right" | "bottom-left" | "bottom-center" | "bottom-right" = 'top-center';
 
   constructor(baseUrl: string = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1') {
     this.baseUrl = baseUrl;
@@ -147,7 +154,15 @@ class HttpClient {
     }
 
     if (response.status === 403) {
-      window.location.href = '/unauthorized';
+      // Mostrar mensaje de error en lugar de redirigir
+      notifications.error(
+        this.unauthorizedMessage,
+        {
+          duration: this.unauthorizedDuration,
+          position: this.unauthorizedPosition,
+        }
+      );
+      
       const customError = new Error('Acceso denegado');
       (customError as any).status = 403;
       (customError as any).type = 'AUTHORIZATION_ERROR';
