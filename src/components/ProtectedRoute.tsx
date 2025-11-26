@@ -8,6 +8,7 @@ import { useAuthContext } from "./auth-provider";
 import { usePageAccess } from "@/hooks/usePageAccess";
 import { ROUTES, USER_ROLES } from "@/lib/constants";
 import { notifications } from "@/lib/notifications";
+import { getPermissionErrorMessageFromPath } from "@/lib/permissionMessages";
 import type { UserRole } from "@/types";
 
 interface ProtectedRouteProps {
@@ -48,12 +49,16 @@ export function ProtectedRoute({
       return;
     }
 
-    // Validación dinámica de acceso a página (prioritaria)
+    //Validacion dinmica de acceso a pagina 
     if (checkPageAccess && isAuthenticated && hasAccess === false) {
       // Mostrar mensaje de error en lugar de redirigir
       if (!hasShownUnauthorizedMessage.current) {
+        const message = unauthorizedMessage === 'No tienes permisos para acceder a esta página.' 
+          ? (getPermissionErrorMessageFromPath(pathname) || unauthorizedMessage)
+          : unauthorizedMessage;
+        
         notifications.error(
-          unauthorizedMessage,
+          message,
           {
             duration: unauthorizedDuration,
             position: unauthorizedPosition,
@@ -69,8 +74,13 @@ export function ProtectedRoute({
     if (!checkPageAccess && allowedRoles && isAuthenticated && !hasRole(allowedRoles)) {
       // Mostrar mensaje de error en lugar de redirigir
       if (!hasShownUnauthorizedMessage.current) {
+        // Intentar generar mensaje específico basado en la ruta si no se proporcionó uno personalizado
+        const message = unauthorizedMessage === 'No tienes permisos para acceder a esta página.' 
+          ? (getPermissionErrorMessageFromPath(pathname) || unauthorizedMessage)
+          : unauthorizedMessage;
+        
         notifications.error(
-          unauthorizedMessage,
+          message,
           {
             duration: unauthorizedDuration,
             position: unauthorizedPosition,

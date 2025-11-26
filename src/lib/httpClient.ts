@@ -1,4 +1,5 @@
 import { notifications } from './notifications';
+import { generateSpecificErrorMessage } from './permissionMessages';
 
 class HttpClient {
   private baseUrl: string;
@@ -154,9 +155,22 @@ class HttpClient {
     }
 
     if (response.status === 403) {
-      // Mostrar mensaje de error en lugar de redirigir
+      // Intentar extraer el mensaje de error del backend para generar mensaje específico
+      let errorMessage = this.unauthorizedMessage;
+      try {
+        const errorData = await response.clone().json().catch(() => null);
+        if (errorData?.message) {
+          // Generar mensaje específico basado en el permiso requerido
+          errorMessage = generateSpecificErrorMessage(errorData.message);
+        }
+      } catch (e) {
+        // Si no se puede leer el mensaje, usar el mensaje por defecto
+        console.warn('No se pudo extraer mensaje de error del backend:', e);
+      }
+      
+      // Mostrar mensaje de error específico en lugar de redirigir
       notifications.error(
-        this.unauthorizedMessage,
+        errorMessage,
         {
           duration: this.unauthorizedDuration,
           position: this.unauthorizedPosition,
@@ -166,6 +180,7 @@ class HttpClient {
       const customError = new Error('Acceso denegado');
       (customError as any).status = 403;
       (customError as any).type = 'AUTHORIZATION_ERROR';
+      (customError as any).originalMessage = errorMessage;
       throw customError;
     }
 
