@@ -63,7 +63,8 @@ const uploadFiles = async (files: File[], ticketId: number): Promise<void> => {
     const errors: string[] = [];
     results.forEach((result, index) => {
         if (result.status === 'rejected') {
-            errors.push(result.reason?.message || `Error al subir ${files[index].name}`);
+            const fileName = files[index]?.name || 'archivo desconocido';
+            errors.push(result.reason?.message || `Error al subir ${fileName}`);
         }
     });
 
@@ -159,10 +160,14 @@ export const createTicketHandlers = ({
             const validation = createTicketSchema.safeParse(ticketData);
             if (!validation.success) {
                 const firstError = validation.error.issues[0];
-                notifications.error(firstError?.message || 'Error de validación');
-                setters.setErrors({
-                    [firstError.path[0] as string]: firstError.message
-                });
+                if (firstError) {
+                    notifications.error(firstError.message || 'Error de validación');
+                    setters.setErrors({
+                        [firstError.path[0] as string]: firstError.message
+                    });
+                } else {
+                    notifications.error('Error de validación');
+                }
                 return;
             }
 

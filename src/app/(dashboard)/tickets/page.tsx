@@ -195,7 +195,9 @@ export default function TicketsPage() {
         createTicket,
         deleteTicket: (id: string | number) => deleteTicket(id).then(() => true).catch(() => false),
         exportToExcel,
-        refetch
+        refetch: async () => {
+            refetch();
+        }
     });
 
     // Wrapper functions para los handlers

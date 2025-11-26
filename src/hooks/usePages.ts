@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { api } from '@/lib/httpClient';
 import { useAuthContext } from '@/components/auth-provider';
+import { useRolePermissions } from '@/hooks/useRolePermissions';
 
 export interface Page {
   id: number;
@@ -26,9 +27,17 @@ export interface MenuItem {
 
 export const usePages = () => {
   const { user } = useAuthContext();
+  const { roles } = useRolePermissions();
   const [pages, setPages] = useState<Page[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Obtener el ID del rol basado en el nombre del rol del usuario
+  const roleId = useMemo(() => {
+    if (!user?.role || roles.length === 0) return null;
+    const role = roles.find(r => r.role_name === user.role);
+    return role?.id ?? null;
+  }, [user?.role, roles]);
 
   // Obtener todas las páginas
   const fetchPages = useCallback(async () => {
@@ -48,7 +57,7 @@ export const usePages = () => {
 
   // Obtener páginas accesibles para el usuario actual
   const fetchUserPages = useCallback(async () => {
-    if (!user?.role_id) {
+    if (!roleId) {
       setPages([]);
       return;
     }
@@ -56,7 +65,7 @@ export const usePages = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await api.get(`/pages/by-role/${user.role_id}`);
+      const data = await api.get(`/pages/by-role/${roleId}`);
       setPages(data);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
@@ -66,7 +75,7 @@ export const usePages = () => {
     } finally {
       setLoading(false);
     }
-  }, [user?.role_id]);
+  }, [roleId]);
 
   // Convertir páginas a formato de menú
   const getMenuItems = useCallback((): MenuItem[] => {
@@ -96,12 +105,12 @@ export const usePages = () => {
 
   // Cargar páginas al montar el componente
   useEffect(() => {
-    if (user?.role_id) {
+    if (roleId) {
       fetchUserPages();
     } else {
       fetchPages();
     }
-  }, [user?.role_id, fetchUserPages, fetchPages]);
+  }, [roleId, fetchUserPages, fetchPages]);
 
   return {
     pages,
@@ -110,7 +119,7 @@ export const usePages = () => {
     error,
     fetchPages,
     fetchUserPages,
-    refetch: user?.role_id ? fetchUserPages : fetchPages,
+    refetch: roleId ? fetchUserPages : fetchPages,
   };
 };
 

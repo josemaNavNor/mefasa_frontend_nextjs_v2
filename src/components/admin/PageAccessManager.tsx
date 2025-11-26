@@ -269,11 +269,14 @@ export default function PageAccessManager() {
                   </div>
                 ))}
               </div>
-              {pageRoles[page.id] && (
-                <div className="mt-4 text-sm text-muted-foreground">
-                  {pageRoles[page.id].length} de {roles.length} roles asignados
-                </div>
-              )}
+              {(() => {
+                const assignedRoles = pageRoles[page.id];
+                return assignedRoles && (
+                  <div className="mt-4 text-sm text-muted-foreground">
+                    {assignedRoles.length} de {roles.length} roles asignados
+                  </div>
+                );
+              })()}
             </CardContent>
           </Card>
         ))}

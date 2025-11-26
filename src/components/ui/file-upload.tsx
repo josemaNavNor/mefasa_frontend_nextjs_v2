@@ -74,7 +74,7 @@ export function FileUpload({
 
     if (errors.length > 0) {
       errors.forEach((error) => {
-        notifications.error('Error al agregar archivo', error)
+        notifications.error(error)
       })
     }
 
