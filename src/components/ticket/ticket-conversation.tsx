@@ -18,9 +18,10 @@ export function TicketConversation({ ticket, comments, loading }: TicketConversa
     const [showHistory, setShowHistory] = useState(true)
     const [showImages, setShowImages] = useState(false)
     
-    // Analizar imágenes en el contenido
+    // Analizar imágenes en el contenido (solo en descripción y comentarios, no en el summary)
     const imageAnalysis = useMemo(() => {
-        const ticketImages = analyzeEmailImages(ticket.description || ticket.summary || '');
+        // Analizar imágenes solo en la descripción del ticket (no en el summary)
+        const ticketImages = analyzeEmailImages(ticket.description || '');
         
         // Contar archivos directos del ticket
         const ticketFiles = ticket.file?.filter(file => file.file_type?.startsWith('image/')) || [];
@@ -125,11 +126,10 @@ export function TicketConversation({ ticket, comments, loading }: TicketConversa
                                 {new Date(ticket.created_at).toLocaleString('es-ES')}
                             </span>
                         </div>
-                        <div className="text-gray-800" dangerouslySetInnerHTML={{ 
-                            __html: showImages 
-                                ? applyEmailStylesWithImages(ticket.description || ticket.summary)
-                                : applyEmailStyles(ticket.description || ticket.summary) 
-                        }} />
+                        {/* Mostrar solo el asunto del ticket */}
+                        <div className="text-gray-800 font-medium">
+                            {ticket.summary || 'Sin asunto'}
+                        </div>
                         
                         {/* Mostrar archivos directos del ticket */}
                         {ticket.file && ticket.file.length > 0 && (
