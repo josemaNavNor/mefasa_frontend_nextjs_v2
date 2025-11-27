@@ -5,6 +5,8 @@ import { TicketComment, Ticket, CommentFile } from "@/types/ticket"
 import { Button } from "@/components/ui/button"
 import { useState, useMemo } from "react"
 import { applyEmailStyles, applyEmailStylesWithImages, analyzeEmailImages } from "@/lib/html-utils"
+import { AuthenticatedImage } from "./AuthenticatedImage"
+import { downloadAuthenticatedFile } from "@/lib/file-utils"
 
 interface TicketConversationProps {
     ticket: Ticket
@@ -143,36 +145,21 @@ export function TicketConversation({ ticket, comments, loading }: TicketConversa
                                         const filename = file.filename || `archivo-${index + 1}`;
                                         
                                         if (isImage && showImages && fileId) {
-                                            // Mostrar imagen desde el endpoint de descarga
+                                            // Mostrar imagen desde el endpoint de descarga con autenticación
                                             return (
                                                 <div key={fileId} className="border rounded-lg p-2 bg-white">
                                                     <div className="text-xs text-gray-600 mb-2">{filename}</div>
-                                                    <img 
-                                                        src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/files/${fileId}/download`}
-                                                        alt={filename}
+                                                    <AuthenticatedImage
+                                                        fileId={fileId}
+                                                        filename={filename}
                                                         className="email-image max-w-xs h-auto rounded border shadow-sm cursor-pointer hover:shadow-md transition-shadow"
                                                         style={{ maxHeight: '200px', maxWidth: '300px' }}
-                                                        onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/files/${fileId}/download`, '_blank')}
-                                                        onError={(e) => {
-                                                            // Si falla la carga, mostrar placeholder
-                                                            const img = e.target as HTMLImageElement;
-                                                            img.style.display = 'none';
-                                                            const placeholder = img.nextElementSibling as HTMLElement;
-                                                            if (placeholder) placeholder.style.display = 'block';
+                                                        onClick={() => {
+                                                            downloadAuthenticatedFile(fileId, filename).catch((err) => {
+                                                                console.error('Error al descargar imagen:', err);
+                                                            });
                                                         }}
                                                     />
-                                                    <div className="email-image-placeholder" style={{display: 'none'}}>
-                                                        <span className="email-image-icon">🖼️</span>
-                                                        <span className="email-image-text">Error al cargar: {filename}</span>
-                                                        <a 
-                                                            href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/files/${fileId}/download`}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="text-blue-600 hover:underline text-xs"
-                                                        >
-                                                            Descargar archivo
-                                                        </a>
-                                                    </div>
                                                 </div>
                                             );
                                         } else if (isImage && !showImages) {
@@ -190,14 +177,16 @@ export function TicketConversation({ ticket, comments, loading }: TicketConversa
                                                 <div key={fileId} className="flex items-center gap-2 p-2 bg-white rounded border">
                                                     <span className="text-sm">📎</span>
                                                     <span className="text-sm text-gray-700 flex-1">{filename}</span>
-                                                    <a 
-                                                        href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/files/${fileId}/download`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-blue-600 hover:underline text-xs"
+                                                    <button
+                                                        onClick={() => {
+                                                            downloadAuthenticatedFile(fileId, filename).catch((err) => {
+                                                                console.error('Error al descargar archivo:', err);
+                                                            });
+                                                        }}
+                                                        className="text-blue-600 hover:underline text-xs cursor-pointer"
                                                     >
                                                         Descargar
-                                                    </a>
+                                                    </button>
                                                 </div>
                                             );
                                         }
@@ -243,36 +232,21 @@ export function TicketConversation({ ticket, comments, loading }: TicketConversa
                                                 const filename = commentFile.file?.filename || `archivo-${index + 1}`;
                                                 
                                                 if (isImage && showImages && fileId) {
-                                                    // Mostrar imagen desde el endpoint de descarga
+                                                    // Mostrar imagen desde el endpoint de descarga con autenticación
                                                     return (
                                                         <div key={commentFile.id || index} className="border rounded-lg p-2">
                                                             <div className="text-xs text-gray-600 mb-2">{filename}</div>
-                                                            <img 
-                                                                src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/files/${fileId}/download`}
-                                                                alt={filename}
+                                                            <AuthenticatedImage
+                                                                fileId={fileId}
+                                                                filename={filename}
                                                                 className="email-image max-w-xs h-auto rounded border shadow-sm cursor-pointer hover:shadow-md transition-shadow"
                                                                 style={{ maxHeight: '200px', maxWidth: '300px' }}
-                                                                onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/files/${fileId}/download`, '_blank')}
-                                                                onError={(e) => {
-                                                                    // Si falla la carga, mostrar placeholder
-                                                                    const img = e.target as HTMLImageElement;
-                                                                    img.style.display = 'none';
-                                                                    const placeholder = img.nextElementSibling as HTMLElement;
-                                                                    if (placeholder) placeholder.style.display = 'block';
+                                                                onClick={() => {
+                                                                    downloadAuthenticatedFile(fileId, filename).catch((err) => {
+                                                                        console.error('Error al descargar imagen:', err);
+                                                                    });
                                                                 }}
                                                             />
-                                                            <div className="email-image-placeholder" style={{display: 'none'}}>
-                                                                <span className="email-image-icon">🖼️</span>
-                                                                <span className="email-image-text">Error al cargar: {filename}</span>
-                                                                <a 
-                                                                    href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/files/${fileId}/download`}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    className="text-blue-600 hover:underline text-xs"
-                                                                >
-                                                                    Descargar archivo
-                                                                </a>
-                                                            </div>
                                                         </div>
                                                     );
                                                 } else if (isImage && !showImages) {
@@ -291,14 +265,16 @@ export function TicketConversation({ ticket, comments, loading }: TicketConversa
                                                             <span className="text-sm">📎</span>
                                                             <span className="text-sm text-gray-700 flex-1">{filename}</span>
                                                             {fileId && (
-                                                                <a 
-                                                                    href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/files/${fileId}/download`}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    className="text-blue-600 hover:underline text-xs"
+                                                                <button
+                                                                    onClick={() => {
+                                                                        downloadAuthenticatedFile(fileId, filename).catch((err) => {
+                                                                            console.error('Error al descargar archivo:', err);
+                                                                        });
+                                                                    }}
+                                                                    className="text-blue-600 hover:underline text-xs cursor-pointer"
                                                                 >
                                                                     Descargar
-                                                                </a>
+                                                                </button>
                                                             )}
                                                         </div>
                                                     );
