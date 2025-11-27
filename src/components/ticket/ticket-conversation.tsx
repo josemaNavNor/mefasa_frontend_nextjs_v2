@@ -23,6 +23,14 @@ export function TicketConversation({ ticket, comments, loading }: TicketConversa
         // Contar archivos directos del ticket
         const ticketFiles = ticket.file?.filter(file => file.file_type?.startsWith('image/')) || [];
         
+        // Contar archivos adjuntos de comentarios
+        const commentFiles = comments.reduce((acc, comment) => {
+            const commentFileImages = comment.comments_files?.filter(
+                (cf: CommentFile) => cf.file?.file_type?.startsWith('image/')
+            ) || [];
+            return acc + commentFileImages.length;
+        }, 0);
+        
         const commentImages = comments.reduce((acc, comment) => {
             const analysis = analyzeEmailImages(comment.body || '');
             return {
@@ -35,7 +43,7 @@ export function TicketConversation({ ticket, comments, loading }: TicketConversa
         }, { totalImages: 0, base64Images: 0, externalImages: 0, largeImages: 0, totalSizeKB: 0 });
         
         return {
-            totalImages: ticketImages.totalImages + commentImages.totalImages + ticketFiles.length,
+            totalImages: ticketImages.totalImages + commentImages.totalImages + ticketFiles.length + commentFiles,
             base64Images: ticketImages.base64Images + commentImages.base64Images,
             externalImages: ticketImages.externalImages + commentImages.externalImages,
             largeImages: ticketImages.largeImages + commentImages.largeImages,

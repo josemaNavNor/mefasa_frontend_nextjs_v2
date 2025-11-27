@@ -69,7 +69,7 @@ export function useTicketComments(ticketId?: number) {
       eventEmitter.emit(TICKET_EVENTS.UPDATED, { ticketId });
       eventEmitter.emit(TICKET_EVENTS.REFRESH_TICKETS_PAGE);
       eventEmitter.emitWithDebounce('ticket-history-updated', 300, ticketId);
-      notifications.success('Respuesta enviada con éxito');
+      // Notificación movida a useTicketModal para incluir información sobre archivos
       return response;
     } catch (error) {
       // No mostrar notificación si es error de autorización (ya se muestra en httpClient)
