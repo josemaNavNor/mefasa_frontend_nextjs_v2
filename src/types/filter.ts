@@ -4,10 +4,17 @@ export interface Filter {
   description?: string;
   is_public: boolean;
   is_system_default: boolean;
+  user_id?: number;
   createdAt: string;
   updatedAt: string;
   filterCriteria?: FilterCriterion[];
   userFavFilters?: UserFavFilter[];
+  user?: {
+    id: number;
+    name: string;
+    last_name: string;
+    email: string;
+  };
 }
 
 export interface FilterCriterion {

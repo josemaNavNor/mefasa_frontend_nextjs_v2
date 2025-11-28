@@ -98,7 +98,7 @@ export function useAuth(): AuthContextValue {
   }, [clearAuthState]);
 
   /**
-   * Inicia sesión con email y contraseña
+   * Inicia sesin con email y contraseña
    * @param email - Email del usuario
    * @param password - Contraseña del usuario
    * @param token - Token OTP opcional para autenticación de dos factores
@@ -119,10 +119,10 @@ export function useAuth(): AuthContextValue {
       });
 
       if (response) {
-        // If different user, clear previous state
+        // Si usuario diferente, limpiar estado anterior
         if (currentUserId && currentUserId !== response.user.id) {
           clearAuthState();
-          // Delay for cleanup
+          // Retraso para limpiar
           await new Promise(resolve => setTimeout(resolve, 200));
         }
 
@@ -135,13 +135,28 @@ export function useAuth(): AuthContextValue {
         // Set new user
         setAuthenticatedUser(user, response.access_token, response.refresh_token);
         
-        notifications.success(`¡Bienvenido de nuevo, ${user.name}!`);
+        // Guardar recomendaciones en localStorage si existen
+        if (response.recommendations) {
+          localStorage.setItem('auth_recommendations', JSON.stringify(response.recommendations));
+        }
         
-        // Navigate to dashboard
-        setTimeout(() => {
-          router.push(ROUTES.HOME);
-          router.refresh();
-        }, 300);
+        notifications.success(`¡Bienvenido, ${user.name}!`, {size: "small"});
+        
+        // Si hay recomendación de configurar 2FA, redirigir a página de callback para mostrar prompt
+        if (response.recommendations?.setup2FA) {
+          // Guardar datos necesarios para mostrar el prompt
+          const callbackUrl = `${ROUTES.LOGIN}/callback?token=${response.access_token}&user=${encodeURIComponent(JSON.stringify(user))}&recommendations=${encodeURIComponent(JSON.stringify(response.recommendations))}`;
+          setTimeout(() => {
+            router.push(callbackUrl);
+            router.refresh();
+          }, 300);
+        } else {
+          // Navigate to dashboard si no hay recomendaciones
+          setTimeout(() => {
+            router.push(ROUTES.HOME);
+            router.refresh();
+          }, 300);
+        }
 
         return { success: true };
       } else {

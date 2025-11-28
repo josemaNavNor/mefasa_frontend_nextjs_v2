@@ -1,16 +1,25 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
+const Chart = dynamic(() => import('react-apexcharts'), { 
+  ssr: false,
+  loading: () => <div className="h-[300px] flex items-center justify-center">Cargando gráfico...</div>
+});
 
 interface StatusDonutProps {
   data: Record<string, number>;
 }
 
 export function StatusDonut({ data }: StatusDonutProps) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const chartOptions = useMemo(() => ({
     chart: {
       type: 'donut' as const,
@@ -84,12 +93,24 @@ export function StatusDonut({ data }: StatusDonutProps) {
         <CardTitle>Distribución por Estado</CardTitle>
       </CardHeader>
       <CardContent>
-        <Chart
-          options={chartOptions}
-          series={series}
-          type="donut"
-          height={300}
-        />
+        {isMounted ? (
+          <Suspense fallback={
+            <div className="h-[300px] flex items-center justify-center text-gray-500">
+              Cargando gráfico...
+            </div>
+          }>
+            <Chart
+              options={chartOptions}
+              series={series}
+              type="donut"
+              height={300}
+            />
+          </Suspense>
+        ) : (
+          <div className="h-[300px] flex items-center justify-center text-gray-500">
+            Cargando gráfico...
+          </div>
+        )}
       </CardContent>
     </Card>
   );

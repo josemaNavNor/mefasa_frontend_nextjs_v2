@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Save, RotateCcw, Minus } from 'lucide-react';
+import { notifications } from '@/lib/notifications';
 //
 export default function RolePermissionsManager() {
   const {
@@ -85,11 +86,8 @@ export default function RolePermissionsManager() {
     setSaving(false);
 
     if (success) {
-      // TODO: Reemplazar con un toast notification
       setError(null);
-      // Mensaje temporal hasta implementar toast
-      const message = `Permisos del rol "${selectedRole?.role_name}" actualizados correctamente`;
-      alert(message);
+      notifications.success(`Permisos del rol "${selectedRole?.role_name}" actualizados correctamente`);
     }
   };
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/httpClient';
-import Notiflix from 'notiflix';
+import { notifications } from '@/lib/notifications';
 
 export interface PendingLastWeekData {
   tickets: any[];
@@ -25,7 +25,7 @@ export function usePendingLastWeek() {
     } catch (err) {
       console.error('Error fetching pending last week tickets:', err);
       setError('Error al cargar tickets pendientes de la semana pasada');
-      Notiflix.Notify.failure('Error al cargar tickets pendientes de la semana pasada');
+      notifications.error('Error al cargar tickets pendientes de la semana pasada');
     } finally {
       setLoading(false);
     }

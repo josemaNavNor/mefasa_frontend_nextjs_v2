@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import Notiflix from 'notiflix';
+import { notifications } from '@/lib/notifications';
 import { eventEmitter } from './useEventListener'
 import { TYPE_EVENTS, GLOBAL_EVENTS } from '@/lib/events'
 import { api } from '@/lib/httpClient'
@@ -43,10 +43,14 @@ export function useType() {
             eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'types');
             eventEmitter.emit('types-updated');
             
-            Notiflix.Notify.success('Tipo creado correctamente');
+            notifications.success('Tipo creado correctamente');
         } catch (error) {
+            // No mostrar notificación si es error de autorización (ya se muestra en httpClient)
+            if ((error as any)?.type === 'AUTHORIZATION_ERROR') {
+                throw error;
+            }
             console.error("Error al crear el tipo:", error);
-            Notiflix.Notify.failure(
+            notifications.error(
                 error instanceof Error ? `Error al crear el tipo: ${error.message}` : 'Error al crear el tipo'
             );
         } finally {
@@ -66,11 +70,15 @@ export function useType() {
             // Mantener eventos globales para compatibilidad
             eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'types');
             eventEmitter.emit('types-updated');
-            Notiflix.Notify.success('Tipo de ticket actualizado correctamente');
+            notifications.success('Tipo de ticket actualizado correctamente');
             return response;
         } catch (error) {
+            // No mostrar notificación si es error de autorización (ya se muestra en httpClient)
+            if ((error as any)?.type === 'AUTHORIZATION_ERROR') {
+                return null;
+            }
             console.error("Error al actualizar el tipo de ticket:", error);
-            Notiflix.Notify.failure(
+            notifications.error(
                 error instanceof Error ? `Error al actualizar el tipo: ${error.message}` : 'Error al actualizar el tipo: Error desconocido'
             );
             return null;
@@ -89,11 +97,15 @@ export function useType() {
             // Mantener eventos globales para compatibilidad
             eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'types');
             eventEmitter.emit('types-updated');
-            Notiflix.Notify.success('Tipo de ticket eliminado correctamente');
+            notifications.success('Tipo de ticket eliminado correctamente');
             return true;
         } catch (error) {
+            // No mostrar notificación si es error de autorización (ya se muestra en httpClient)
+            if ((error as any)?.type === 'AUTHORIZATION_ERROR') {
+                return false;
+            }
             console.error("Error al eliminar el tipo de ticket:", error);
-            Notiflix.Notify.failure(
+            notifications.error(
                 error instanceof Error ? `Error al eliminar el tipo: ${error.message}` : 'Error al eliminar el tipo: Error desconocido'
             );
             return false;

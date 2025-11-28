@@ -60,3 +60,22 @@ export const getCurrentUserId = (): number | null => {
         return null
     }
 }
+
+/**
+ * Obtiene el email del usuario autenticado desde localStorage
+ * @returns El email del usuario o null si no está disponible
+ */
+export const getCurrentUserEmail = (): string | null => {
+    try {
+        const userString = localStorage.getItem('user')
+        if (!userString) {
+            return null
+        }
+        
+        const user = JSON.parse(userString)
+        return user?.email || null
+    } catch (error) {
+        console.error('Error al obtener el email del usuario de localStorage:', error)
+        return null
+    }
+}

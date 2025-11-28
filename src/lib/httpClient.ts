@@ -1,3 +1,6 @@
+import { notifications } from './notifications';
+import { generateSpecificErrorMessage } from './permissionMessages';
+
 class HttpClient {
   private baseUrl: string;
   private isRefreshing: boolean = false;
@@ -5,6 +8,11 @@ class HttpClient {
     resolve: (value?: any) => void;
     reject: (reason?: any) => void;
   }> = [];
+
+  // Configuración de mensajes de error de autorización
+  private readonly unauthorizedMessage = 'Acceso denegado. No tienes permisos para realizar esta acción.';
+  private readonly unauthorizedDuration = 5000; // 5 segundos
+  private readonly unauthorizedPosition: "top-left" | "top-center" | "top-right" | "bottom-left" | "bottom-center" | "bottom-right" = 'top-right';
 
   constructor(baseUrl: string = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1') {
     this.baseUrl = baseUrl;
@@ -75,15 +83,40 @@ class HttpClient {
     method: string; 
     data?: any 
   }): Promise<any> {
-    if (response.status === 401 && originalRequest) {
-      // Token expired, try to refresh
+    // Endpoints de autenticacion que NO deben intentar refrescar token
+    const authEndpoints = [
+      '/auth/login-2fa',
+      '/auth/register',
+      '/auth/refresh',
+      '/auth/microsoft-login',
+      '/auth/microsoft/callback',
+    ];
+    
+    const isAuthEndpoint = originalRequest && authEndpoints.some(endpoint => 
+      originalRequest.endpoint.includes(endpoint)
+    );
+
+    // Para endpoints de autenticacion con 401, manejar el error normalmente
+    if (response.status === 401 && isAuthEndpoint) {
+      const error = await response.json().catch(() => ({ message: 'Error desconocido' }));
+      const errorMessage = error.message || `Error ${response.status}: ${response.statusText}`;
+      
+      const customError = new Error(errorMessage);
+      (customError as any).status = response.status;
+      (customError as any).type = 'AUTHENTICATION_ERROR';
+      throw customError;
+    }
+
+    // Solo intentar refrescar token si NO es un endpoint de autenticacion
+    if (response.status === 401 && originalRequest && !isAuthEndpoint) {
+      // Token expirado, intentar refrescar
       if (this.isRefreshing) {
-        // Wait for the token refresh to complete
+        // Esperar a que el token se refresque
         return new Promise((resolve, reject) => {
           this.failedQueue.push({ resolve, reject });
         })
           .then(() => {
-            // Retry the original request with new token
+            // Reintentar la peticion original con el nuevo token
             return this.retryRequest(originalRequest);
           })
           .catch((err) => {
@@ -98,34 +131,56 @@ class HttpClient {
 
         if (newToken) {
           this.processQueue(null, newToken);
-          // Retry the original request
+          // Reintentar la peticion original
           return this.retryRequest(originalRequest);
         } else {
-          // Refresh failed, logout user
-          this.processQueue(new Error('Token refresh failed'), null);
+          // Fallo al refrescar el token, cerrar sesion
+          this.processQueue(new Error('Token de acceso expirado'), null);
           this.clearAuthAndRedirect();
-          throw new Error('Token expirado');
+          throw new Error('Token de acceso expirado');
         }
       } catch (error) {
         this.processQueue(error, null);
         this.clearAuthAndRedirect();
-        throw new Error('Token expirado');
+        throw new Error('Token de acceso expirado');
       } finally {
         this.isRefreshing = false;
       }
     }
 
     if (response.status === 401 && !originalRequest) {
-      // No original request to retry, just logout
+      // No hay peticion original para reintentar, solo cerrar sesion
       this.clearAuthAndRedirect();
       throw new Error('Token expirado');
     }
 
     if (response.status === 403) {
-      window.location.href = '/unauthorized';
+      // Intentar extraer el mensaje de error del backend para generar mensaje específico
+      let errorMessage = this.unauthorizedMessage;
+      try {
+        const errorData = await response.clone().json().catch(() => null);
+        if (errorData?.message) {
+          // Generar mensaje específico basado en el permiso requerido
+          errorMessage = generateSpecificErrorMessage(errorData.message);
+        }
+      } catch (e) {
+        // Si no se puede leer el mensaje, usar el mensaje por defecto
+        console.warn('No se pudo extraer mensaje de error del backend:', e);
+      }
+      
+      // Mostrar mensaje de error específico en lugar de redirigir
+      notifications.error(
+        errorMessage,
+        {
+          duration: this.unauthorizedDuration,
+          position: this.unauthorizedPosition,
+        }
+      );
+      
       const customError = new Error('Acceso denegado');
       (customError as any).status = 403;
       (customError as any).type = 'AUTHORIZATION_ERROR';
+      (customError as any).originalMessage = errorMessage;
       throw customError;
     }
 
@@ -142,12 +197,12 @@ class HttpClient {
 
     const jsonData = await response.json();
     
-    // Si la respuesta tiene la estructura estándar del backend {success, data, ...}, devolver solo los datos
+    // Si la respuesta tiene la estructura estandar {success, data, ...}, devolver solo los datos
     if (jsonData && typeof jsonData === 'object' && 'success' in jsonData && 'data' in jsonData) {
       return jsonData.data;
     }
     
-    // Si no, devolver la respuesta completa (compatibilidad con respuestas que no usan la estructura estándar)
+    // Si no, devolver la respuesta completa 
     return jsonData;
   }
 

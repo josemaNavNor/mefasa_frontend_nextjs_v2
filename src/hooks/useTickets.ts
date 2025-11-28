@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react"
-import Notiflix from 'notiflix';
+import { notifications } from '@/lib/notifications';
 import { eventEmitter } from './useEventListener'
 import { TICKET_EVENTS, GLOBAL_EVENTS } from '@/lib/events'
 import * as XLSX from 'xlsx'
@@ -8,6 +8,7 @@ import { useSettings } from '@/contexts/SettingsContext'
 import { logger } from '@/lib/logger'
 import { createTicketSchema, updateTicketSchema } from '@/lib/zod'
 import type { Ticket, CreateTicketDto, UpdateTicketDto } from '@/types'
+import { getCurrentUserEmail } from '@/lib/ticket-utils'
 
 /**
  * Hook personalizado para gestionar tickets
@@ -66,7 +67,7 @@ export function useTickets() {
             
             if (lastTicketCount > 0 && currentCount > lastTicketCount && showNotification) {
                 const newTicketsCount = currentCount - lastTicketCount;
-                Notiflix.Notify.info(`¡${newTicketsCount} nuevo${newTicketsCount > 1 ? 's' : ''} ticket${newTicketsCount > 1 ? 's' : ''} registrado${newTicketsCount > 1 ? 's' : ''}!`);
+                notifications.info(`¡${newTicketsCount} nuevo${newTicketsCount > 1 ? 's' : ''} ticket${newTicketsCount > 1 ? 's' : ''} registrado${newTicketsCount > 1 ? 's' : ''}!`);
             }
             
             // Transformar tickets: si el ticket tiene estructura con .ticket (del nuevo endpoint), extraer el ticket
@@ -90,7 +91,7 @@ export function useTickets() {
             
         } catch (error) {
             if (!isPolling) {
-                Notiflix.Notify.failure('Error al cargar tickets');
+                notifications.error('Error al cargar tickets');
                 setTickets([]);
             }
         } finally {
@@ -110,7 +111,7 @@ export function useTickets() {
             
             return response;
         } catch (error) {
-            Notiflix.Notify.failure(
+            notifications.error(
                 error instanceof Error ? `Error al cargar ticket: ${error.message}` : 'Error al cargar ticket'
             );
             return null;
@@ -166,7 +167,7 @@ export function useTickets() {
             const validation = updateTicketSchema.safeParse(ticket);
             if (!validation.success) {
                 const firstError = validation.error.issues[0];
-                Notiflix.Notify.failure(firstError?.message || 'Error de validación');
+                notifications.error(firstError?.message || 'Error de validación');
                 return null;
             }
 
@@ -186,7 +187,7 @@ export function useTickets() {
             eventEmitter.emit('ticket-history-updated', parseInt(id));
             return response;
         } catch (error) {
-            Notiflix.Notify.failure(
+            notifications.error(
                 error instanceof Error ? `Error al actualizar el ticket: ${error.message}` : 'Error al actualizar el ticket'
             );
             return null;
@@ -204,28 +205,28 @@ export function useTickets() {
     async function createTicket(ticket: CreateTicketDto) {
         setLoading(true);
         try {
-            // Validar datos con Zod
-            const validation = createTicketSchema.safeParse(ticket);
-            if (!validation.success) {
-                const firstError = validation.error.issues[0];
-                Notiflix.Notify.failure(firstError?.message || 'Error de validación');
+            // Obtener email del usuario del localStorage ANTES de validar
+            const endUserEmail = getCurrentUserEmail();
+            if (!endUserEmail) {
+                notifications.error('No se pudo obtener el email del usuario autenticado. Por favor, inicia sesión nuevamente.');
                 return;
             }
 
-            const userFromStorage = localStorage.getItem('user');
-            let endUser = '';
-            
-            if (userFromStorage) {
-                try {
-                    const userData = JSON.parse(userFromStorage);
-                    endUser = userData.email || '';
-                } catch (error) {
-                    logger.error('Error parsing user data from localStorage:', error);
-                    endUser = '';
-                }
+            // Preparar datos del ticket con el email del usuario
+            const ticketDataWithEmail: CreateTicketDto = {
+                ...ticket,
+                end_user: endUserEmail // Usar siempre el email del localStorage
+            };
+
+            // Validar datos con Zod
+            const validation = createTicketSchema.safeParse(ticketDataWithEmail);
+            if (!validation.success) {
+                const firstError = validation.error.issues[0];
+                notifications.error(firstError?.message || 'Error de validación');
+                return;
             }
             
-            const response = await api.post('/tickets', { ...validation.data, end_user: endUser });
+            const response = await api.post('/tickets', validation.data);
 
             // En lugar de agregar el ticket básico, refrescar toda la lista para obtener los datos completos
             await fetchTickets();
@@ -236,9 +237,13 @@ export function useTickets() {
             // Mantener eventos globales para compatibilidad
             eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'tickets');
             eventEmitter.emit(GLOBAL_EVENTS.TICKETS_UPDATED);
-            Notiflix.Notify.success(`Ticket creado correctamente`);
+            notifications.success(`Ticket creado correctamente`);
         } catch (error) {
-            Notiflix.Notify.failure(
+            // No mostrar notificación si es error de autorización (ya se muestra en httpClient)
+            if ((error as any)?.type === 'AUTHORIZATION_ERROR') {
+                throw error;
+            }
+            notifications.error(
                 error instanceof Error ? `Error al crear el ticket: ${error.message}` : 'Error al crear el ticket'
             );
         } finally {
@@ -265,10 +270,14 @@ export function useTickets() {
             // Mantener eventos globales para compatibilidad
             eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'tickets');
             eventEmitter.emit(GLOBAL_EVENTS.TICKETS_UPDATED);
-            Notiflix.Notify.success('Ticket eliminado correctamente');
+            notifications.success('Ticket eliminado correctamente');
             return true;
         } catch (error) {
-            Notiflix.Notify.failure(
+            // No mostrar notificación si es error de autorización (ya se muestra en httpClient)
+            if ((error as any)?.type === 'AUTHORIZATION_ERROR') {
+                return false;
+            }
+            notifications.error(
                 error instanceof Error ? `Error al eliminar el ticket: ${error.message}` : 'Error al eliminar el ticket: Error desconocido'
             );
             return false;
@@ -357,11 +366,11 @@ export function useTickets() {
             // Descargar el archivo
             XLSX.writeFile(workbook, filename);
 
-            Notiflix.Notify.success(`Se han exportado ${dataToExport.length} tickets a Excel`);
+            notifications.success(`Se han exportado ${dataToExport.length} tickets a Excel`);
 
         } catch (error) {
             logger.error('Error al exportar a Excel:', error);
-            Notiflix.Notify.failure('Error al exportar a Excel');
+            notifications.error('Error al exportar a Excel');
         }
     };
 

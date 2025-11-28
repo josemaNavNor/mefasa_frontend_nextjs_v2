@@ -1,5 +1,5 @@
 import { floorSchema } from "@/lib/zod";
-import Notiflix from 'notiflix';
+import { notifications } from '@/lib/notifications';
 import { FormsFloor as Floor } from "@/types/floor";
 
 interface FloorHandlersProps {
@@ -30,22 +30,14 @@ export const createFloorHandlers = ({
     };
 
     const handleDelete = (floor: Floor): void => {
-        Notiflix.Confirm.show(
+        notifications.confirm(
             'Confirmar eliminación',
             `¿Estás seguro de que quieres eliminar la planta "${floor.floor_name}"?`,
-            'Eliminar',
-            'Cancelar',
             async () => {
                 await deleteFloor(floor.id);
             },
             () => {
                 // Cancelado, no hacer nada
-            },
-            {
-                width: '320px',
-                borderRadius: '8px',
-                titleColor: '#f43f5e',
-                okButtonBackground: '#f43f5e',
             }
         );
     };
@@ -125,11 +117,7 @@ export const createFloorHandlers = ({
         );
 
         if (!hasChanges) {
-            Notiflix.Notify.warning('Debe modificar al menos un campo para actualizar la planta', {
-                timeout: 4000,
-                pauseOnHover: true,
-                position: 'right-top'
-            });
+            notifications.warning('Debe modificar al menos un campo para actualizar la planta');
             return;
         }
 

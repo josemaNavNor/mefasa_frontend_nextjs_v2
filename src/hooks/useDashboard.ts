@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/httpClient';
-import Notiflix from 'notiflix';
+import { notifications } from '@/lib/notifications';
 
 export interface DashboardData {
   seriesByDate: { date: string; count: number }[];
@@ -34,7 +34,7 @@ export function useDashboard() {
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
       setError('Error al cargar datos del dashboard');
-      Notiflix.Notify.failure('Error al cargar datos del dashboard');
+      notifications.error('Error al cargar datos del dashboard');
     } finally {
       setLoading(false);
     }

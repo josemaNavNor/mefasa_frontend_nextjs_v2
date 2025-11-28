@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import Notiflix from 'notiflix';
+import { notifications } from '@/lib/notifications';
 import { eventEmitter } from './useEventListener'
 import { api } from '@/lib/httpClient'
 import { FLOOR_EVENTS, GLOBAL_EVENTS } from '@/lib/events'
@@ -37,9 +37,13 @@ export function useFloors() {
             // Mantener eventos globales para compatibilidad
             eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'floors');
             eventEmitter.emit('floors-updated');
-            Notiflix.Notify.success(`Planta ${floor.floor_name} creada correctamente`);
+            notifications.success(`Planta ${floor.floor_name} creada correctamente`);
         } catch (error) {
-            Notiflix.Notify.failure(
+            // No mostrar notificación si es error de autorización (ya se muestra en httpClient)
+            if ((error as any)?.type === 'AUTHORIZATION_ERROR') {
+                throw error;
+            }
+            notifications.error(
                 error instanceof Error ? `Error al crear el piso: ${error.message}` : 'Error al crear el piso: Error desconocido'
             );
         } finally {
@@ -59,10 +63,14 @@ export function useFloors() {
             // Mantener eventos globales para compatibilidad
             eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'floors');
             eventEmitter.emit('floors-updated');
-            Notiflix.Notify.success(`Planta ${floor.floor_name ?? ''} actualizada correctamente`);
+            notifications.success(`Planta ${floor.floor_name ?? ''} actualizada correctamente`);
             return response;
         } catch (error) {
-            Notiflix.Notify.failure(
+            // No mostrar notificación si es error de autorización (ya se muestra en httpClient)
+            if ((error as any)?.type === 'AUTHORIZATION_ERROR') {
+                return null;
+            }
+            notifications.error(
                 error instanceof Error ? `Error al actualizar la planta: ${error.message}` : 'Error al actualizar la planta: Error desconocido'
             );
             return null;
@@ -81,10 +89,14 @@ export function useFloors() {
             // Mantener eventos globales para compatibilidad
             eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'floors');
             eventEmitter.emit('floors-updated');
-            Notiflix.Notify.success('Planta eliminada correctamente');
+            notifications.success('Planta eliminada correctamente');
             return true;
         } catch (error) {
-            Notiflix.Notify.failure(
+            // No mostrar notificación si es error de autorización (ya se muestra en httpClient)
+            if ((error as any)?.type === 'AUTHORIZATION_ERROR') {
+                return false;
+            }
+            notifications.error(
                 error instanceof Error ? `Error al eliminar la planta: ${error.message}` : 'Error al eliminar la planta: Error desconocido'
             );
             return false;

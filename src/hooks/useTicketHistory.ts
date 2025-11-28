@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import Notiflix from 'notiflix';
+import { notifications } from '@/lib/notifications';
 import { useEventListener } from "./useEventListener";
 import { api } from "@/lib/httpClient";
 
@@ -54,7 +54,7 @@ export function useTicketHistory(ticketId?: number) {
         } catch (error) {
             console.error("Error al obtener el historial:", error);
             setHistory([]);
-            Notiflix.Notify.failure('Error al cargar el historial del ticket');
+            notifications.error('Error al cargar el historial del ticket');
         } finally {
             setLoading(false);
         }
@@ -78,11 +78,11 @@ export function useTicketHistory(ticketId?: number) {
             const response = await api.post('/ticket-history', entry);
 
             await fetchHistory();
-            Notiflix.Notify.success('Entrada de historial creada correctamente');
+            notifications.success('Entrada de historial creada correctamente');
             return response;
         } catch (error) {
             console.error('Error al crear la entrada de historial:', error);
-            Notiflix.Notify.failure(
+            notifications.error(
                 error instanceof Error ? `Error al crear la entrada de historial: ${error.message}` : 'Error al crear la entrada de historial'
             );
             throw error;

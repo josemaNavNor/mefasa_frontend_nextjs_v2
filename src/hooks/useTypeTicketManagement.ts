@@ -1,11 +1,11 @@
 import { useState, useCallback } from "react";
-import { useType } from "@/hooks/useTypeTickets";
+import { useTypesContext } from "@/contexts/TypesContext";
 import { useEventListener } from "@/hooks/useEventListener";
 import { ticketTypeSchema } from "@/lib/zod";
 import { TicketType } from "@/types/ticketType";
 import { TYPE_EVENTS } from "@/lib/events";
 import { eventEmitter } from "./useEventListener";
-import Notiflix from 'notiflix';
+import { notifications } from '@/lib/notifications';
 
 interface TypeTicket {
     id: number;
@@ -14,7 +14,7 @@ interface TypeTicket {
 }
 
 export const useTypeTicketManagement = () => {
-    const { types, createTicketType, updateTicketType, deleteTicketType, refetch } = useType();
+    const { types, createTicketType, updateTicketType, deleteTicketType, refetch } = useTypesContext();
 
     // Estados para crear tipo de ticket
     const [type_name, setTicketTypeName] = useState("");
@@ -58,22 +58,14 @@ export const useTypeTicketManagement = () => {
 
     // Función para manejar la eliminación
     const handleDelete = useCallback((ticketType: TicketType) => {
-        Notiflix.Confirm.show(
+        notifications.confirm(
             'Confirmar eliminación',
             `¿Estás seguro de que quieres eliminar el tipo de ticket "${ticketType.type_name}"?`,
-            'Eliminar',
-            'Cancelar',
             async () => {
                 await deleteTicketType(parseInt(ticketType.id));
             },
             () => {
                 // Cancelado, no hacer nada
-            },
-            {
-                width: '320px',
-                borderRadius: '8px',
-                titleColor: '#f43f5e',
-                okButtonBackground: '#f43f5e',
             }
         );
     }, [deleteTicketType]);
@@ -136,11 +128,7 @@ export const useTypeTicketManagement = () => {
         );
         
         if (!hasChanges) {
-            Notiflix.Notify.warning('Debe modificar al menos un campo para actualizar el tipo de ticket', {
-                timeout: 4000,
-                pauseOnHover: true,
-                position: 'right-top'
-            });
+            notifications.warning('Debe modificar al menos un campo para actualizar el tipo de ticket');
             return;
         }
 

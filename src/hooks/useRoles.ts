@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { api } from '@/lib/httpClient'
-import Notiflix from 'notiflix';
+import { notifications } from '@/lib/notifications';
 import { eventEmitter } from './useEventListener'
 import { ROLE_EVENTS, GLOBAL_EVENTS } from '@/lib/events'
 
@@ -35,10 +35,14 @@ export function useRoles() {
             // Mantener eventos globales para compatibilidad
             eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'roles');
             eventEmitter.emit(GLOBAL_EVENTS.ROLES_UPDATED);
-            Notiflix.Notify.success(`Rol ${role.role_name} creado correctamente`);
+            notifications.success(`Rol ${role.role_name} creado correctamente`);
         } catch (error) {
+            // No mostrar notificación si es error de autorización (ya se muestra en httpClient)
+            if ((error as any)?.type === 'AUTHORIZATION_ERROR') {
+                throw error;
+            }
             //console.error("Error al crear el rol:", error);
-            Notiflix.Notify.failure(
+            notifications.error(
                 error instanceof Error ? `Error al crear el rol: ${error.message}` : 'Error al crear el rol: Error desconocido'
             );
         } finally {
@@ -58,11 +62,15 @@ export function useRoles() {
             // Mantener eventos globales para compatibilidad
             eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'roles');
             eventEmitter.emit(GLOBAL_EVENTS.ROLES_UPDATED);
-            Notiflix.Notify.success(`Rol ${role.role_name ?? ''} actualizado correctamente`);
+            notifications.success(`Rol ${role.role_name ?? ''} actualizado correctamente`);
             return response;
         } catch (error) {
+            // No mostrar notificación si es error de autorización (ya se muestra en httpClient)
+            if ((error as any)?.type === 'AUTHORIZATION_ERROR') {
+                return null;
+            }
             //console.error("Error al actualizar el rol:", error);
-            Notiflix.Notify.failure(
+            notifications.error(
                 error instanceof Error ? `Error al actualizar el rol: ${error.message}` : 'Error al actualizar el rol: Error desconocido'
             );
             return null;
@@ -81,11 +89,15 @@ export function useRoles() {
             // Mantener eventos globales para compatibilidad
             eventEmitter.emit(GLOBAL_EVENTS.DATA_CHANGED, 'roles');
             eventEmitter.emit(GLOBAL_EVENTS.ROLES_UPDATED);
-            Notiflix.Notify.success('Rol eliminado correctamente');
+            notifications.success('Rol eliminado correctamente');
             return true;
         } catch (error) {
+            // No mostrar notificación si es error de autorización (ya se muestra en httpClient)
+            if ((error as any)?.type === 'AUTHORIZATION_ERROR') {
+                return false;
+            }
             //console.error("Error al eliminar el rol:", error);
-            Notiflix.Notify.failure(
+            notifications.error(
                 error instanceof Error ? `Error al eliminar el rol: ${error.message}` : 'Error al eliminar el rol: Error desconocido'
             );
             return false;

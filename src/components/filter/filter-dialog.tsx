@@ -11,10 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Trash2 } from 'lucide-react';
-import { useFilters } from '@/hooks/useFilters';
-import { useFloors } from '@/hooks/useFloors';
-import { useType } from '@/hooks/useTypeTickets';
-import { useUsers } from '@/hooks/useUsersAdmin';
+import { useFiltersContext } from '@/contexts/FiltersContext';
+import { useFloorsContext } from '@/contexts/FloorsContext';
+import { useTypesContext } from '@/contexts/TypesContext';
+import { useUsersMinimalContext } from '@/contexts/UsersMinimalContext';
 import { eventEmitter } from '@/hooks/useEventListener';
 import { FILTER_EVENTS } from '@/lib/events';
 import { 
@@ -25,7 +25,7 @@ import {
   LogicalOperator, 
   TicketFilterField 
 } from '@/types/filter';
-import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import { notifications } from '@/lib/notifications';
 import { ticketFilterSchema } from '@/lib/zod';
 
 interface FilterDialogProps {
@@ -66,17 +66,13 @@ const operatorLabels: Record<string, string> = {
   [FilterOperator.LESS_THAN]: 'Menor que',
   [FilterOperator.GREATER_EQUAL]: 'Mayor o igual que',
   [FilterOperator.LESS_EQUAL]: 'Menor o igual que',
-  [FilterOperator.IN]: 'En lista',
-  [FilterOperator.NOT_IN]: 'No en lista',
-  [FilterOperator.IS_NULL]: 'Es nulo',
-  [FilterOperator.IS_NOT_NULL]: 'No es nulo',
 };
 
 export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProps) {
-  const { createFilter, updateFilter, loading } = useFilters();
-  const { floors } = useFloors();
-  const { types } = useType();
-  const { users } = useUsers();
+  const { createFilter, updateFilter, loading } = useFiltersContext();
+  const { floors } = useFloorsContext();
+  const { types } = useTypesContext();
+  const { users } = useUsersMinimalContext();
   
   const [formData, setFormData] = useState<FilterFormData>({
     filter_name: '',
@@ -157,7 +153,7 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
       }
 
       setErrors(newErrors);
-      Notify.failure('Por favor, corrija los errores en el formulario');
+      notifications.error('Por favor, corrija los errores en el formulario');
       return;
     }
 
@@ -178,11 +174,7 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
       );
 
       if (!hasChanges) {
-        Notify.warning('Debe modificar al menos un campo para actualizar el filtro', {
-          timeout: 4000,
-          pauseOnHover: true,
-          position: 'right-top'
-        });
+        notifications.warning('Debe modificar al menos un campo para actualizar el filtro');
         return;
       }
     }
@@ -198,7 +190,7 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
 
     if (incompleteCriteria.length > 0) {
       setErrors({ criteria: 'Todos los criterios deben estar completos (campo, operador y valor cuando sea requerido)' });
-      Notify.failure('Todos los criterios deben estar completos (campo, operador y valor cuando sea requerido)');
+      notifications.error('Todos los criterios deben estar completos (campo, operador y valor cuando sea requerido)');
       return;
     }
 
@@ -233,7 +225,7 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
     }
 
     if (success) {
-      Notify.success(
+      notifications.success(
         mode === 'create' 
           ? 'Filtro creado correctamente con todos sus criterios' 
           : 'Filtro actualizado correctamente'
@@ -377,13 +369,22 @@ export function FilterDialog({ isOpen, onClose, mode, filter }: FilterDialogProp
                 <p className="text-red-500 text-xs mt-1">{errors.filter_name}</p>
               )}
             </div>
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="is_public"
-                checked={formData.is_public}
-                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_public: checked }))}
-              />
-              <Label htmlFor="is_public">Filtro público</Label>
+            <div className="flex flex-col space-y-2">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="is_public"
+                  checked={formData.is_public}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_public: checked }))}
+                />
+                <Label htmlFor="is_public" className="cursor-pointer">
+                  Filtro público
+                </Label>
+              </div>
+              <p className="text-xs text-muted-foreground ml-8">
+                {formData.is_public 
+                  ? "Este filtro será visible para todos los usuarios" 
+                  : "Este filtro será privado y solo tú podrás verlo"}
+              </p>
             </div>
           </div>
 

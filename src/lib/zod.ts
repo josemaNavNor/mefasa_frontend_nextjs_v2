@@ -8,7 +8,7 @@ export const userSchema = z.object({
         .min(1, { message: "El apellido es requerido" })
         .max(100, { message: "El apellido debe tener menos de 100 caracteres" }),
     email: z.string()
-        .email({ message: "Email inválido" })
+        .email({ message: "Debe ser un email válido" })
         .min(1, { message: "El email es requerido" }),
     password: z.string()
         .min(1, { message: "La contraseña es requerida" })
@@ -64,7 +64,7 @@ export const ticketTypeSchema = z.object({
 export const loginSchema = z.object({
     email: z.string()
         .min(1, { message: "El email es requerido" })
-        .email({ message: "Email inválido" }),
+        .email({ message: "Debe ser un email válido" }),
     password: z.string()
         .min(1, { message: "La contraseña es requerida" })
         .min(6, { message: "La contraseña debe tener más de 6 caracteres" }),
@@ -89,7 +89,7 @@ export const registerSchema = z.object({
         .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s\-]+$/, { message: "Solo se permiten letras, espacios y guiones" }),
     email: z.string()
         .min(1, { message: "El email es requerido" })
-        .email({ message: "Email inválido" }),
+        .email({ message: "Debe ser un email válido" }),
     password: z.string()
         .min(1, { message: "La contraseña es requerida" })
         .min(6, { message: "La contraseña debe tener al menos 6 caracteres" })
@@ -177,9 +177,14 @@ export const createTicketSchema = z.object({
         .max(255, { message: "El título no puede tener más de 255 caracteres" }),
     description: z.string()
         .min(1, { message: "La descripción es requerida" })
+        .refine((val) => {
+            // Remover tags HTML y espacios para verificar si hay contenido real
+            const textContent = val.replace(/<[^>]*>/g, '').trim();
+            return textContent.length > 0;
+        }, { message: "La descripción es requerida" })
         .max(2000, { message: "La descripción no puede tener más de 2000 caracteres" }),
     end_user: z.string()
-        .email({ message: "Email inválido" })
+        .email({ message: "Debe ser un email válido" })
         .min(1, { message: "El usuario final es requerido" }),
     technician_id: z.number().nullable(),
     type_id: z.number()
