@@ -6,6 +6,12 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
@@ -195,14 +201,25 @@ function Setup2FAContent() {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="verification-code">Código de verificación</Label>
-                  <Input
-                    id="verification-code"
-                    placeholder="Ingresa el código de 6 dígitos"
-                    value={verificationCode}
-                    onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    maxLength={6}
-                    className="text-center text-lg tracking-widest"
-                  />
+                  <div className="flex items-center justify-center gap-2">
+                    <InputOTP
+                      maxLength={6}
+                      value={verificationCode}
+                      onChange={(value) => setVerificationCode(value)}
+                    >
+                      <InputOTPGroup>
+                        <InputOTPSlot index={0} />
+                        <InputOTPSlot index={1} />
+                        <InputOTPSlot index={2} />
+                      </InputOTPGroup>
+                      <InputOTPSeparator />
+                      <InputOTPGroup>
+                        <InputOTPSlot index={3} />
+                        <InputOTPSlot index={4} />
+                        <InputOTPSlot index={5} />
+                      </InputOTPGroup>
+                    </InputOTP>
+                  </div>
                 </div>
                 <Button 
                   onClick={handleVerifyCode}

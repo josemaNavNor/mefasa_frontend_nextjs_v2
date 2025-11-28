@@ -321,3 +321,9 @@
 .dark .email-image:hover {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
+
+/* Estilos para toasts pequeños - solo reduce el ancho */
+.toast-small {
+  max-width: 250px !important;
+  width: auto !important;
+}

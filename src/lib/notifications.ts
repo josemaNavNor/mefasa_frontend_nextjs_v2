@@ -6,6 +6,7 @@ interface ToastOptions {
   readonly duration?: number;
   readonly position?: "top-left" | "top-center" | "top-right" | "bottom-left" | "bottom-center" | "bottom-right";
   readonly dismissible?: boolean;
+  size?: "small" | "medium" | "large";
   readonly action?: {
     readonly label: string;
     readonly onClick: () => void;
@@ -43,12 +44,22 @@ class NotificationService {
   }
 
   private showToast(type: ToastType, message: string, options?: ToastOptions): void {
-    const toastOptions = {
+    const size = options?.size ?? "medium";
+    
+    // Preparar opciones de toast
+    const toastOptions: any = {
       duration: options?.duration ?? this.defaultDuration,
       position: options?.position ?? "top-right",
       dismissible: options?.dismissible ?? true,
       action: options?.action,
     };
+
+    // Aplicar clase CSS personalizada para tamaño small (solo reduce el ancho)
+    if (size === "small") {
+      toastOptions.classNames = {
+        toast: "toast-small",
+      };
+    }
 
     switch (type) {
       case "success":

@@ -43,12 +43,16 @@ function LoginCallbackContent() {
         localStorage.setItem('user', JSON.stringify(user));
         
         // Verificar si necesita configurar 2FA
-        if (recommendations?.setup2FA) {
+        // El backend retorna setup2FA: true si el usuario no tiene 2FA activado
+        const needs2FASetup = recommendations?.setup2FA === true;
+        
+        if (needs2FASetup) {
+          // Mostrar el prompt de configuración de 2FA
           setUserData(user);
           setAuthData({ recommendations });
           setShow2FAPrompt(true);
         } else {
-          // Redirigir al dashboard directamente
+          // Redirigir al dashboard directamente si ya tiene 2FA activado
           router.push('/');
         }
       } catch (error) {
@@ -86,10 +90,10 @@ function LoginCallbackContent() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
-        <p className="mt-4 text-lg">Procesando autenticación...</p>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+        <p className="mt-4 text-lg text-foreground">Procesando autenticación...</p>
       </div>
     </div>
   );
@@ -98,10 +102,10 @@ function LoginCallbackContent() {
 export default function LoginCallback() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4 text-lg">Cargando...</p>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-lg text-foreground">Cargando...</p>
         </div>
       </div>
     }>

@@ -16,6 +16,10 @@ interface AuthResponse {
     name: string;
     role: string;
   };
+  recommendations?: {
+    setup2FA: boolean;
+    message: string | null;
+  };
 }
 
 class AuthService {
