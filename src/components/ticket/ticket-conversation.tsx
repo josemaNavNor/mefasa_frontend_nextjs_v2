@@ -176,7 +176,7 @@ export function TicketConversation({ ticket, comments, loading }: TicketConversa
                         </div>
                         {/* Mostrar solo el asunto del ticket */}
                         <div className="text-gray-800 font-medium">
-                            {ticket.summary || 'Sin asunto'}
+                            {ticket.description || 'Sin asunto'}
                         </div>
                         
                         {/* Mostrar archivos directos del ticket */}

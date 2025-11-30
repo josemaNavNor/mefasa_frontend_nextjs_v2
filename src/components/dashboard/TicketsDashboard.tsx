@@ -3,7 +3,6 @@
 import { useDashboard } from '@/hooks/useDashboard';
 import { TicketTimeline } from './TicketTimeline';
 import { StatusDonut } from './StatusDonut';
-import { PriorityBars } from './PriorityBars';
 import { TopTechnicians } from './TopTechnicians';
 import { MetricsCards } from './MetricsCards';
 import { PendingLastWeekTickets } from './PendingLastWeekTickets';
@@ -103,9 +102,8 @@ export function TicketsDashboard() {
       <TicketTimeline data={data.seriesByDate} />
 
       {/* Segunda fila de gráficas */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         <StatusDonut data={data.countsByStatus} />
-        <PriorityBars data={data.countsByPriority} />
       </div>
 
       {/* Top técnicos */}

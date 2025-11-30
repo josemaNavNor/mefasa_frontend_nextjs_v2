@@ -64,8 +64,8 @@ export default function TicketsPage() {
     const [ticket_number] = useState("");
     const [summary, setSummary] = useState("");
     const [description, setDescription] = useState("");
-    // Inicializar end_user con el email del usuario del localStorage
-    const [end_user, setEndUser] = useState(() => getCurrentUserEmail() || "");
+    // Inicializar end_user vacío, se establecerá en useEffect
+    const [end_user, setEndUser] = useState("");
     const [technician_id, setTechnicianId] = useState("0");
     const [type_id, setTypeId] = useState("");
     const [floor_id, setFloorId] = useState("0");
@@ -89,6 +89,14 @@ export default function TicketsPage() {
     // Estado para filtros
     const [activeFilter, setActiveFilter] = useState<Filter | null>(null);
     const [isFiltersCollapsed, setIsFiltersCollapsed] = useState(false);
+    
+    // Inicializar el email del usuario después del montaje del componente
+    useEffect(() => {
+        const userEmail = getCurrentUserEmail();
+        if (userEmail) {
+            setEndUser(userEmail);
+        }
+    }, []);
     
     // Función para aplicar filtros - movida antes de useMemo
     const applyFilterLogic = useCallback((filter: Filter | null, ticketsToFilter: Ticket[]): Ticket[] => {

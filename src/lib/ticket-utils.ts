@@ -47,6 +47,11 @@ export const getFieldDisplayName = (field: string) => {
 
 export const getCurrentUserId = (): number | null => {
     try {
+        // Verificar si estamos en el navegador (localStorage solo está disponible en el cliente)
+        if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+            return null
+        }
+        
         const userString = localStorage.getItem('user')
         if (!userString) {
             console.warn('Usuario no encontrado en localStorage')
@@ -67,6 +72,11 @@ export const getCurrentUserId = (): number | null => {
  */
 export const getCurrentUserEmail = (): string | null => {
     try {
+        // Verificar si estamos en el navegador (localStorage solo está disponible en el cliente)
+        if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+            return null
+        }
+        
         const userString = localStorage.getItem('user')
         if (!userString) {
             return null

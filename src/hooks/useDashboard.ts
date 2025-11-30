@@ -5,13 +5,11 @@ import { notifications } from '@/lib/notifications';
 export interface DashboardData {
   seriesByDate: { date: string; count: number }[];
   countsByStatus: Record<string, number>;
-  countsByPriority: Record<string, number>;
   topTechnicians: { name: string; count: number }[];
   metrics: {
     totalTickets: number;
     openTickets: number;
     closedToday: number;
-    avgResolutionDays: string;
     pendingLastWeek: number;
     pendingLastWeekDateRange: {
       start: string;

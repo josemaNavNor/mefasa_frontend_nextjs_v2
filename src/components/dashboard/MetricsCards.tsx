@@ -1,14 +1,13 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp, TrendingDown, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
+import { TrendingUp, TrendingDown, CheckCircle, AlertTriangle } from 'lucide-react';
 
 interface MetricsCardsProps {
   metrics: {
     totalTickets: number;
     openTickets: number;
     closedToday: number;
-    avgResolutionDays: string;
     pendingLastWeek: number;
     pendingLastWeekDateRange: {
       start: string;
@@ -21,8 +20,8 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
   // Validación defensiva para evitar errores cuando metrics no tiene la estructura esperada
   if (!metrics) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-        {Array.from({ length: 5 }).map((_, i) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {Array.from({ length: 4 }).map((_, i) => (
           <Card key={i} className="animate-pulse">
             <CardHeader className="pb-2">
               <div className="h-4 bg-gray-200 rounded w-3/4"></div>
@@ -57,7 +56,6 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
     totalTickets: metrics.totalTickets || 0,
     openTickets: metrics.openTickets || 0,
     closedToday: metrics.closedToday || 0,
-    avgResolutionDays: metrics.avgResolutionDays || '0',
     pendingLastWeek: metrics.pendingLastWeek || 0,
     pendingLastWeekDateRange: metrics.pendingLastWeekDateRange || {
       start: new Date().toISOString(),
@@ -90,14 +88,6 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
       bgColor: 'bg-green-50 dark:bg-green-900/20',
     },
     {
-      title: 'Promedio Resolución',
-      value: `${safeMetrics.avgResolutionDays} días`,
-      icon: Clock,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50 dark:bg-purple-900/20',
-      isText: true,
-    },
-    {
       title: 'Pendientes Semana Pasada',
       value: safeMetrics.pendingLastWeek,
       subtitle: lastWeekRange,
@@ -109,7 +99,7 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       {cards.map((card, index) => {
         const IconComponent = card.icon;
         return (
@@ -124,7 +114,7 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
             </CardHeader>
             <CardContent>
               <div className={`text-2xl font-bold ${card.isHighlight ? 'text-red-700 dark:text-red-400' : 'text-gray-900 dark:text-gray-100'}`}>
-                {card.isText ? card.value : Number(card.value).toLocaleString()}
+                {Number(card.value).toLocaleString()}
               </div>
               {card.subtitle && (
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
