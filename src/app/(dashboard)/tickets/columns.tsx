@@ -391,9 +391,6 @@ export const createColumns = ({ onDeleteTicket }: ColumnsProps = {}): ColumnDef<
                 </DropdownMenu>
             )
         },
-        size: 50,
-        minSize: 40,
-        maxSize: 60,
     },
 ]
 
