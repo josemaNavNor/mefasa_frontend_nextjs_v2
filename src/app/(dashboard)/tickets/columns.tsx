@@ -324,17 +324,19 @@ export const createColumns = ({ onDeleteTicket }: ColumnsProps = {}): ColumnDef<
                 if (!dateString) return "N/A";
                 try {
                     const date = new Date(dateString);
-                    return date.toLocaleDateString('es-ES', {
+                    return date.toLocaleString('es-ES', {
                         day: '2-digit',
                         month: '2-digit',
-                        year: '2-digit'
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
                     });
                 } catch (error) {
                     return "N/A";
                 }
             };
             return (
-                <div className="text-center text-sm font-mono">
+                <div className="text-center text-sm" title={dateValue}>
                     {formatDate(dateValue)}
                 </div>
             );
@@ -346,6 +348,9 @@ export const createColumns = ({ onDeleteTicket }: ColumnsProps = {}): ColumnDef<
     {
         id: "actions",
         header: "",
+        size: 70,
+        minSize: 60,
+        maxSize: 80,
         cell: ({ row }) => {
             const user = row.original
             return (

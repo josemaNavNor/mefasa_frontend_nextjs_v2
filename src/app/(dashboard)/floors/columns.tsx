@@ -46,13 +46,15 @@ export const createColumns = ({ onEdit, onDelete }: ColumnsProps = {}): ColumnDe
     // },
     {
         accessorKey: "floor_name",
+        size: 150,
+        minSize: 120,
         header: ({ column }) => {
             return (
                 <Button
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Name
+                    Nombre
                     <ArrowUpDown className="h-4 w-4" />
                 </Button>
             )
@@ -63,23 +65,32 @@ export const createColumns = ({ onEdit, onDelete }: ColumnsProps = {}): ColumnDe
     },
     {
         accessorKey: "description",
+        size: 300,
+        minSize: 200,
         header: ({ column }) => {
             return (
                 <Button
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Last Name
+                    Descripción
                     <ArrowUpDown className="h-4 w-4" />
                 </Button>
             )
         },
-        cell: ({ row }) => (
-            <div className="text-left">{row.getValue("description") ? row.getValue("description") : 'Sin descripción'}</div>
-        ),
+        cell: ({ row }) => {
+            const description = row.getValue("description") as string;
+            return (
+                <div className="text-left truncate max-w-[280px]" title={description || undefined}>
+                    {description || "Sin descripción"}
+                </div>
+            );
+        },
     },
     {
         accessorKey: "created_at",
+        size: 180,
+        minSize: 160,
         header: ({ column }) => {
             return (
                 <Button
@@ -91,12 +102,26 @@ export const createColumns = ({ onEdit, onDelete }: ColumnsProps = {}): ColumnDe
                 </Button>
             )
         },
-        cell: ({ row }) => (
-            <div className="text-left">{row.getValue("created_at")}</div>
-        ),
+        cell: ({ row }) => {
+            const date = row.getValue("created_at") as string;
+            const formattedDate = date ? new Date(date).toLocaleString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }) : '';
+            return (
+                <div className="text-left text-sm" title={date}>
+                    {formattedDate}
+                </div>
+            );
+        },
     },
     {
         accessorKey: "updated_at",
+        size: 180,
+        minSize: 160,
         header: ({ column }) => {
             return (
                 <Button
@@ -108,12 +133,26 @@ export const createColumns = ({ onEdit, onDelete }: ColumnsProps = {}): ColumnDe
                 </Button>
             )
         },
-        cell: ({ row }) => (
-            <div className="text-left">{row.getValue("updated_at")}</div>
-        ),
+        cell: ({ row }) => {
+            const date = row.getValue("updated_at") as string;
+            const formattedDate = date ? new Date(date).toLocaleString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }) : '';
+            return (
+                <div className="text-left text-sm" title={date}>
+                    {formattedDate}
+                </div>
+            );
+        },
     },
     {
         accessorKey: "deleted_at",
+        size: 140,
+        minSize: 120,
         header: ({ column }) => {
             return (
                 <Button
@@ -125,12 +164,29 @@ export const createColumns = ({ onEdit, onDelete }: ColumnsProps = {}): ColumnDe
                 </Button>
             )
         },
-        cell: ({ row }) => (
-            <div className="text-center">{row.getValue("deleted_at") ? row.getValue("deleted_at") : 'Activo'}</div>
-        ),
+        cell: ({ row }) => {
+            const deletedAt = row.getValue("deleted_at") as string;
+            if (deletedAt) {
+                const formattedDate = new Date(deletedAt).toLocaleString('es-ES', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                return (
+                    <div className="text-center text-sm" title={deletedAt}>
+                        {formattedDate}
+                    </div>
+                );
+            }
+            return <div className="text-center">Activo</div>;
+        },
     },
     {
         id: "actions",
+        size: 80,
+        minSize: 70,
         cell: ({ row }) => {
             const floor = row.original
             return (

@@ -24,6 +24,8 @@ interface ColumnsProps {
 export const createColumns = ({ onEdit, onDelete }: ColumnsProps = {}): ColumnDef<User>[] => [
     {
         accessorKey: "name",
+        size: 120,
+        minSize: 100,
         header: ({ column }) => {
             return (
                 <Button
@@ -41,6 +43,8 @@ export const createColumns = ({ onEdit, onDelete }: ColumnsProps = {}): ColumnDe
     },
     {
         accessorKey: "last_name",
+        size: 120,
+        minSize: 100,
         header: ({ column }) => {
             return (
                 <Button
@@ -58,6 +62,8 @@ export const createColumns = ({ onEdit, onDelete }: ColumnsProps = {}): ColumnDe
     },
     {
         accessorKey: "role",
+        size: 130,
+        minSize: 110,
         header: ({ column }) => {
             return (
                 <Button
@@ -76,6 +82,8 @@ export const createColumns = ({ onEdit, onDelete }: ColumnsProps = {}): ColumnDe
     },
     {
         accessorKey: "email",
+        size: 220,
+        minSize: 180,
         header: ({ column }) => {
             return (
                 <Button
@@ -87,12 +95,19 @@ export const createColumns = ({ onEdit, onDelete }: ColumnsProps = {}): ColumnDe
                 </Button>
             )
         },
-        cell: ({ row }) => (
-            <div className="text-left">{row.getValue("email")}</div>
-        ),
+        cell: ({ row }) => {
+            const email = row.getValue("email") as string;
+            return (
+                <div className="text-left truncate max-w-[200px]" title={email}>
+                    {email}
+                </div>
+            );
+        },
     },
     {
         accessorKey: "phone_number",
+        size: 140,
+        minSize: 120,
         header: ({ column }) => {
             return (
                 <Button
@@ -110,6 +125,8 @@ export const createColumns = ({ onEdit, onDelete }: ColumnsProps = {}): ColumnDe
     },
     {
         accessorKey: "is_email_verified",
+        size: 130,
+        minSize: 110,
         header: ({ column }) => {
             return (
                 <Button
@@ -127,6 +144,8 @@ export const createColumns = ({ onEdit, onDelete }: ColumnsProps = {}): ColumnDe
     },
     {
         accessorKey: "created_at",
+        size: 180,
+        minSize: 160,
         header: ({ column }) => {
             return (
                 <Button
@@ -138,12 +157,26 @@ export const createColumns = ({ onEdit, onDelete }: ColumnsProps = {}): ColumnDe
                 </Button>
             )
         },
-        cell: ({ row }) => (
-            <div className="text-left">{row.getValue("created_at")}</div>
-        ),
+        cell: ({ row }) => {
+            const date = row.getValue("created_at") as string;
+            const formattedDate = date ? new Date(date).toLocaleString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }) : '';
+            return (
+                <div className="text-left text-sm" title={date}>
+                    {formattedDate}
+                </div>
+            );
+        },
     },
     {
         accessorKey: "updated_at",
+        size: 180,
+        minSize: 160,
         header: ({ column }) => {
             return (
                 <Button
@@ -155,12 +188,26 @@ export const createColumns = ({ onEdit, onDelete }: ColumnsProps = {}): ColumnDe
                 </Button>
             )
         },
-        cell: ({ row }) => (
-            <div className="text-left">{row.getValue("updated_at")}</div>
-        ),
+        cell: ({ row }) => {
+            const date = row.getValue("updated_at") as string;
+            const formattedDate = date ? new Date(date).toLocaleString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }) : '';
+            return (
+                <div className="text-left text-sm" title={date}>
+                    {formattedDate}
+                </div>
+            );
+        },
     },
     {
         accessorKey: "deleted_at",
+        size: 140,
+        minSize: 120,
         header: ({ column }) => {
             return (
                 <Button
@@ -172,12 +219,29 @@ export const createColumns = ({ onEdit, onDelete }: ColumnsProps = {}): ColumnDe
                 </Button>
             )
         },
-        cell: ({ row }) => (
-            <div className="text-center">{row.getValue("deleted_at") ? row.getValue("deleted_at") : "Activo"}</div>
-        ),
+        cell: ({ row }) => {
+            const deletedAt = row.getValue("deleted_at") as string;
+            if (deletedAt) {
+                const formattedDate = new Date(deletedAt).toLocaleString('es-ES', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                return (
+                    <div className="text-center text-sm" title={deletedAt}>
+                        {formattedDate}
+                    </div>
+                );
+            }
+            return <div className="text-center">Activo</div>;
+        },
     },
     {
         id: "actions",
+        size: 80,
+        minSize: 70,
         cell: ({ row }) => {
             const user = row.original
             return (
