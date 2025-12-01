@@ -228,15 +228,15 @@ if (!detectedType || !allowedMimeTypes.includes(detectedType.mime)) {
 
 ---
 
-### BUG-007: Falta de Transacciones en Operaciones Críticas
+### BUG-007: Falta de Transacciones en Operaciones Críticas ✅ RESUELTO
 **Severidad:** ALTA  
 **Categoría:** Consistencia de Datos  
-**Ubicación:** `backend/src/auth/auth.service.ts:46-75`
+**Ubicación:** `backend/src/auth/auth.service.ts:50-130`
 
 **Descripción:**
 En el método `register`, se crea un usuario y se envía un email de verificación. Si el envío del email falla, se elimina el usuario, pero no hay transacción que garantice la atomicidad. Si hay un error entre la creación y el envío del email, puede quedar un usuario huérfano.
 
-**Código Problemático:**
+**Código Problemático (ANTES):**
 ```typescript
 const createResult = await this.userService.create({...});
 const newUser = createResult.user;
@@ -249,28 +249,46 @@ try {
 }
 ```
 
-**Impacto:**
-- Posible inconsistencia de datos
-- Usuarios creados sin emails de verificación enviados
-- Problemas en la integridad de la base de datos
+**Solución Implementada:**
+Se implementó una transacción de base de datos que garantiza la atomicidad de la operación:
 
-**Solución Recomendada:**
-Usar transacciones de base de datos:
 ```typescript
 return await this.dataSource.transaction(async (manager) => {
-  const userRepo = manager.getRepository(User);
-  const newUser = userRepo.create({...});
-  const savedUser = await userRepo.save(newUser);
+  const userRepository = manager.getRepository(User);
   
+  // Verificar duplicados dentro de la transacción
+  const userInTransaction = await userRepository.findOne({
+    where: { email: registerDto.email }
+  });
+  
+  if (userInTransaction) {
+    throw new BadRequestException('Dirección no disponible...');
+  }
+
+  // Crear y guardar usuario dentro de la transacción
+  const savedUser = await userRepository.save(newUser);
+
+  // Intentar enviar email - si falla, la transacción se revierte automáticamente
   try {
     await this.sendVerificationEmail(savedUser.email, emailVerificationToken);
-    return { message: '...', user: savedUser };
   } catch (error) {
-    // La transacción se revierte automáticamente
-    throw new BadRequestException(...);
+    this.logger.error(`Error enviando correo:`, error);
+    throw new BadRequestException(`No se pudo enviar el correo...`);
   }
+
+  return { message: '...' };
 });
 ```
+
+**Mejoras Implementadas:**
+- ✅ Transacción atómica que garantiza consistencia
+- ✅ Verificación de duplicados dentro de la transacción (evita race conditions)
+- ✅ Validación de phone_number dentro de la transacción
+- ✅ Si el email falla, el usuario no se crea (rollback automático)
+- ✅ Reemplazo de `console.error` por `Logger` de NestJS
+- ✅ Mejor manejo de errores con logging estructurado
+
+**Estado:** ✅ **RESUELTO** - Implementado en `backend/src/auth/auth.service.ts`
 
 ---
 
