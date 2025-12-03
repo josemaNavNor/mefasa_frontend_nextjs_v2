@@ -7,7 +7,6 @@ import type { Ticket, CreateTicketDto, UpdateTicketDto } from '@/types';
 interface TicketsContextType {
     tickets: Ticket[];
     loading: boolean;
-    isPolling: boolean;
     createTicket: (ticket: CreateTicketDto) => Promise<void>;
     updateTicket: (id: string, ticket: UpdateTicketDto) => Promise<Ticket | null>;
     deleteTicket: (id: string | number) => Promise<boolean>;
@@ -23,7 +22,6 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
     const {
         tickets,
         loading,
-        isPolling,
         createTicket,
         updateTicket,
         deleteTicket,
@@ -37,7 +35,6 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
         <TicketsContext.Provider value={{
             tickets,
             loading,
-            isPolling,
             createTicket,
             updateTicket,
             deleteTicket,

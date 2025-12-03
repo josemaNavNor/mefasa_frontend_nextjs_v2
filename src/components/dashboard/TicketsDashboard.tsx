@@ -1,6 +1,6 @@
 'use client';
 
-import { useDashboard } from '@/hooks/useDashboard';
+import { useDashboard, type DashboardData } from '@/hooks/useDashboard';
 import { TicketTimeline } from './TicketTimeline';
 import { StatusDonut } from './StatusDonut';
 import { TopTechnicians } from './TopTechnicians';
@@ -10,8 +10,12 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export function TicketsDashboard() {
-  const { data, loading, error, refetch } = useDashboard();
+interface TicketsDashboardProps {
+  initialData?: DashboardData | null;
+}
+
+export function TicketsDashboard({ initialData }: TicketsDashboardProps) {
+  const { data, loading, error, refetch } = useDashboard(initialData);
 
   if (loading) {
     return (
@@ -93,21 +97,21 @@ export function TicketsDashboard() {
       </div>
 
       {/* Métricas principales */}
-      <MetricsCards metrics={data.metrics} />
+      <MetricsCards metrics={data.metrics || undefined} />
 
       {/* Tickets pendientes de la semana pasada - Componente destacado */}
       {data.metrics?.pendingLastWeek && data.metrics.pendingLastWeek > 0 && <PendingLastWeekTickets />}
 
       {/* Gráfica principal - Timeline */}
-      <TicketTimeline data={data.seriesByDate} />
+      <TicketTimeline data={data.seriesByDate || []} />
 
       {/* Segunda fila de gráficas */}
       <div className="grid grid-cols-1 gap-6">
-        <StatusDonut data={data.countsByStatus} />
+        <StatusDonut data={data.countsByStatus || {}} />
       </div>
 
       {/* Top técnicos */}
-      <TopTechnicians data={data.topTechnicians} />
+      <TopTechnicians data={data.topTechnicians || []} />
     </div>
   );
 }

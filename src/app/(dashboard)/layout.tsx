@@ -1,46 +1,21 @@
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
-import { ModeToggle } from "@/components/mode-toggle";
-import { UsersMinimalProvider } from "@/contexts/UsersMinimalContext";
-import { FloorsProvider } from "@/contexts/FloorsContext";
-import { TypesProvider } from "@/contexts/TypesContext";
-import { TicketsProvider } from "@/contexts/TicketsContext";
-import { RolesProvider } from "@/contexts/RolesContext";
-import { UserFavFiltersProvider } from "@/contexts/UserFavFiltersContext";
-import { FiltersProvider } from "@/contexts/FiltersContext";
-//import { AuthLoadingWrapper } from "@/components/AuthLoadingWrapper";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
-export default function DashboardLayout({
-  children,
-}: {
+import { AUTH_CONFIG } from "@/lib/constants";
+import { DashboardClientLayout } from "./DashboardClientLayout";
+
+interface DashboardLayoutProps {
   children: React.ReactNode;
-}) {
-  return (
-    //<AuthLoadingWrapper>
-      <UsersMinimalProvider>
-        <FloorsProvider>
-          <TypesProvider>
-            <TicketsProvider>
-              <RolesProvider>
-                <UserFavFiltersProvider>
-                  <FiltersProvider>
-                    <SidebarProvider>
-                      <AppSidebar />
-                      <main className="flex-1">
-                        <div className="flex items-center gap-2 p-4">
-                          <SidebarTrigger />
-                          <ModeToggle />
-                        </div>
-                        {children}
-                      </main>
-                    </SidebarProvider>
-                  </FiltersProvider>
-                </UserFavFiltersProvider>
-              </RolesProvider>
-            </TicketsProvider>
-          </TypesProvider>
-        </FloorsProvider>
-      </UsersMinimalProvider>
-    //</AuthLoadingWrapper>
-  );
+}
+
+export default async function DashboardLayout({ children }: DashboardLayoutProps) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(AUTH_CONFIG.tokenKey)?.value;
+
+  // Si no hay token en cookies, redirigir al login desde el servidor
+  if (!token) {
+    redirect("/login");
+  }
+
+  return <DashboardClientLayout>{children}</DashboardClientLayout>;
 }

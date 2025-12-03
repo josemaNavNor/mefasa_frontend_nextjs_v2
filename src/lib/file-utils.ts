@@ -12,17 +12,10 @@ export async function downloadAuthenticatedFile(
   filename: string
 ): Promise<void> {
   try {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      throw new Error('No hay token de autenticación disponible');
-    }
-
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
     const response = await fetch(`${apiUrl}/files/${fileId}/download`, {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
+      credentials: 'include',
     });
 
     if (!response.ok) {

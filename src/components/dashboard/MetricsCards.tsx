@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, TrendingDown, CheckCircle, AlertTriangle } from 'lucide-react';
 
 interface MetricsCardsProps {
-  metrics: {
+  metrics?: {
     totalTickets: number;
     openTickets: number;
     closedToday: number;
@@ -13,7 +13,7 @@ interface MetricsCardsProps {
       start: string;
       end: string;
     };
-  };
+  } | null;
 }
 
 export function MetricsCards({ metrics }: MetricsCardsProps) {

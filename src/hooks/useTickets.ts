@@ -4,7 +4,6 @@ import { eventEmitter } from './useEventListener'
 import { TICKET_EVENTS, GLOBAL_EVENTS } from '@/lib/events'
 import * as XLSX from 'xlsx'
 import { api } from '@/lib/httpClient'
-import { useSettings } from '@/contexts/SettingsContext'
 import { logger } from '@/lib/logger'
 import { createTicketSchema, updateTicketSchema } from '@/lib/zod'
 import type { Ticket, CreateTicketDto, UpdateTicketDto } from '@/types'
@@ -25,11 +24,9 @@ const sortTicketsByDate = (tickets: Ticket[]): Ticket[] => {
 };
 
 export function useTickets() {
-    const { autoRefreshEnabled, autoRefreshInterval } = useSettings();
     const [tickets, setTickets] = useState<Ticket[]>([]);
     const [loading, setLoading] = useState(false);
     const [lastTicketCount, setLastTicketCount] = useState(0);
-    const [isPolling, setIsPolling] = useState(false);
     const [lastFetchTime, setLastFetchTime] = useState<number>(0);
 
     /**
@@ -45,7 +42,7 @@ export function useTickets() {
         }
         setLastFetchTime(now);
         
-        if (!isPolling) setLoading(true);
+        setLoading(true);
         try {
             // Usar el endpoint con estado de visualización
             const response = await api.get('/tickets/with-view-status');
@@ -90,14 +87,12 @@ export function useTickets() {
             setLastTicketCount(currentCount);
             
         } catch (error) {
-            if (!isPolling) {
-                notifications.error('Error al cargar tickets');
-                setTickets([]);
-            }
+            notifications.error('Error al cargar tickets');
+            setTickets([]);
         } finally {
-            if (!isPolling) setLoading(false);
+            setLoading(false);
         }
-    }, [lastFetchTime, isPolling, lastTicketCount]);
+    }, [lastFetchTime, lastTicketCount]);
 
     /**
      * Obtiene un ticket específico por su ID
@@ -377,27 +372,7 @@ export function useTickets() {
     useEffect(() => {
         // Cargar tickets inicial
         fetchTickets();
-        
-        let pollingInterval: NodeJS.Timeout | null = null;
-        
-        // Solo iniciar polling si está habilitado en configuraciones
-        if (autoRefreshEnabled) {
-            setIsPolling(true);
-            pollingInterval = setInterval(() => {
-                fetchTickets(true); // true para mostrar notificaciones de nuevos tickets
-            }, autoRefreshInterval);
-        } else {
-            setIsPolling(false);
-        }
-        
-        // Cleanup: detener el polling cuando el componente se desmonte o cambien las configuraciones
-        return () => {
-            setIsPolling(false);
-            if (pollingInterval) {
-                clearInterval(pollingInterval);
-            }
-        };
-    }, [autoRefreshEnabled, autoRefreshInterval, fetchTickets]);
+    }, [fetchTickets]);
 
     return { 
         tickets, 
@@ -408,8 +383,7 @@ export function useTickets() {
         fetchTicketById, 
         markTicketAsViewed,
         refetch, 
-        exportToExcel,
-        isPolling
+        exportToExcel
     };
 }
 

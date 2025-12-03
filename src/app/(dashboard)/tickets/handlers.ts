@@ -230,11 +230,11 @@ export const createTicketHandlers = ({
 
     const handleRowClick = (
         ticket: Ticket,
-        setSelectedTicket: (ticket: Ticket) => void,
-        setShowDetailsModal: (show: boolean) => void
+        navigate?: (path: string) => void
     ) => {
-        setSelectedTicket(ticket);
-        setShowDetailsModal(true);
+        if (navigate) {
+            navigate(`/tickets/${ticket.id}`);
+        }
     };
 
     const handleEditTicket = (

@@ -34,20 +34,21 @@ class AuthService {
   }
 
   logout(): void {
-    localStorage.removeItem(AUTH_CONFIG.tokenKey);
-    localStorage.removeItem('refresh_token');
+    // Solo limpiar datos de usuario (los tokens están en cookies HTTP-only y se limpian desde el backend)
     localStorage.removeItem(AUTH_CONFIG.userKey);
-    sessionStorage.removeItem(AUTH_CONFIG.tokenKey);
-    sessionStorage.removeItem('refresh_token');
     sessionStorage.removeItem(AUTH_CONFIG.userKey);
   }
 
   getToken(): string | null {
-    return localStorage.getItem(AUTH_CONFIG.tokenKey);
+    // Los tokens están en cookies HTTP-only, no accesibles desde JavaScript
+    // Este método se mantiene por compatibilidad pero siempre retornará null
+    return null;
   }
 
   getRefreshToken(): string | null {
-    return localStorage.getItem('refresh_token');
+    // Los tokens están en cookies HTTP-only, no accesibles desde JavaScript
+    // Este método se mantiene por compatibilidad pero siempre retornará null
+    return null;
   }
 
   getUser(): unknown {
@@ -56,7 +57,9 @@ class AuthService {
   }
 
   isAuthenticated(): boolean {
-    return !!this.getToken();
+    // Verificar si hay datos de usuario guardados
+    // La autenticación real se valida en el servidor mediante cookies HTTP-only
+    return !!this.getUser();
   }
 }
 

@@ -30,14 +30,12 @@ export function useAuth(): AuthContextValue {
   const router = useRouter();
 
   /**
-   * Limpia el estado de autenticación y elimina tokens del almacenamiento
+   * Limpia el estado de autenticación
+   * Nota: Los tokens están en cookies HTTP-only y se limpian desde el backend en logout
    */
   const clearAuthState = useCallback(() => {
-    localStorage.removeItem(AUTH_CONFIG.tokenKey);
-    localStorage.removeItem('refresh_token');
+    // Solo limpiar datos de usuario (no tokens, están en cookies HTTP-only)
     localStorage.removeItem(AUTH_CONFIG.userKey);
-    sessionStorage.removeItem(AUTH_CONFIG.tokenKey);
-    sessionStorage.removeItem('refresh_token');
     sessionStorage.removeItem(AUTH_CONFIG.userKey);
     
     setState({
@@ -48,14 +46,12 @@ export function useAuth(): AuthContextValue {
   }, []);
 
   /**
-   * Establece el usuario autenticado y guarda los tokens
+   * Establece el usuario autenticado
+   * Nota: Los tokens están en cookies HTTP-only configuradas por el backend
    * @param user - Datos del usuario autenticado
-   * @param token - Token de acceso
-   * @param refreshToken - Token de refresco
    */
-  const setAuthenticatedUser = useCallback((user: AuthUser, token: string, refreshToken: string) => {
-    localStorage.setItem(AUTH_CONFIG.tokenKey, token);
-    localStorage.setItem('refresh_token', refreshToken);
+  const setAuthenticatedUser = useCallback((user: AuthUser) => {
+    // Solo guardar datos de usuario (no tokens, están en cookies HTTP-only)
     localStorage.setItem(AUTH_CONFIG.userKey, JSON.stringify(user));
     
     setState({
@@ -69,10 +65,10 @@ export function useAuth(): AuthContextValue {
   useEffect(() => {
     const initializeAuth = () => {
       try {
-        const token = localStorage.getItem(AUTH_CONFIG.tokenKey);
+        // Solo leer datos de usuario (los tokens están en cookies HTTP-only)
         const userData = localStorage.getItem(AUTH_CONFIG.userKey);
 
-        if (token && userData) {
+        if (userData) {
           const user = JSON.parse(userData) as AuthUser;
           setState({
             user,
@@ -132,8 +128,8 @@ export function useAuth(): AuthContextValue {
           role: response.user.role as UserRole,
         };
 
-        // Set new user
-        setAuthenticatedUser(user, response.access_token, response.refresh_token);
+        // Set new user (los tokens están en cookies HTTP-only configuradas por el backend)
+        setAuthenticatedUser(user);
         
         // Guardar recomendaciones en localStorage si existen
         if (response.recommendations) {
@@ -144,8 +140,8 @@ export function useAuth(): AuthContextValue {
         
         // Si hay recomendación de configurar 2FA, redirigir a página de callback para mostrar prompt
         if (response.recommendations?.setup2FA) {
-          // Guardar datos necesarios para mostrar el prompt
-          const callbackUrl = `${ROUTES.LOGIN}/callback?token=${response.access_token}&user=${encodeURIComponent(JSON.stringify(user))}&recommendations=${encodeURIComponent(JSON.stringify(response.recommendations))}`;
+          // Guardar datos necesarios para mostrar el prompt (sin tokens, están en cookies)
+          const callbackUrl = `${ROUTES.LOGIN}/callback?user=${encodeURIComponent(JSON.stringify(user))}&recommendations=${encodeURIComponent(JSON.stringify(response.recommendations))}`;
           setTimeout(() => {
             router.push(callbackUrl);
             router.refresh();
@@ -204,13 +200,10 @@ export function useAuth(): AuthContextValue {
    */
   const logout = useCallback(async () => {
     try {
-      const refreshToken = localStorage.getItem('refresh_token');
-      if (refreshToken) {
-        // Intentar revocar el refresh token en el backend
-        await api.post('/auth/logout', { refresh_token: refreshToken }).catch(() => {
-          // Ignorar errores del logout en el backend
-        });
-      }
+      // El backend leerá el refresh_token de las cookies HTTP-only automáticamente
+      await api.post('/auth/logout', {}).catch(() => {
+        // Ignorar errores del logout en el backend
+      });
     } catch (error) {
       console.error('Error during logout:', error);
     } finally {

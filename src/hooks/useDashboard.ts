@@ -18,9 +18,10 @@ export interface DashboardData {
   };
 }
 
-export function useDashboard() {
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
+export function useDashboard(initialData?: DashboardData | null) {
+  const [data, setData] = useState<DashboardData | null>(initialData ?? null);
+  // Si hay initialData, empezar con loading=false, si no, empezar con loading=true
+  const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState<string | null>(null);
 
   const fetchDashboardData = useCallback(async () => {
@@ -39,8 +40,14 @@ export function useDashboard() {
   }, []);
 
   useEffect(() => {
-    fetchDashboardData();
-  }, [fetchDashboardData]);
+    // Si ya tenemos datos iniciales (SSR/ISR), no es necesario hacer la primera petición
+    if (!initialData) {
+      fetchDashboardData();
+    } else {
+      // Asegurar que loading sea false si tenemos datos
+      setLoading(false);
+    }
+  }, [fetchDashboardData, initialData]);
 
   const refetch = () => {
     fetchDashboardData();

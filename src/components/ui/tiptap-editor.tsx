@@ -141,7 +141,10 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
 export function TiptapEditor({ content, onChange, placeholder = "Escribe tu mensaje...", className = "" }: TiptapEditorProps) {
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        // Excluir Link del StarterKit para evitar duplicados
+        link: false,
+      }),
       Placeholder.configure({
         placeholder,
       }),
@@ -168,9 +171,19 @@ export function TiptapEditor({ content, onChange, placeholder = "Escribe tu mens
   })
 
   // Sincronizar el contenido cuando cambie externamente
+  // Solo actualizar si el contenido realmente cambió y es diferente del contenido actual del editor
   useEffect(() => {
-    if (editor && content !== editor.getHTML()) {
-      editor.commands.setContent(content)
+    if (!editor) return
+    
+    const currentContent = editor.getHTML()
+    // Normalizar ambos contenidos para comparación (eliminar espacios en blanco extra)
+    const normalizedCurrent = currentContent.trim()
+    const normalizedNew = content.trim()
+    
+    // Solo actualizar si el contenido es realmente diferente
+    if (normalizedNew !== normalizedCurrent) {
+      // Usar setContent con emitUpdate: false para evitar disparar onUpdate y causar loops
+      editor.commands.setContent(content, false, { emitUpdate: false })
     }
   }, [content, editor])
 

@@ -1,37 +1,80 @@
-"use client";
-import { useAuthContext } from '@/components/auth-provider';
-import { TicketsDashboard } from '@/components/dashboard/TicketsDashboard';
-import { useEffect, useState } from 'react';
+import { cookies } from "next/headers";
 
-export default function DashboardHome() {
-  const { user, loading } = useAuthContext();
-  const [, forceUpdate] = useState({});
+import { AUTH_CONFIG, API_CONFIG } from "@/lib/constants";
+import { TicketsDashboard } from "@/components/dashboard/TicketsDashboard";
+import type { DashboardData } from "@/hooks/useDashboard";
 
-  // Escuchar cambios en el usuario para forzar re-render
-  useEffect(() => {
-    const handleUserChange = () => {
-      forceUpdate({});
+// Hacemos que esta página use ISR: los datos del dashboard se regeneran periódicamente
+export const revalidate = 60; // segundos
+
+async function fetchDashboardData(cookieStore: Awaited<ReturnType<typeof cookies>>): Promise<DashboardData | null> {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || `${API_CONFIG.baseUrl}/api/${API_CONFIG.version}`;
+
+  try {
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
     };
+    
+    // Construir header Cookie con todas las cookies disponibles
+    const cookiePairs: string[] = [];
+    cookieStore.getAll().forEach(cookie => {
+      cookiePairs.push(`${cookie.name}=${cookie.value}`);
+    });
+    
+    if (cookiePairs.length > 0) {
+      headers['Cookie'] = cookiePairs.join('; ');
+    }
 
-    window.addEventListener('userChanged', handleUserChange);
-    return () => window.removeEventListener('userChanged', handleUserChange);
-  }, []);
+    const response = await fetch(`${baseUrl}/tickets/dashboard`, {
+      headers,
+      // Dejamos que ISR controle el caché con revalidate
+      next: { revalidate: 60 },
+    });
 
-  // Mostrar loading mientras se carga la información de autenticación
-  if (loading) {
-    return (
-      <div className="p-6">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-        </div>
-      </div>
-    );
+    if (!response.ok) {
+      return null;
+    }
+
+    const responseData = await response.json();
+    
+    // El backend puede devolver los datos envueltos en { success, data } o directamente
+    let data: DashboardData;
+    if (responseData && typeof responseData === 'object' && 'data' in responseData && 'success' in responseData) {
+      // Si viene envuelto en { success, data }
+      data = responseData.data as DashboardData;
+    } else {
+      // Si viene directamente
+      data = responseData as DashboardData;
+    }
+    
+    // Validar que los datos tienen la estructura esperada
+    if (!data || (!data.seriesByDate && !data.countsByStatus && !data.metrics && !data.topTechnicians)) {
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error("Error fetching dashboard data (SSR):", error);
+    return null;
+  }
+}
+
+export default async function DashboardHome() {
+  const cookieStore = await cookies();
+
+  let initialData: DashboardData | null = null;
+
+  // Verificar si hay token en cookies antes de hacer la petición
+  const token = cookieStore.get(AUTH_CONFIG.tokenKey)?.value;
+  
+  if (token) {
+    initialData = await fetchDashboardData(cookieStore);
   }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto">
-        <TicketsDashboard />
+        <TicketsDashboard initialData={initialData} />
       </div>
     </div>
   );

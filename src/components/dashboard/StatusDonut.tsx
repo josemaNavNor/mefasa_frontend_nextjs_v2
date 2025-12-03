@@ -10,7 +10,7 @@ const Chart = dynamic(() => import('react-apexcharts'), {
 });
 
 interface StatusDonutProps {
-  data: Record<string, number>;
+  data?: Record<string, number> | null;
 }
 
 export function StatusDonut({ data }: StatusDonutProps) {
@@ -20,11 +20,14 @@ export function StatusDonut({ data }: StatusDonutProps) {
     setIsMounted(true);
   }, []);
 
+  // Validar que data existe y es un objeto antes de usarlo
+  const safeData = data && typeof data === 'object' ? data : {};
+
   const chartOptions = useMemo(() => ({
     chart: {
       type: 'donut' as const,
     },
-    labels: Object.keys(data),
+    labels: Object.keys(safeData),
     colors: ['#10B981', '#F59E0B', '#EF4444'], // Verde, Amarillo, Rojo
     legend: {
       position: 'bottom' as const,
@@ -40,7 +43,7 @@ export function StatusDonut({ data }: StatusDonutProps) {
               show: true,
               label: 'Total',
               formatter: () => {
-                const total = Object.values(data).reduce((sum, val) => sum + val, 0);
+                const total = Object.values(safeData).reduce((sum, val) => sum + val, 0);
                 return total.toString();
               },
             },
@@ -66,11 +69,11 @@ export function StatusDonut({ data }: StatusDonutProps) {
         },
       },
     ],
-  }), [data]);
+  }), [safeData]);
 
-  const series = useMemo(() => Object.values(data), [data]);
+  const series = useMemo(() => Object.values(safeData), [safeData]);
 
-  const hasData = Object.values(data).some(value => value > 0);
+  const hasData = Object.values(safeData).some(value => value > 0);
 
   if (!hasData) {
     return (

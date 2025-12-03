@@ -8,10 +8,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
 interface TicketTimelineProps {
-  data: { date: string; count: number }[];
+  data?: { date: string; count: number }[] | null;
 }
 
 export function TicketTimeline({ data }: TicketTimelineProps) {
+  // Validar que data existe y es un array antes de usarlo
+  const safeData = data && Array.isArray(data) ? data : [];
+
   const chartOptions = useMemo(() => ({
     chart: {
       id: 'tickets-timeline',
@@ -41,7 +44,7 @@ export function TicketTimeline({ data }: TicketTimelineProps) {
       },
     },
     xaxis: {
-      categories: data.map(item => {
+      categories: safeData.map(item => {
         const date = new Date(item.date);
         return date.toLocaleDateString('es-ES', { 
           day: '2-digit', 
@@ -61,7 +64,7 @@ export function TicketTimeline({ data }: TicketTimelineProps) {
     tooltip: {
       x: {
         formatter: (value: any, { dataPointIndex }: any) => {
-          const dateValue = data[dataPointIndex]?.date;
+          const dateValue = safeData[dataPointIndex]?.date;
           if (!dateValue) return 'Fecha no disponible';
           const date = new Date(dateValue);
           return date.toLocaleDateString('es-ES', {
@@ -74,16 +77,16 @@ export function TicketTimeline({ data }: TicketTimelineProps) {
       },
     },
     colors: ['#3B82F6'],
-  }), [data]);
+  }), [safeData]);
 
   const series = useMemo(() => [
     {
       name: 'Tickets Creados',
-      data: data.map(item => item.count),
+      data: safeData.map(item => item.count),
     },
-  ], [data]);
+  ], [safeData]);
 
-  if (!data || data.length === 0) {
+  if (!safeData || safeData.length === 0) {
     return (
       <Card>
         <CardHeader>

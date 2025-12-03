@@ -19,16 +19,11 @@ class HttpClient {
   }
 
   private getAuthHeaders(): HeadersInit {
-    const token = localStorage.getItem('token');
+    // Las cookies HTTP-only se envían automáticamente con las peticiones
+    // No necesitamos leer el token manualmente
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
     };
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    } else {
-      console.log('No hay token disponible');
-    }
 
     return headers;
   }
@@ -47,31 +42,26 @@ class HttpClient {
 
   private async refreshAccessToken(): Promise<string | null> {
     try {
-      const refreshToken = localStorage.getItem('refresh_token');
-      
-      if (!refreshToken) {
-        return null;
-      }
-
+      // El refresh token está en las cookies HTTP-only
+      // El backend lo leerá automáticamente de las cookies
       const response = await fetch(`${this.baseUrl}/auth/refresh`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ refresh_token: refreshToken }),
+        credentials: 'include', // Importante: incluir cookies
+        body: JSON.stringify({}), // El backend leerá el refresh_token de las cookies
       });
 
       if (!response.ok) {
         return null;
       }
 
-      const data = await response.json();
-      const newAccessToken = data.access_token;
-
-      // Update stored token
-      localStorage.setItem('token', newAccessToken);
+      // El nuevo access token se guarda automáticamente en una cookie HTTP-only por el backend
+      // No necesitamos leerlo ni guardarlo manualmente
+      await response.json();
       
-      return newAccessToken;
+      return 'refreshed'; // Indicador de que el token fue refrescado
     } catch (error) {
       console.error('Error refreshing token:', error);
       return null;
@@ -212,6 +202,7 @@ class HttpClient {
     const options: RequestInit = {
       method,
       headers: this.getAuthHeaders(),
+      credentials: 'include', // Importante: incluir cookies en todas las peticiones
     };
 
     if (data) {
@@ -224,13 +215,12 @@ class HttpClient {
   }
 
   private clearAuthAndRedirect() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('refresh_token');
+    // Limpiar solo datos de usuario (no tokens, están en cookies HTTP-only)
     localStorage.removeItem('user');
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('refresh_token');
     sessionStorage.removeItem('user');
     
+    // El backend limpiará las cookies en el logout
+    // Redirigir al login
     window.location.href = '/login';
   }
 
@@ -243,6 +233,7 @@ class HttpClient {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       method: 'GET',
       headers: this.getAuthHeaders(),
+      credentials: 'include', // Incluir cookies (HTTP-only)
     });
 
     return this.handleResponse(response, { endpoint, method: 'GET' });
@@ -258,6 +249,7 @@ class HttpClient {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
+      credentials: 'include', // Incluir cookies (HTTP-only)
       body: JSON.stringify(data),
     });
 
@@ -274,6 +266,7 @@ class HttpClient {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       method: 'PUT',
       headers: this.getAuthHeaders(),
+      credentials: 'include', // Incluir cookies (HTTP-only)
       body: JSON.stringify(data),
     });
 
@@ -289,6 +282,7 @@ class HttpClient {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       method: 'DELETE',
       headers: this.getAuthHeaders(),
+      credentials: 'include', // Incluir cookies (HTTP-only)
     });
 
     return this.handleResponse(response, { endpoint, method: 'DELETE' });
@@ -304,6 +298,7 @@ class HttpClient {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       method: 'PATCH',
       headers: this.getAuthHeaders(),
+      credentials: 'include', // Incluir cookies (HTTP-only)
       body: JSON.stringify(data),
     });
 

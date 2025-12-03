@@ -4,6 +4,7 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 
 // Next.js imports
+import { useRouter } from "next/navigation";
 import { Download, ChevronLeft, ChevronRight, Filter as FilterIcon } from "lucide-react";
 
 // Component imports
@@ -15,7 +16,6 @@ import { SimpleDatePicker } from "@/components/ui/simple-date-picker"
 import { TiptapEditor } from "@/components/ui/tiptap-editor"
 import { FileUpload } from "@/components/ui/file-upload"
 import { EditTicketDialog } from "@/components/edit-ticket-dialog";
-import { TicketDetailsModal } from "@/components/ticket-details-modal";
 import { FavoriteFilters } from "@/components/filter";
 import {
     Sheet,
@@ -41,7 +41,6 @@ import { useTypesContext } from "@/contexts/TypesContext";
 import { useFloorsContext } from "@/contexts/FloorsContext";
 import { useUsersMinimalContext } from "@/contexts/UsersMinimalContext";
 import { useEventListener } from "@/hooks/useEventListener";
-import { useSettings } from "@/contexts/SettingsContext";
 
 // Utility imports
 import { createColumns } from "./columns"
@@ -55,11 +54,11 @@ import type { Ticket } from "@/types";
 import { Filter } from "@/types/filter";
 
 export default function TicketsPage() {
-    const { tickets, createTicket, deleteTicket, refetch, exportToExcel, isPolling } = useTicketsContext();
+    const router = useRouter();
+    const { tickets, createTicket, deleteTicket, refetch, exportToExcel } = useTicketsContext();
     const { types } = useTypesContext();
     const { users } = useUsersMinimalContext();
     const { floors } = useFloorsContext();
-    const { autoRefreshEnabled } = useSettings();
 
     const [ticket_number] = useState("");
     const [summary, setSummary] = useState("");
@@ -78,10 +77,6 @@ export default function TicketsPage() {
     // Estado para edición de tickets
     const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
     const [showEditDialog, setShowEditDialog] = useState(false);
-
-    // Estado para el modal de detalles
-    const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
-    const [showDetailsModal, setShowDetailsModal] = useState(false);
 
     // Estado para controlar el Sheet de creación
     const [sheetOpen, setSheetOpen] = useState(false);
@@ -218,8 +213,8 @@ export default function TicketsPage() {
     }, [handlers]);
 
     const handleRowClick = useCallback((ticket: Ticket) => {
-        handlers.handleRowClick(ticket, setSelectedTicket, setShowDetailsModal);
-    }, [handlers]);
+        handlers.handleRowClick(ticket, router.push);
+    }, [handlers, router]);
 
     const handleSubmit = useCallback(async (e: React.FormEvent) => {
         const formData = {
@@ -275,12 +270,6 @@ export default function TicketsPage() {
             <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <h1 className="text-4xl font-bold">Tickets</h1>
-                    {autoRefreshEnabled && isPolling && (
-                        <div className="flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                            Auto-refresh activo
-                        </div>
-                    )}
                 </div>
                 <div className="flex items-center gap-2">
                     <Button
@@ -522,18 +511,6 @@ export default function TicketsPage() {
                     setShowEditDialog(open);
                     if (!open) {
                         setEditingTicket(null);
-                    }
-                }}
-            />
-
-            {/* Modal de detalles del ticket */}
-            <TicketDetailsModal
-                ticket={selectedTicket}
-                open={showDetailsModal}
-                onOpenChange={(open) => {
-                    setShowDetailsModal(open);
-                    if (!open) {
-                        setSelectedTicket(null);
                     }
                 }}
             />

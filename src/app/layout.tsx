@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 
 import "./globals.css";
 import { AuthProvider } from "@/components/auth-provider";
-import { SettingsProvider } from "@/contexts/SettingsContext";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "sonner";
 
@@ -52,32 +51,30 @@ export default function RootLayout({ children }: RootLayoutProps) {
     <html lang="es" suppressHydrationWarning>
       <body className="min-h-screen bg-background font-sans antialiased">
         <AuthProvider>
-          <SettingsProvider>
-            <ThemeProvider 
-              attribute="class" 
-              defaultTheme="system" 
-              enableSystem 
-              disableTransitionOnChange
-            >
-              <div id="app-root" className="relative flex min-h-screen flex-col">
-                {children}
-              </div>
-              <Toaster 
-                richColors 
-                position="top-right" 
-                closeButton
-                duration={4000}
-                toastOptions={{
-                  classNames: {
-                    error: 'border-destructive',
-                    success: 'border-green-500',
-                    warning: 'border-yellow-500',
-                    info: 'border-blue-500',
-                  },
-                }}
-              />
-            </ThemeProvider>
-          </SettingsProvider>
+          <ThemeProvider 
+            attribute="class" 
+            defaultTheme="system" 
+            enableSystem 
+            disableTransitionOnChange
+          >
+            <div id="app-root" className="relative flex min-h-screen flex-col">
+              {children}
+            </div>
+            <Toaster 
+              richColors 
+              position="top-right" 
+              closeButton
+              duration={4000}
+              toastOptions={{
+                classNames: {
+                  error: 'border-destructive',
+                  success: 'border-green-500',
+                  warning: 'border-yellow-500',
+                  info: 'border-blue-500',
+                },
+              }}
+            />
+          </ThemeProvider>
         </AuthProvider>
       </body>
     </html>

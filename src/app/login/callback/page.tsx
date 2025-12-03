@@ -12,7 +12,6 @@ function LoginCallbackContent() {
   const [authData, setAuthData] = useState<any>(null);
 
   useEffect(() => {
-    const token = searchParams.get('token');
     const userParam = searchParams.get('user');
     const recommendationsParam = searchParams.get('recommendations');
     const error = searchParams.get('error');
@@ -23,7 +22,7 @@ function LoginCallbackContent() {
       return;
     }
 
-    if (token && userParam) {
+    if (userParam) {
       try {
         const user = JSON.parse(decodeURIComponent(userParam));
         let recommendations: any = {};
@@ -37,9 +36,7 @@ function LoginCallbackContent() {
           }
         }
         
-        // IMPORTANTE: Guardar en localStorage ANTES de cualquier validación
-        // para que el token esté disponible cuando se configure 2FA
-        localStorage.setItem('token', token);
+        // Guardar datos de usuario (los tokens están en cookies HTTP-only configuradas por el backend)
         localStorage.setItem('user', JSON.stringify(user));
         
         // Verificar si necesita configurar 2FA

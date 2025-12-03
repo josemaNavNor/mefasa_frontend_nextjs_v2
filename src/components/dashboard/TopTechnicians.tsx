@@ -4,11 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
 interface TopTechniciansProps {
-  data: { name: string; count: number }[];
+  data?: { name: string; count: number }[] | null;
 }
 
 export function TopTechnicians({ data }: TopTechniciansProps) {
-  if (!data || data.length === 0) {
+  // Validar que data existe y es un array antes de usarlo
+  const safeData = data && Array.isArray(data) ? data : [];
+  
+  if (safeData.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -30,7 +33,7 @@ export function TopTechnicians({ data }: TopTechniciansProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {data.map((technician, index) => (
+          {safeData.map((technician, index) => (
             <div
               key={technician.name}
               className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800"

@@ -48,17 +48,20 @@ export const useTicketModal = (ticket: Ticket | null) => {
         if (ticket?.id) {
             setLocalTicketUpdates({})
             
-            // Marcar ticket como visto cuando se abre el modal (solo una vez por ticket)
+            // Marcar ticket como visto cuando se abre la página (solo una vez por ticket)
             const ticketId = typeof ticket.id === 'string' ? ticket.id : ticket.id.toString()
             const ticketIdKey = ticket.id.toString()
             
             // Solo marcar como visto si no lo hemos hecho antes
             if (!markedAsViewedRef.current.has(ticketIdKey)) {
                 markedAsViewedRef.current.add(ticketIdKey)
-                markTicketAsViewed(ticketId)
+                markTicketAsViewed(ticketId).catch((error) => {
+                    console.error('Error al marcar ticket como visto:', error)
+                })
             }
         }
-    }, [ticket?.id]) // Solo depender del ID del ticket
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [ticket?.id]) // Solo depender del ID del ticket, markTicketAsViewed es estable del contexto
 
     const handleTicketUpdate = async (field: string, newValue: any, oldValue: any) => {
         if (!ticket || !currentUserId) {
