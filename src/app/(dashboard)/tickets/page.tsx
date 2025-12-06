@@ -47,11 +47,15 @@ import { createColumns } from "./columns"
 import { createTicketHandlers } from "./handlers";
 import { TICKET_EVENTS } from "@/lib/events";
 import { logger } from "@/lib/logger";
-import { getCurrentUserEmail } from "@/lib/ticket-utils";
+import { getCurrentUserEmail, getCurrentUserId } from "@/lib/ticket-utils";
+import { TICKET_STATUS } from "@/lib/constants";
 
 // Type imports
 import type { Ticket } from "@/types";
 import { Filter } from "@/types/filter";
+
+// Tipo para las opciones del dropdown
+type TicketViewType = "all" | "my" | "closed";
 
 export default function TicketsPage() {
     const router = useRouter();
@@ -85,11 +89,21 @@ export default function TicketsPage() {
     const [activeFilter, setActiveFilter] = useState<Filter | null>(null);
     const [isFiltersCollapsed, setIsFiltersCollapsed] = useState(false);
     
-    // Inicializar el email del usuario después del montaje del componente
+    // Estado para el tipo de vista de tickets (dropdown)
+    const [ticketViewType, setTicketViewType] = useState<TicketViewType>("all");
+    
+    // Estado para el ID del usuario actual
+    const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+    
+    // Inicializar el email y ID del usuario después del montaje del componente
     useEffect(() => {
         const userEmail = getCurrentUserEmail();
+        const userId = getCurrentUserId();
         if (userEmail) {
             setEndUser(userEmail);
+        }
+        if (userId) {
+            setCurrentUserId(userId);
         }
     }, []);
     
@@ -188,10 +202,29 @@ export default function TicketsPage() {
         });
     }, []);
     
-    // Derivar filteredTickets usando useMemo
+    // Filtrar tickets según el tipo de vista seleccionado
+    const baseFilteredTickets = useMemo(() => {
+        switch (ticketViewType) {
+            case "my":
+                // Mis tickets: solo tickets ASIGNADOS al usuario autenticado (technician_id)
+                if (!currentUserId) return [];
+                return tickets.filter(ticket => 
+                    ticket.technician_id === currentUserId
+                );
+            case "closed":
+                // Tickets cerrados: todos los tickets con estado "Cerrado"
+                return tickets.filter(ticket => ticket.status === TICKET_STATUS.CLOSED);
+            case "all":
+            default:
+                // Todos los tickets
+                return tickets;
+        }
+    }, [tickets, ticketViewType, currentUserId]);
+    
+    // Aplicar filtros adicionales (filtros favoritos) a los tickets base
     const filteredTickets = useMemo(() => {
-        return applyFilterLogic(activeFilter, tickets);
-    }, [activeFilter, tickets, applyFilterLogic]);
+        return applyFilterLogic(activeFilter, baseFilteredTickets);
+    }, [activeFilter, baseFilteredTickets, applyFilterLogic]);
 
     // Crear handlers
     const handlers = createTicketHandlers({
@@ -444,6 +477,19 @@ export default function TicketsPage() {
                         </form>
                     </SheetContent>
                 </Sheet>
+                
+                {/* Dropdown para seleccionar tipo de vista */}
+                <Select value={ticketViewType} onValueChange={(value) => setTicketViewType(value as TicketViewType)}>
+                    <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder="Ver tickets" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">Todos los tickets</SelectItem>
+                        <SelectItem value="my">Mis tickets</SelectItem>
+                        <SelectItem value="closed">Tickets cerrados</SelectItem>
+                    </SelectContent>
+                </Select>
+                
                 <Button
                     variant="default"
                     onClick={handleExportToExcel}

@@ -10,12 +10,15 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    useSidebar,
 } from "@/components/ui/sidebar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import ImgLogo from "@/components/img-logo"
 import { useAuthContext } from "@/components/auth-provider" 
 import { ChevronUp, Home, Settings, User2, Building2, Ticket, Notebook, Footprints, LogOut, Filter } from "lucide-react"
 import { usePages } from "@/hooks/usePages"
+import { useProfile } from "@/hooks/useProfile"
 
 // Mapeo de nombres de iconos a componentes de Lucide
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -28,15 +31,37 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
     'Building2': Building2,
 };
 
+// Función para generar iniciales del nombre y apellido
+const getInitials = (name: string, lastName: string) => {
+    const firstInitial = name?.charAt(0) || '';
+    const lastInitial = lastName?.charAt(0) || '';
+    return `${firstInitial}${lastInitial}`.toUpperCase();
+};
+
 export function AppSidebar() {
     const { user, logout, loading: authLoading } = useAuthContext();
     const { menuItems, loading: pagesLoading } = usePages();
+    const { state } = useSidebar();
+    const { profile, loading: profileLoading } = useProfile(user?.id);
 
     const handleSignOut = () => {
         logout();
     };
 
     const loading = authLoading || pagesLoading;
+
+    // Función para construir la URL completa del avatar
+    const getAvatarUrl = () => {
+        if (profile?.avatar_url) {
+            // Si es una URL relativa, construir la URL completa
+            if (profile.avatar_url.startsWith('/')) {
+                const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+                return `${baseUrl}${profile.avatar_url}`;
+            }
+            return profile.avatar_url;
+        }
+        return undefined;
+    };
 
     return (
         <Sidebar collapsible="icon">
@@ -77,9 +102,23 @@ export function AppSidebar() {
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <SidebarMenuButton>
-                                    <User2 /> 
-                                    {authLoading ? 'Cargando...' : (user?.email || 'Username')}
-                                    <ChevronUp className="ml-auto" />
+                                    <Avatar className="h-8 w-8 group-data-[collapsible=icon]:h-6 group-data-[collapsible=icon]:w-6">
+                                        <AvatarImage 
+                                            src={getAvatarUrl()} 
+                                            alt={profile ? `${profile.name} ${profile.last_name}` : user?.name || 'Usuario'}
+                                        />
+                                        <AvatarFallback className="text-xs group-data-[collapsible=icon]:text-[10px]">
+                                            {profile 
+                                                ? getInitials(profile.name, profile.last_name) 
+                                                : user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    {state === "expanded" && (
+                                        <span>
+                                            {authLoading || profileLoading ? 'Cargando...' : (user?.email || 'Username')}
+                                        </span>
+                                    )}
+                                    {state === "expanded" && <ChevronUp className="ml-auto" />}
                                 </SidebarMenuButton>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent

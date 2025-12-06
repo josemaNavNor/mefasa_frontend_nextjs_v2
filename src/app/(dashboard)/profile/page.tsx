@@ -239,12 +239,10 @@ export default function ProfilePage() {
                         <div className="flex items-center space-x-6 pb-6 border-b border-gray-100">
                             <div className="flex flex-col items-center space-y-3">
                                 <Avatar className="h-24 w-24 border-4 border-white shadow-md">
-                                    {getAvatarUrl() && (
-                                        <AvatarImage 
-                                            src={getAvatarUrl() || undefined} 
-                                            alt={`${profile.name} ${profile.last_name}`}
-                                        />
-                                    )}
+                                    <AvatarImage 
+                                        src={getAvatarUrl() || undefined} 
+                                        alt={`${profile.name} ${profile.last_name}`}
+                                    />
                                     <AvatarFallback className="text-xl font-semibold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
                                         {getInitials(profile.name, profile.last_name)}
                                     </AvatarFallback>

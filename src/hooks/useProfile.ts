@@ -70,30 +70,18 @@ export const useProfile = (userId?: number) => {
             // Convertir archivo a base64
             const base64Data = await fileToBase64(file);
 
-            // Subir el avatar
-            const avatarResponse = await api.post('/files/avatar', {
+            // Subir el avatar (el backend actualiza automáticamente el avatar_url del usuario)
+            await api.post('/files/avatar', {
                 filename: file.name,
                 file_type: file.type,
                 user_id: profile.id,
                 file_data: base64Data
             });
 
-            // Actualizar el perfil con la URL del avatar
-            const avatarUrl = avatarResponse.url || `/files/avatar/${avatarResponse.id}/download`;
-            const success = await updateProfile({ 
-                name: profile.name,
-                last_name: profile.last_name,
-                phone_number: profile.phone_number,
-                avatar_url: avatarUrl
-            });
-
-            if (success) {
-                notifications.success('Foto de perfil actualizada exitosamente');
-                await refetch();
-                return true;
-            }
-
-            return false;
+            // Recargar el perfil para obtener el avatar_url actualizado
+            await refetch();
+            notifications.success('Foto de perfil actualizada exitosamente');
+            return true;
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
             setError(errorMessage);
