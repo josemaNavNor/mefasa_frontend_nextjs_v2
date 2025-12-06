@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { User, Phone, Mail, Calendar, Shield, Edit3, Save, X, Lock, Eye, EyeOff, Key } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { User, Phone, Mail, Calendar, Shield, Edit3, Save, X, Lock, Eye, EyeOff, Key, Upload } from "lucide-react";
 import { useAuthContext } from "@/components/auth-provider";
 import { useProfile } from "@/hooks/useProfile";
 import { usePasswordChange } from "@/hooks/usePasswordChange";
@@ -16,13 +16,15 @@ import { Separator } from "@/components/ui/separator";
 
 export default function ProfilePage() {
     const { user: authUser, loading: authLoading } = useAuthContext();
-    const { profile, loading, updateProfile, refetch } = useProfile(authUser?.id);
+    const { profile, loading, updateProfile, uploadAvatar, refetch } = useProfile(authUser?.id);
     const { changePassword, loading: passwordLoading, errors: passwordErrors, clearErrors } = usePasswordChange(authUser?.id);
     
     const [isEditing, setIsEditing] = useState(false);
     const [isEditingPassword, setIsEditingPassword] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [uploadingAvatar, setUploadingAvatar] = useState(false);
+    const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
     
     const [formData, setFormData] = useState({
         name: "",
@@ -136,7 +138,49 @@ export default function ProfilePage() {
         setPasswordData({ password: "", confirmPassword: "" });
         setIsEditingPassword(false);
         clearErrors();
-    };    if (authLoading || loading) {
+    };
+
+    const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        setUploadingAvatar(true);
+        try {
+            // Crear preview
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setAvatarPreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+
+            // Subir el avatar
+            const success = await uploadAvatar(file);
+            if (success) {
+                setAvatarPreview(null);
+            }
+        } catch (error) {
+            console.error('Error al subir avatar:', error);
+        } finally {
+            setUploadingAvatar(false);
+            // Limpiar el input
+            event.target.value = '';
+        }
+    };
+
+    const getAvatarUrl = () => {
+        if (avatarPreview) return avatarPreview;
+        if (profile?.avatar_url) {
+            // Si es una URL relativa, construir la URL completa
+            if (profile.avatar_url.startsWith('/')) {
+                const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+                return `${baseUrl}${profile.avatar_url}`;
+            }
+            return profile.avatar_url;
+        }
+        return null;
+    };
+
+    if (authLoading || loading) {
         return <Loading />;
     }
 
@@ -193,11 +237,39 @@ export default function ProfilePage() {
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="flex items-center space-x-6 pb-6 border-b border-gray-100">
-                            <Avatar className="h-24 w-24 border-4 border-white shadow-md">
-                                <AvatarFallback className="text-xl font-semibold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                                    {getInitials(profile.name, profile.last_name)}
-                                </AvatarFallback>
-                            </Avatar>
+                            <div className="flex flex-col items-center space-y-3">
+                                <Avatar className="h-24 w-24 border-4 border-white shadow-md">
+                                    {getAvatarUrl() && (
+                                        <AvatarImage 
+                                            src={getAvatarUrl() || undefined} 
+                                            alt={`${profile.name} ${profile.last_name}`}
+                                        />
+                                    )}
+                                    <AvatarFallback className="text-xl font-semibold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                                        {getInitials(profile.name, profile.last_name)}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <div className="flex flex-col items-center space-y-2">
+                                    <Label 
+                                        htmlFor="avatar-upload" 
+                                        className="cursor-pointer flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                                    >
+                                        <Upload className="h-4 w-4" />
+                                        <span>Subir foto de perfil</span>
+                                    </Label>
+                                    <Input
+                                        id="avatar-upload"
+                                        type="file"
+                                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/bmp"
+                                        onChange={handleAvatarChange}
+                                        disabled={uploadingAvatar}
+                                        className="hidden"
+                                    />
+                                    {uploadingAvatar && (
+                                        <p className="text-xs text-gray-500">Subiendo...</p>
+                                    )}
+                                </div>
+                            </div>
                             <div className="flex-1">
                                 <h2 className="text-2xl font-semibold text-gray-900">
                                     {profile.name} {profile.last_name}

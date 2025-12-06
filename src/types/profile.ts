@@ -9,6 +9,7 @@ export interface UserProfile {
     two_factor_enable: boolean;
     created_at: string;
     updated_at: string;
+    avatar_url?: string;
     role?: {
         id: number;
         role_name: string;
@@ -20,4 +21,5 @@ export interface UpdateProfileData {
     name: string;
     last_name: string;
     phone_number?: string;
+    avatar_url?: string;
 }

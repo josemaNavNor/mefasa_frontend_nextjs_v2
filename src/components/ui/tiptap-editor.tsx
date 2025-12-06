@@ -183,7 +183,7 @@ export function TiptapEditor({ content, onChange, placeholder = "Escribe tu mens
     // Solo actualizar si el contenido es realmente diferente
     if (normalizedNew !== normalizedCurrent) {
       // Usar setContent con emitUpdate: false para evitar disparar onUpdate y causar loops
-      editor.commands.setContent(content, false)
+      editor.commands.setContent(content, { emitUpdate: false })
     }
   }, [content, editor])
 

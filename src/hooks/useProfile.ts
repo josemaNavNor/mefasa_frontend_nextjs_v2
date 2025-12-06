@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { notifications } from '@/lib/notifications';
 import { UserProfile, UpdateProfileData } from '@/types/profile';
-import { api } from '@/lib/httpClient'
+import { api } from '@/lib/httpClient';
+import { fileToBase64, validateImage } from '@/lib/image-utils';
 
 export const useProfile = (userId?: number) => {
     const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -52,6 +53,58 @@ export const useProfile = (userId?: number) => {
         }
     };
 
+    const uploadAvatar = async (file: File): Promise<boolean> => {
+        if (!profile?.id) return false;
+
+        // Validar la imagen
+        const validation = validateImage(file, 5);
+        if (!validation.isValid) {
+            notifications.error(validation.errorMessage || 'Error al validar la imagen');
+            return false;
+        }
+
+        setLoading(true);
+        setError(null);
+
+        try {
+            // Convertir archivo a base64
+            const base64Data = await fileToBase64(file);
+
+            // Subir el avatar
+            const avatarResponse = await api.post('/files/avatar', {
+                filename: file.name,
+                file_type: file.type,
+                user_id: profile.id,
+                file_data: base64Data
+            });
+
+            // Actualizar el perfil con la URL del avatar
+            const avatarUrl = avatarResponse.url || `/files/avatar/${avatarResponse.id}/download`;
+            const success = await updateProfile({ 
+                name: profile.name,
+                last_name: profile.last_name,
+                phone_number: profile.phone_number,
+                avatar_url: avatarUrl
+            });
+
+            if (success) {
+                notifications.success('Foto de perfil actualizada exitosamente');
+                await refetch();
+                return true;
+            }
+
+            return false;
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
+            setError(errorMessage);
+            console.error('Error uploading avatar:', err);
+            notifications.error('No se pudo subir la foto de perfil');
+            return false;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const refetch = async () => {
         if (profile?.id) {
             await fetchProfile(profile.id);
@@ -71,6 +124,7 @@ export const useProfile = (userId?: number) => {
         loading,
         error,
         updateProfile,
+        uploadAvatar,
         refetch,
     };
 };
